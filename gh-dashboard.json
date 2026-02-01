@@ -1,0 +1,490 @@
+[
+    {
+        "id": "6cda5a5f32196c63",
+        "type": "tab",
+        "label": "GH-Dashboard",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "239514801c1bffa2",
+        "type": "serial in",
+        "z": "6cda5a5f32196c63",
+        "name": "UNO",
+        "serial": "f21e5fa854a87f38",
+        "x": 80,
+        "y": 120,
+        "wires": [
+            [
+                "0331b7e8018058e8"
+            ]
+        ]
+    },
+    {
+        "id": "0331b7e8018058e8",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Parse sensor line (JSON or key=val)",
+        "func": "function parseKeyVal(line){\n    var o = {};\n    var parts = line.split(',');\n    for(var i=0;i<parts.length;i++){\n        var p = parts[i].trim();\n        if(!p) continue;\n        var kv = p.split('=');\n        if(kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif(!s){ return null; }\n\nvar data = null;\n\n// Try JSON first\nif(s[0] === '{'){\n    try {\n        data = JSON.parse(s);\n    } catch(e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif(!data){\n    data = parseKeyVal(s);\n}\n\n// Normalize names (accept either t1/T1, etc.)\nfunction pick(obj, keys){\n    for(var i=0;i<keys.length;i++){\n        if(obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\nvar t1 = pick(data, ['t1','T1','temp1','Temp1']);\nvar t2 = pick(data, ['t2','T2','temp2','Temp2']);\nvar h1 = pick(data, ['h1','H1','hum1','Hum1']);\nvar h2 = pick(data, ['h2','H2','hum2','Hum2']);\nvar soil = pick(data, ['soil','SOIL','sm','SM']);\nvar lux = pick(data, ['lux','LUX','light','LIGHT']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number') ? (t1+t2)/2 : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number') ? (h1+h2)/2 : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 420,
+        "y": 120,
+        "wires": [
+            [
+                "f98d2f1f0673b101",
+                "e945f40524447b30",
+                "ee12a869e25d83bb",
+                "4b266addf47812be",
+                "3999dea12c82b1a6"
+            ]
+        ]
+    },
+    {
+        "id": "f98d2f1f0673b101",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Format CSV line",
+        "func": "var p = msg.payload;\nvar d = new Date(p.ts);\nfunction f(x){ return (x === undefined || x === null) ? '' : x; }\nvar line = [\n    d.toISOString(),\n    f(p.t1),f(p.t2),f(p.tavg),\n    f(p.h1),f(p.h2),f(p.havg),\n    f(p.soil),f(p.lux)\n].join(',') + \"\\n\";\nmsg.payload = line;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 660,
+        "y": 60,
+        "wires": [
+            [
+                "887f4b565053691c"
+            ]
+        ]
+    },
+    {
+        "id": "887f4b565053691c",
+        "type": "file",
+        "z": "6cda5a5f32196c63",
+        "name": "Append CSV log",
+        "filename": "/home/pff/greenhouse/logs/sensors.csv",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 900,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e945f40524447b30",
+        "type": "ui_text",
+        "z": "6cda5a5f32196c63",
+        "group": "a7d1c3b2f4e5d002",
+        "order": 1,
+        "width": "12",
+        "height": "1",
+        "name": "Last sample",
+        "label": "Last sample (JSON)",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 710,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ee12a869e25d83bb",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Split to chart points",
+        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('tavg', p.tavg);\npush('havg', p.havg);\npush('soil', p.soil);\npush('lux', p.lux);\nreturn [out];",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 690,
+        "y": 180,
+        "wires": [
+            [
+                "0a7c0f9ce0c337cf"
+            ]
+        ]
+    },
+    {
+        "id": "0a7c0f9ce0c337cf",
+        "type": "ui_chart",
+        "z": "6cda5a5f32196c63",
+        "name": "Trends",
+        "group": "a7d1c3b2f4e5d002",
+        "order": 2,
+        "width": "12",
+        "height": "6",
+        "label": "Trends",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "waiting...",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "outputs": 1,
+        "x": 900,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fb8c481a34f0fd0e",
+        "type": "mqtt out",
+        "z": "6cda5a5f32196c63",
+        "name": "MQTT Out (data)",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "9a8b7c6d5e4f3002",
+        "x": 1310,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "3999dea12c82b1a6",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Format MQTT payload (live)",
+        "func": "// Publish the live parsed sample to LAN via MQTT\nmsg.topic = \"greenhouse/data/live\";\n// msg.payload is already the parsed object from Parse sensor line\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 100,
+        "wires": [
+            [
+                "fb8c481a34f0fd0e"
+            ]
+        ]
+    },
+    {
+        "id": "4b266addf47812be",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "function 1",
+        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null\n];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 240,
+        "wires": [
+            [
+                "b91ca825f88143fb"
+            ]
+        ]
+    },
+    {
+        "id": "b91ca825f88143fb",
+        "type": "sqlite",
+        "z": "6cda5a5f32196c63",
+        "mydb": "38fa402bc4e15b76",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "greenhouse_db",
+        "x": 700,
+        "y": 240,
+        "wires": [
+            [
+                "a00e9e4ee9f938a1",
+                "10d54d59890a7417"
+            ]
+        ]
+    },
+    {
+        "id": "a00e9e4ee9f938a1",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "10d54d59890a7417",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Format MQTT payload",
+        "func": "// Expect rows from SQLite\nif (!Array.isArray(msg.payload) || msg.payload.length === 0) {\n    return null;\n}\n\n// Take the newest row\nconst row = msg.payload[0];\n\n// Set MQTT topic\nmsg.topic = \"greenhouse/data/latest\";\n\n// Publish JSON object\nmsg.payload = row;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 320,
+        "wires": [
+            [
+                "fb8c481a34f0fd0e"
+            ]
+        ]
+    },
+    {
+        "id": "9c954700ec15527d",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "76de5bf877b6191a",
+        "type": "mqtt in",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "topic": "greenhouse/data/#",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "9a8b7c6d5e4f3002",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 930,
+        "y": 400,
+        "wires": [
+            [
+                "0d1202f9041fb697"
+            ]
+        ]
+    },
+    {
+        "id": "8ba39c5ed2842546",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "query db (every 10s)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 240,
+        "y": 380,
+        "wires": [
+            [
+                "8def210fb4efeb3c"
+            ]
+        ]
+    },
+    {
+        "id": "8def210fb4efeb3c",
+        "type": "change",
+        "z": "6cda5a5f32196c63",
+        "name": "Build SELECT query (latest row)",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "[ ]",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 520,
+        "y": 380,
+        "wires": [
+            [
+                "b91ca825f88143fb"
+            ]
+        ]
+    },
+    {
+        "id": "e74a16e9a0b7350e",
+        "type": "ui_gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "group": "c450dd5b975415aa",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature",
+        "label": "°F",
+        "format": "{{value}}",
+        "min": "0",
+        "max": "120",
+        "colors": [
+            "#ca3838",
+            "#e6e600",
+            "#00b500"
+        ],
+        "seg1": "65",
+        "seg2": "85",
+        "diff": false,
+        "className": "",
+        "x": 1170,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "0d1202f9041fb697",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "function 2",
+        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.tavg);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 480,
+        "wires": [
+            [
+                "e74a16e9a0b7350e",
+                "9c954700ec15527d"
+            ]
+        ]
+    },
+    {
+        "id": "f21e5fa854a87f38",
+        "type": "serial-port",
+        "name": "",
+        "serialport": "/dev/ttyACM0",
+        "serialbaud": "9600",
+        "databits": 8,
+        "parity": "none",
+        "stopbits": 1,
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": 10000
+    },
+    {
+        "id": "a7d1c3b2f4e5d002",
+        "type": "ui_group",
+        "name": "Sensors",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "9a8b7c6d5e4f3002",
+        "type": "mqtt-broker",
+        "name": "MQTT Broker",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "38fa402bc4e15b76",
+        "type": "sqlitedb",
+        "db": "/home/pff/greenhouse/db/greenhouse_db_v2.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "c450dd5b975415aa",
+        "type": "ui_group",
+        "name": "Temperature",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a7d1c3b2f4e5d001",
+        "type": "ui_tab",
+        "name": "Greenhouse",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "ae6151a1f2ac9683",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-serialport": "2.0.3",
+            "node-red-dashboard": "3.6.6",
+            "node-red-node-sqlite": "1.1.1"
+        }
+    }
+]
