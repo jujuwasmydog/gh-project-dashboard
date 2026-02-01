@@ -7,6 +7,242 @@
         "info": ""
     },
     {
+        "id": "a7d1c3b2f4e5d001",
+        "type": "ui_tab",
+        "name": "Greenhouse",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "a7d1c3b2f4e5d002",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 7,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9a8b7c6d5e4f3002",
+        "type": "mqtt-broker",
+        "name": "MQTT Broker",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "38fa402bc4e15b76",
+        "type": "sqlitedb",
+        "db": "/home/pff/greenhouse/db/greenhouse_db_v2.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "f21e5fa854a87f38",
+        "type": "serial-port",
+        "name": "",
+        "serialport": "/dev/ttyACM0",
+        "serialbaud": "9600",
+        "databits": 8,
+        "parity": "none",
+        "stopbits": 1,
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": 10000
+    },
+    {
+        "id": "67be606e10e97380",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0eb8c0",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Greenhouse Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "false",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 12,
+                "sy": 24,
+                "gx": 6,
+                "gy": 6,
+                "cx": 12,
+                "cy": 6,
+                "px": 10,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "c450dd5b975415aa",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8f9c87e658f6809c",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1031a373083d4e4f",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "b47b5ede66d46c8c",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 4,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "23ae3d0ad7417bcd",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6d20b73d09270a4d",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 6,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "239514801c1bffa2",
         "type": "serial in",
         "z": "6cda5a5f32196c63",
@@ -660,153 +896,5 @@
         "wires": [
             []
         ]
-    },
-    {
-        "id": "f21e5fa854a87f38",
-        "type": "serial-port",
-        "name": "",
-        "serialport": "/dev/ttyACM0",
-        "serialbaud": "9600",
-        "databits": 8,
-        "parity": "none",
-        "stopbits": 1,
-        "waitfor": "",
-        "dtr": "none",
-        "rts": "none",
-        "cts": "none",
-        "dsr": "none",
-        "newline": "\\n",
-        "bin": "false",
-        "out": "char",
-        "addchar": "",
-        "responsetimeout": 10000
-    },
-    {
-        "id": "a7d1c3b2f4e5d002",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 7,
-        "disp": true,
-        "width": "12",
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "9a8b7c6d5e4f3002",
-        "type": "mqtt-broker",
-        "name": "MQTT Broker",
-        "broker": "127.0.0.1",
-        "port": "1883",
-        "clientid": "",
-        "autoConnect": true,
-        "usetls": false,
-        "protocolVersion": "4",
-        "keepalive": "60",
-        "cleansession": true,
-        "autoUnsubscribe": true,
-        "birthTopic": "",
-        "birthQos": "0",
-        "birthPayload": "",
-        "birthMsg": {},
-        "closeTopic": "",
-        "closeQos": "0",
-        "closePayload": "",
-        "closeMsg": {},
-        "willTopic": "",
-        "willQos": "0",
-        "willPayload": "",
-        "willMsg": {},
-        "userProps": "",
-        "sessionExpiry": ""
-    },
-    {
-        "id": "38fa402bc4e15b76",
-        "type": "sqlitedb",
-        "db": "/home/pff/greenhouse/db/greenhouse_db_v2.db",
-        "mode": "RWC"
-    },
-    {
-        "id": "c450dd5b975415aa",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 1,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "8f9c87e658f6809c",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 2,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "1031a373083d4e4f",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 3,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "b47b5ede66d46c8c",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 4,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "23ae3d0ad7417bcd",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 5,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "6d20b73d09270a4d",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 6,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "a7d1c3b2f4e5d001",
-        "type": "ui_tab",
-        "name": "Greenhouse",
-        "icon": "dashboard",
-        "order": 1
-    },
-    {
-        "id": "1cfdb81e646610a6",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-node-serialport": "2.0.3",
-            "node-red-dashboard": "3.6.6",
-            "node-red-node-sqlite": "1.1.1"
-        }
     }
 ]
