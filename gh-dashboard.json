@@ -2,7 +2,7 @@
     {
         "id": "6cda5a5f32196c63",
         "type": "tab",
-        "label": "GH-Dashboard",
+        "label": "Greenhouse Starter",
         "disabled": false,
         "info": ""
     },
@@ -12,7 +12,7 @@
         "z": "6cda5a5f32196c63",
         "name": "UNO",
         "serial": "f21e5fa854a87f38",
-        "x": 80,
+        "x": 190,
         "y": 120,
         "wires": [
             [
@@ -25,15 +25,18 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor line (JSON or key=val)",
-        "func": "function parseKeyVal(line){\n    var o = {};\n    var parts = line.split(',');\n    for(var i=0;i<parts.length;i++){\n        var p = parts[i].trim();\n        if(!p) continue;\n        var kv = p.split('=');\n        if(kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif(!s){ return null; }\n\nvar data = null;\n\n// Try JSON first\nif(s[0] === '{'){\n    try {\n        data = JSON.parse(s);\n    } catch(e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif(!data){\n    data = parseKeyVal(s);\n}\n\n// Normalize names (accept either t1/T1, etc.)\nfunction pick(obj, keys){\n    for(var i=0;i<keys.length;i++){\n        if(obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\nvar t1 = pick(data, ['t1','T1','temp1','Temp1']);\nvar t2 = pick(data, ['t2','T2','temp2','Temp2']);\nvar h1 = pick(data, ['h1','H1','hum1','Hum1']);\nvar h2 = pick(data, ['h2','H2','hum2','Hum2']);\nvar soil = pick(data, ['soil','SOIL','sm','SM']);\nvar lux = pick(data, ['lux','LUX','light','LIGHT']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number') ? (t1+t2)/2 : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number') ? (h1+h2)/2 : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;",
+        "func": "function parseKeyVal(line) {\n    var o = {};\n    var parts = line.split(',');\n    for (var i = 0; i < parts.length; i++) {\n        var p = parts[i].trim();\n        if (!p) continue;\n        var kv = p.split('=');\n        if (kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif (!s) { return null; }\n\nvar data = null;\n\n// Try JSON first\nif (s[0] === '{') {\n    try {\n        data = JSON.parse(s);\n    } catch (e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif (!data) {\n    data = parseKeyVal(s);\n}\n\n// Normalize names\nfunction pick(obj, keys) {\n    for (var i = 0; i < keys.length; i++) {\n        if (obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\n// Existing fields\nvar t1 = pick(data, ['t1', 'T1', 'temp1', 'Temp1']);\nvar t2 = pick(data, ['t2', 'T2', 'temp2', 'Temp2']);\nvar h1 = pick(data, ['h1', 'H1', 'hum1', 'Hum1']);\nvar h2 = pick(data, ['h2', 'H2', 'hum2', 'Hum2']);\nvar soil = pick(data, ['soil', 'SOIL', 'sm', 'SM']);\nvar lux = pick(data, ['lux', 'LUX', 'light', 'LIGHT']);\nvar louvre_pct = pick(data, ['louvre_pct', 'LOUVRE_PCT']);\nvar louvre_state = pick(data, ['louvre_state', 'LOUVRE_STATE']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number')\n    ? (t1 + t2) / 2\n    : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\n\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number')\n    ? (h1 + h2) / 2\n    : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\n// Build output object (THIS is what DB + dashboard see)\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux,\n    louvre_pct: louvre_pct,\n    louvre_state: louvre_state\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;\n",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
         "x": 420,
         "y": 120,
         "wires": [
             [
                 "f98d2f1f0673b101",
-                "e945f40524447b30",
                 "ee12a869e25d83bb",
                 "4b266addf47812be",
                 "3999dea12c82b1a6"
@@ -73,29 +76,17 @@
         ]
     },
     {
-        "id": "e945f40524447b30",
-        "type": "ui_text",
-        "z": "6cda5a5f32196c63",
-        "group": "a7d1c3b2f4e5d002",
-        "order": 1,
-        "width": "12",
-        "height": "1",
-        "name": "Last sample",
-        "label": "Last sample (JSON)",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "x": 710,
-        "y": 140,
-        "wires": []
-    },
-    {
         "id": "ee12a869e25d83bb",
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Split to chart points",
-        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('tavg', p.tavg);\npush('havg', p.havg);\npush('soil', p.soil);\npush('lux', p.lux);\nreturn [out];",
+        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('Temp (avg)', p.tavg);\npush('Humidity (avg)', p.havg);\npush('Soil Moisture', p.soil);\npush('Lighting', p.lux);\nreturn [out];",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
         "x": 690,
         "y": 180,
         "wires": [
@@ -118,15 +109,30 @@
         "legend": "true",
         "xformat": "HH:mm:ss",
         "interpolate": "linear",
-        "nodata": "waiting...",
+        "nodata": "",
         "dot": false,
         "ymin": "",
         "ymax": "",
-        "removeOlder": "6",
+        "removeOlder": "12",
+        "removeOlderPoints": "",
         "removeOlderUnit": "3600",
         "cutout": 0,
         "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
         "outputs": 1,
+        "useDifferentColor": false,
+        "className": "center-card",
         "x": 900,
         "y": 180,
         "wires": [
@@ -147,9 +153,10 @@
         "correl": "",
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
-        "x": 1310,
-        "y": 160,
-        "wires": []
+        "x": 1130,
+        "y": 180,
+        "wires": [],
+        "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
     },
     {
         "id": "3999dea12c82b1a6",
@@ -175,15 +182,15 @@
         "id": "4b266addf47812be",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "function 1",
-        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null\n];\n\nreturn msg;\n",
+        "name": "db_function",
+        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Preserve original decoded sample for dashboard/other branches\nmsg.data = p;\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null,\n  p.louvre_pct ?? null,\n  p.louvre_state ?? null\n];\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 480,
+        "x": 490,
         "y": 240,
         "wires": [
             [
@@ -279,7 +286,13 @@
         "y": 400,
         "wires": [
             [
-                "0d1202f9041fb697"
+                "0d1202f9041fb697",
+                "d4942742387dabb4",
+                "112b42a1704108f8",
+                "c5aa37be95cbd5f2",
+                "f2588d218f7169c5",
+                "744e76bedde5edb1",
+                "9c954700ec15527d"
             ]
         ]
     },
@@ -353,8 +366,8 @@
         "name": "",
         "group": "c450dd5b975415aa",
         "order": 0,
-        "width": 0,
-        "height": 0,
+        "width": "0",
+        "height": "0",
         "gtype": "gage",
         "title": "Temperature",
         "label": "°F",
@@ -370,7 +383,7 @@
         "seg2": "85",
         "diff": false,
         "className": "",
-        "x": 1170,
+        "x": 1150,
         "y": 480,
         "wires": []
     },
@@ -378,7 +391,7 @@
         "id": "0d1202f9041fb697",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "function 2",
+        "name": "Temperature",
         "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.tavg);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
@@ -386,13 +399,266 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 920,
+        "x": 930,
         "y": 480,
         "wires": [
             [
-                "e74a16e9a0b7350e",
-                "9c954700ec15527d"
+                "e74a16e9a0b7350e"
             ]
+        ]
+    },
+    {
+        "id": "d4942742387dabb4",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Humidity",
+        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.havg);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 520,
+        "wires": [
+            [
+                "4b154cde352e2f71"
+            ]
+        ]
+    },
+    {
+        "id": "4b154cde352e2f71",
+        "type": "ui_gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "group": "8f9c87e658f6809c",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Humidity",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "40",
+        "seg2": "65",
+        "diff": false,
+        "className": "",
+        "x": 1160,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "112b42a1704108f8",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Lux",
+        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.lux);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 560,
+        "wires": [
+            [
+                "13457caa1a5926a0"
+            ]
+        ]
+    },
+    {
+        "id": "c5aa37be95cbd5f2",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "soil",
+        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.soil);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 600,
+        "wires": [
+            [
+                "be2a678d7f59510c"
+            ]
+        ]
+    },
+    {
+        "id": "13457caa1a5926a0",
+        "type": "ui_gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "group": "1031a373083d4e4f",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Light Level",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "800",
+        "colors": [
+            "#ca3838",
+            "#e6e600",
+            "#00b500"
+        ],
+        "seg1": "150",
+        "seg2": "550",
+        "diff": false,
+        "className": "",
+        "x": 1150,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "be2a678d7f59510c",
+        "type": "ui_gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "group": "b47b5ede66d46c8c",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Soil Moisture",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "69",
+        "seg2": "89",
+        "diff": false,
+        "className": "",
+        "x": 1150,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "3eca00a5801c39fe",
+        "type": "ui_gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "group": "23ae3d0ad7417bcd",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Louvre Open PCT",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#00b500",
+            "#00b500"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": true,
+        "className": "",
+        "x": 1170,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "f2588d218f7169c5",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "louvre_pct",
+        "func": "msg.payload = msg.payload.louvre_pct;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 640,
+        "wires": [
+            [
+                "3eca00a5801c39fe"
+            ]
+        ]
+    },
+    {
+        "id": "744e76bedde5edb1",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "louve_state",
+        "func": "msg.payload = msg.payload.louvre_state;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 680,
+        "wires": [
+            [
+                "4dc8f66ba2cebe0b"
+            ]
+        ]
+    },
+    {
+        "id": "4dc8f66ba2cebe0b",
+        "type": "ui_text",
+        "z": "6cda5a5f32196c63",
+        "group": "6d20b73d09270a4d",
+        "order": 0,
+        "width": "4",
+        "height": "4",
+        "name": "",
+        "label": "Louvre State",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "center-card",
+        "style": false,
+        "font": "Times New Roman,Times,serif",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1150,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "30292b46e989fdaf",
+        "type": "ui_template",
+        "z": "6cda5a5f32196c63",
+        "group": "",
+        "name": "ui_template",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    /* Apply class \"center-card\" on the widget */\n    .center-card .nr-dashboard-gauge {\n        text-align: center !important;\n        /* centers inline/svg in many builds */\n        width: 100% !important;\n    }\n\n    /* Center SVG-based gauges */\n    .center-card .nr-dashboard-gauge svg {\n        display: block !important;\n        margin: 0 auto !important;\n    }\n\n    /* Center canvas-based widgets (some dashboard builds use canvas) */\n    .center-card .nr-dashboard-gauge canvas {\n        display: block !important;\n        margin: 0 auto !important;\n    }\n\n    /* If the gauge is wrapped in an extra div, center that too */\n    .center-card .nr-dashboard-gauge>div {\n        margin: 0 auto !important;\n    }\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "global",
+        "className": "",
+        "x": 590,
+        "y": 520,
+        "wires": [
+            []
         ]
     },
     {
@@ -418,12 +684,13 @@
     {
         "id": "a7d1c3b2f4e5d002",
         "type": "ui_group",
-        "name": "Sensors",
+        "name": "",
         "tab": "a7d1c3b2f4e5d001",
-        "order": 1,
+        "order": 7,
         "disp": true,
         "width": "12",
-        "collapse": false
+        "collapse": false,
+        "className": ""
     },
     {
         "id": "9a8b7c6d5e4f3002",
@@ -462,9 +729,64 @@
     {
         "id": "c450dd5b975415aa",
         "type": "ui_group",
-        "name": "Temperature",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8f9c87e658f6809c",
+        "type": "ui_group",
+        "name": "",
         "tab": "a7d1c3b2f4e5d001",
         "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1031a373083d4e4f",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "b47b5ede66d46c8c",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 4,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "23ae3d0ad7417bcd",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6d20b73d09270a4d",
+        "type": "ui_group",
+        "name": "",
+        "tab": "a7d1c3b2f4e5d001",
+        "order": 6,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -478,7 +800,7 @@
         "order": 1
     },
     {
-        "id": "ae6151a1f2ac9683",
+        "id": "1cfdb81e646610a6",
         "type": "global-config",
         "env": [],
         "modules": {
