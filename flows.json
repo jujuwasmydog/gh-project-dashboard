@@ -243,6 +243,114 @@
         "className": ""
     },
     {
+        "id": "062287387a26aec8",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "ad1666f09e21ea6d",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#111827",
+            "primary": "#22c55e",
+            "bgPage": "#0b1220",
+            "groupBg": "#111827",
+            "groupOutline": "#1f2937"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "6px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "3f12950bc7b59498",
+        "type": "ui-page",
+        "name": "Page 1",
+        "ui": "062287387a26aec8",
+        "path": "/page1",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "ad1666f09e21ea6d",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "85dcddf4de18c2df",
+        "type": "ui-group",
+        "name": "GH Status",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "15b023f2a14c0f91",
+        "type": "ui-theme",
+        "name": "dark theme",
+        "colors": {
+            "surface": "#111827",
+            "primary": "#22c55e",
+            "bgPage": "#0b1220",
+            "groupBg": "#111827",
+            "groupOutline": "#1f2937"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "6px",
+            "widgetGap": "12px"
+        }
+    },
+    {
         "id": "239514801c1bffa2",
         "type": "serial in",
         "z": "6cda5a5f32196c63",
@@ -369,7 +477,7 @@
         "outputs": 1,
         "useDifferentColor": false,
         "className": "center-card",
-        "x": 1030,
+        "x": 1250,
         "y": 180,
         "wires": [
             []
@@ -389,8 +497,8 @@
         "correl": "",
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
-        "x": 1230,
-        "y": 180,
+        "x": 1310,
+        "y": 100,
         "wires": [],
         "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
     },
@@ -536,7 +644,7 @@
         "id": "8ba39c5ed2842546",
         "type": "inject",
         "z": "6cda5a5f32196c63",
-        "name": "query db (every 10s)",
+        "name": "query db (every 60s)",
         "props": [
             {
                 "p": "payload"
@@ -546,7 +654,7 @@
                 "vt": "str"
             }
         ],
-        "repeat": "10",
+        "repeat": "60",
         "crontab": "",
         "once": true,
         "onceDelay": "1",
@@ -619,7 +727,7 @@
         "seg2": "85",
         "diff": false,
         "className": "",
-        "x": 1250,
+        "x": 1630,
         "y": 480,
         "wires": []
     },
@@ -687,7 +795,7 @@
         "seg2": "65",
         "diff": false,
         "className": "",
-        "x": 1260,
+        "x": 1640,
         "y": 520,
         "wires": []
     },
@@ -745,17 +853,17 @@
         "label": "units",
         "format": "{{value}}",
         "min": 0,
-        "max": "800",
+        "max": "60000",
         "colors": [
             "#ca3838",
-            "#e6e600",
-            "#00b500"
+            "#00b500",
+            "#ca3838"
         ],
-        "seg1": "150",
-        "seg2": "550",
+        "seg1": "9999",
+        "seg2": "40000",
         "diff": false,
         "className": "",
-        "x": 1250,
+        "x": 1630,
         "y": 560,
         "wires": []
     },
@@ -783,7 +891,7 @@
         "seg2": "89",
         "diff": false,
         "className": "",
-        "x": 1250,
+        "x": 1630,
         "y": 600,
         "wires": []
     },
@@ -811,7 +919,7 @@
         "seg2": "",
         "diff": true,
         "className": "",
-        "x": 1270,
+        "x": 1650,
         "y": 640,
         "wires": []
     },
@@ -872,30 +980,9 @@
         "font": "Times New Roman,Times,serif",
         "fontSize": 16,
         "color": "#000000",
-        "x": 1250,
+        "x": 1630,
         "y": 680,
         "wires": []
-    },
-    {
-        "id": "30292b46e989fdaf",
-        "type": "ui_template",
-        "z": "6cda5a5f32196c63",
-        "group": "",
-        "name": "ui_template",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "format": "<style>\n    /* Apply class \"center-card\" on the widget */\n    .center-card .nr-dashboard-gauge {\n        text-align: center !important;\n        /* centers inline/svg in many builds */\n        width: 100% !important;\n    }\n\n    /* Center SVG-based gauges */\n    .center-card .nr-dashboard-gauge svg {\n        display: block !important;\n        margin: 0 auto !important;\n    }\n\n    /* Center canvas-based widgets (some dashboard builds use canvas) */\n    .center-card .nr-dashboard-gauge canvas {\n        display: block !important;\n        margin: 0 auto !important;\n    }\n\n    /* If the gauge is wrapped in an extra div, center that too */\n    .center-card .nr-dashboard-gauge>div {\n        margin: 0 auto !important;\n    }\n</style>",
-        "storeOutMessages": true,
-        "fwdInMessages": true,
-        "resendOnRefresh": true,
-        "templateScope": "global",
-        "className": "",
-        "x": 190,
-        "y": 260,
-        "wires": [
-            []
-        ]
     },
     {
         "id": "d410dc6f8bb74f8c",
@@ -913,7 +1000,7 @@
         "y": 520,
         "wires": [
             [
-                "4b154cde352e2f71"
+                "a6d64198e6eaae62"
             ]
         ]
     },
@@ -933,7 +1020,7 @@
         "y": 600,
         "wires": [
             [
-                "be2a678d7f59510c"
+                "66c91ea4b80fc08f"
             ]
         ]
     },
@@ -953,7 +1040,7 @@
         "y": 480,
         "wires": [
             [
-                "e74a16e9a0b7350e"
+                "bb6a10ac977d0717"
             ]
         ]
     },
@@ -973,7 +1060,7 @@
         "y": 560,
         "wires": [
             [
-                "13457caa1a5926a0"
+                "3a5ee99f6baf7088"
             ]
         ]
     },
@@ -993,7 +1080,7 @@
         "y": 640,
         "wires": [
             [
-                "3eca00a5801c39fe"
+                "66d981e6d96be52c"
             ]
         ]
     },
@@ -1009,11 +1096,11 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 890,
+        "x": 850,
         "y": 180,
         "wires": [
             [
-                "0a7c0f9ce0c337cf"
+                "4af3079dbb6762fa"
             ]
         ]
     },
@@ -1033,7 +1120,569 @@
         "y": 680,
         "wires": [
             [
-                "4dc8f66ba2cebe0b"
+                "072fb8dffe0e9dbc"
+            ]
+        ]
+    },
+    {
+        "id": "911ba08b535d0c83",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Temperature",
+        "group": "85dcddf4de18c2df",
+        "order": 4,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Temperature",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°F",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "value"
+            },
+            {
+                "from": "33",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "value"
+            },
+            {
+                "from": "55",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "value"
+            },
+            {
+                "from": "86",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "value"
+            },
+            {
+                "from": "96",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "value"
+            }
+        ],
+        "min": 0,
+        "max": "120",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1630,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "79974308ea82383b",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Humidity",
+        "group": "85dcddf4de18c2df",
+        "order": 6,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Humidity",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "44",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "45",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "80",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "100",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "0",
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1620,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "05bba795903b4a55",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Lux",
+        "group": "85dcddf4de18c2df",
+        "order": 5,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Lighting",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "Lux",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#ff0000",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "3000",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "10000",
+                "color": "#00c800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "40000",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "60000",
+                "color": "#ff0000",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "100000",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1610,
+        "y": 820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b1163310511ba436",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Soil Moisture",
+        "group": "85dcddf4de18c2df",
+        "order": 3,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Soil Moisture",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "35",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "65",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1630,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "022edd664dc4b3d5",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Louvre Open %",
+        "group": "85dcddf4de18c2df",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Louve Setting",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#969696",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1640,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6a9c73d878494885",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "85dcddf4de18c2df",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Louvre State",
+        "label": "Louvre State",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1630,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "4cb5f93570d7d0ca",
+        "type": "ui-chart",
+        "z": "6cda5a5f32196c63",
+        "group": "85dcddf4de18c2df",
+        "name": "History",
+        "label": "History",
+        "order": 7,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "12",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "smooth",
+        "x": 1260,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4af3079dbb6762fa",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "10",
+        "nbRateUnits": "15",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 180,
+        "wires": [
+            [
+                "0a7c0f9ce0c337cf",
+                "4cb5f93570d7d0ca"
+            ]
+        ]
+    },
+    {
+        "id": "3a5ee99f6baf7088",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "12",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 560,
+        "wires": [
+            [
+                "13457caa1a5926a0",
+                "05bba795903b4a55"
+            ]
+        ]
+    },
+    {
+        "id": "bb6a10ac977d0717",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 480,
+        "wires": [
+            [
+                "e74a16e9a0b7350e",
+                "911ba08b535d0c83"
+            ]
+        ]
+    },
+    {
+        "id": "a6d64198e6eaae62",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "11",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 520,
+        "wires": [
+            [
+                "4b154cde352e2f71",
+                "79974308ea82383b"
+            ]
+        ]
+    },
+    {
+        "id": "66c91ea4b80fc08f",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 600,
+        "wires": [
+            [
+                "be2a678d7f59510c",
+                "b1163310511ba436"
+            ]
+        ]
+    },
+    {
+        "id": "66d981e6d96be52c",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "11",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 640,
+        "wires": [
+            [
+                "3eca00a5801c39fe",
+                "022edd664dc4b3d5"
+            ]
+        ]
+    },
+    {
+        "id": "072fb8dffe0e9dbc",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "12",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 680,
+        "wires": [
+            [
+                "4dc8f66ba2cebe0b",
+                "6a9c73d878494885"
             ]
         ]
     }
