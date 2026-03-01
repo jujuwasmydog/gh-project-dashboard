@@ -1,27 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ============================================================
-# gh_installer_v4.sh  (Fresh Pi OS Provisioning Installer)
-#
-# ASSUMPTIONS:
-# - You already cloned the repo and are running THIS script from inside it.
-# - Repo contains: flows.json, gh_db_v2.sql, (optional) flows_cred.json, *.ino
-#
-# WHAT IT DOES:
-# - apt update + full-upgrade
-# - installs OS deps (sqlite3, mosquitto, ufw, openssh-server, build tools)
-# - installs Node-RED (Node 22 LTS) via official installer
-# - forces Node-RED systemd service to run as the invoking user (NOT root)
-#   + fixes WorkingDirectory/EnvironmentFile issues
-#   + enables + starts Node-RED at boot (resilience)
-# - installs required Node-RED nodes (Dashboard 2, sqlite, serialport, etc.)
-# - enables + starts Mosquitto at boot (resilience)
-# - configures UFW to allow OpenSSH and 1880/tcp, then enables UFW
-# - installs Arduino CLI + AVR core, adds user to dialout
-# - deploys flows.json to ~/.node-red and gh_db_v2.sql to ~/greenhouse/db
-# ============================================================
-
 log() { echo -e "\n[greenhouse] $*\n"; }
 
 require_root() {
