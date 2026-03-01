@@ -2,17 +2,24 @@
 set -euo pipefail
 
 # ============================================================
-# Greenhouse Installer (v2)
-# - ASSUMES you already cloned the repo and are running this script
-#   FROM INSIDE the repo directory.
-# - Removes repo clone/pull logic (Requirement #1)
-# - Uses the CURRENT DIRECTORY as the repo source for deploying files (Requirement #2)
-# - Installs Node-RED with Node 22 LTS
-# - Forces Node-RED systemd service to run as the sudo user (NOT root)
-#   and fixes CHDIR by overriding WorkingDirectory + EnvironmentFile
-# - Installs required Node-RED nodes (includes serialport)
-# - Enables UFW + allows OpenSSH + allows 1880/tcp
-# - Installs Arduino CLI + AVR core (upload step comes later per your plan)
+# gh_installer_v4.sh  (Fresh Pi OS Provisioning Installer)
+#
+# ASSUMPTIONS:
+# - You already cloned the repo and are running THIS script from inside it.
+# - Repo contains: flows.json, gh_db_v2.sql, (optional) flows_cred.json, *.ino
+#
+# WHAT IT DOES:
+# - apt update + full-upgrade
+# - installs OS deps (sqlite3, mosquitto, ufw, openssh-server, build tools)
+# - installs Node-RED (Node 22 LTS) via official installer
+# - forces Node-RED systemd service to run as the invoking user (NOT root)
+#   + fixes WorkingDirectory/EnvironmentFile issues
+#   + enables + starts Node-RED at boot (resilience)
+# - installs required Node-RED nodes (Dashboard 2, sqlite, serialport, etc.)
+# - enables + starts Mosquitto at boot (resilience)
+# - configures UFW to allow OpenSSH and 1880/tcp, then enables UFW
+# - installs Arduino CLI + AVR core, adds user to dialout
+# - deploys flows.json to ~/.node-red and gh_db_v2.sql to ~/greenhouse/db
 # ============================================================
 
 log() { echo -e "\n[greenhouse] $*\n"; }
@@ -52,21 +59,18 @@ REPO_FLOWS="flows.json"
 REPO_CREDS="flows_cred.json"     # optional
 REPO_DB_SCHEMA="gh_db_v2.sql"
 
-# Node-RED nodes to install
+# Node-RED nodes to install (NO unsafe-perm; correct RBE; includes serial)
 NR_NODES=(
   "@flowfuse/node-red-dashboard"
   "node-red-node-sqlite"
   "node-red-node-ui-table"
-  "node-red-node-serialport"     # ✅ fixes "unknown serial in/out"
+  "node-red-node-serialport"
   "node-red-contrib-mqtt-broker"
   "node-red-contrib-time-range-switch"
   "node-red-node-rbe"
 )
 
-# ----------------------------
-# Determine repo directory from where the script is located
-# (works no matter what your current working directory is)
-# ----------------------------
+# Resolve repo dir based on script location (works regardless of current dir)
 SCRIPT_PATH="$(readlink -f "$0")"
 REPO_DIR="$(dirname "${SCRIPT_PATH}")"
 
@@ -98,7 +102,7 @@ install_nodered_node22() {
     | bash -s -- --confirm-root --confirm-install --node22
 }
 
-# CRITICAL: override root defaults in the base unit file
+# CRITICAL: Override vendor unit defaults that run Node-RED as root and WD=/root
 ensure_nodered_service_runs_as_user() {
   log "Configuring Node-RED systemd service (User=${GH_USER}, WD=${GH_HOME}, USERDIR=${NR_USERDIR})"
 
@@ -107,6 +111,10 @@ ensure_nodered_service_runs_as_user() {
 
   mkdir -p /etc/systemd/system/nodered.service.d
   cat >/etc/systemd/system/nodered.service.d/override.conf <<EOF
+[Unit]
+After=network-online.target
+Wants=network-online.target
+
 [Service]
 User=${GH_USER}
 Group=${GH_USER}
@@ -114,11 +122,14 @@ WorkingDirectory=${GH_HOME}
 Environment="NODE_RED_USER_DIR=${NR_USERDIR}"
 EnvironmentFile=-${NR_USERDIR}/environment
 Environment="NODE_RED_OPTIONS="
+Restart=on-failure
+RestartSec=10
 EOF
 
   systemctl daemon-reload
-  systemctl enable nodered.service
-  systemctl restart nodered.service
+
+  # Enable + start now (resilience)
+  systemctl enable --now nodered.service
 }
 
 install_nodered_nodes_as_user() {
@@ -136,6 +147,14 @@ install_nodered_nodes_as_user() {
   "
 
   systemctl start nodered.service
+}
+
+enable_core_services() {
+  log "Enabling core services (mosquitto, nodered)"
+
+  # Force-enable at boot and start now
+  systemctl enable --now mosquitto.service
+  systemctl enable --now nodered.service
 }
 
 configure_ufw() {
@@ -171,13 +190,13 @@ install_arduino_cli() {
   usermod -aG dialout "${GH_USER}" || true
 }
 
-deploy_repo_files_from_current_repo_dir() {
+deploy_repo_files_from_repo_dir() {
   log "Using repo directory: ${REPO_DIR}"
   log "Creating greenhouse dirs at ${GREENHOUSE_DIR}"
   mkdir -p "${GREENHOUSE_DIR}/db" "${GREENHOUSE_DIR}/logs"
   chown -R "${GH_USER}:${GH_USER}" "${GREENHOUSE_DIR}"
 
-  log "Deploying flows + DB schema from repo dir -> Node-RED userdir / greenhouse db"
+  log "Deploying flows + DB schema from repo -> Node-RED userdir / greenhouse db"
 
   systemctl stop nodered.service || true
 
@@ -186,7 +205,7 @@ deploy_repo_files_from_current_repo_dir() {
     cp -f "${REPO_DIR}/${REPO_DB_SCHEMA}" "${GREENHOUSE_DIR}/db/"
     chown "${GH_USER}:${GH_USER}" "${GREENHOUSE_DIR}/db/${REPO_DB_SCHEMA}"
   else
-    log "WARNING: Missing ${REPO_DIR}/${REPO_DB_SCHEMA} (skipping)"
+    log "WARNING: Missing ${REPO_DIR}/${REPO_DB_SCHEMA} (skipping DB schema copy)"
   fi
 
   # flows -> ~/.node-red
@@ -197,7 +216,7 @@ deploy_repo_files_from_current_repo_dir() {
     cp -f "${REPO_DIR}/${REPO_FLOWS}" "${NR_USERDIR}/flows.json"
     chown "${GH_USER}:${GH_USER}" "${NR_USERDIR}/flows.json"
   else
-    log "WARNING: Missing ${REPO_DIR}/${REPO_FLOWS} (skipping)"
+    log "WARNING: Missing ${REPO_DIR}/${REPO_FLOWS} (skipping flows.json copy)"
   fi
 
   # optional creds
@@ -220,24 +239,24 @@ apt_cleanup() {
 # ----------------------------
 log "Target user: ${GH_USER}"
 log "Home: ${GH_HOME}"
+log "Installer: ${SCRIPT_PATH}"
+log "Repo dir: ${REPO_DIR}"
 log "Node-RED userdir: ${NR_USERDIR}"
-log "Installer location: ${SCRIPT_PATH}"
-
-# Requirement (1): repo must already be cloned to get this script
-# ✅ No repo clone/pull performed here.
 
 apt_base
 install_os_deps
 
 install_nodered_node22
 ensure_nodered_service_runs_as_user
+
 install_nodered_nodes_as_user
 
-configure_ufw
 install_arduino_cli
 
-# Requirement (2): deploy files from the current cloned repo (script directory)
-deploy_repo_files_from_current_repo_dir
+deploy_repo_files_from_repo_dir
+
+enable_core_services
+configure_ufw
 
 systemctl restart nodered.service
 systemctl --no-pager --full status nodered.service || true
