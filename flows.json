@@ -332,25 +332,6 @@
         "groupType": "default"
     },
     {
-        "id": "15b023f2a14c0f91",
-        "type": "ui-theme",
-        "name": "dark theme",
-        "colors": {
-            "surface": "#111827",
-            "primary": "#22c55e",
-            "bgPage": "#0b1220",
-            "groupBg": "#111827",
-            "groupOutline": "#1f2937"
-        },
-        "sizes": {
-            "density": "default",
-            "pagePadding": "12px",
-            "groupGap": "12px",
-            "groupBorderRadius": "6px",
-            "widgetGap": "12px"
-        }
-    },
-    {
         "id": "239514801c1bffa2",
         "type": "serial in",
         "z": "6cda5a5f32196c63",
@@ -392,10 +373,14 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Format CSV line",
-        "func": "var p = msg.payload;\nvar d = new Date(p.ts);\nfunction f(x){ return (x === undefined || x === null) ? '' : x; }\nvar line = [\n    d.toISOString(),\n    f(p.t1),f(p.t2),f(p.tavg),\n    f(p.h1),f(p.h2),f(p.havg),\n    f(p.soil),f(p.lux)\n].join(',') + \"\\n\";\nmsg.payload = line;\nreturn msg;",
+        "func": "var p = msg.payload || {};\n\nconst columns = [\"timestamp\",\"t1\",\"t2\",\"tavg\",\"h1\",\"h2\",\"havg\",\"soil\",\"lux\"];\n\nfunction missing(x) {\n    return x === undefined || x === null || x === \"\";\n}\n\n// Reject incomplete rows so you stop getting timestamp-only lines\nif (\n    missing(p.ts)   ||\n    missing(p.t1)   ||\n    missing(p.t2)   ||\n    missing(p.tavg) ||\n    missing(p.h1)   ||\n    missing(p.h2)   ||\n    missing(p.havg) ||\n    missing(p.soil) ||\n    missing(p.lux)\n) {\n    return null;\n}\n\nvar d = new Date(p.ts);\nif (isNaN(d.getTime())) {\n    return null;\n}\n\nvar line = [\n    d.toISOString(),\n    p.t1, p.t2, p.tavg,\n    p.h1, p.h2, p.havg,\n    p.soil, p.lux\n].join(\",\") + \"\\n\";\n\nmsg.payload = line;\nmsg.csv_header = columns.join(\",\") + \"\\n\";\n\nreturn msg;",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
-        "x": 660,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
         "y": 60,
         "wires": [
             [
@@ -413,8 +398,8 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 900,
-        "y": 60,
+        "x": 1090,
+        "y": 40,
         "wires": [
             []
         ]
@@ -1683,6 +1668,51 @@
             [
                 "4dc8f66ba2cebe0b",
                 "6a9c73d878494885"
+            ]
+        ]
+    },
+    {
+        "id": "36efe3892333e559",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "write csv header",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux",
+        "payloadType": "str",
+        "x": 640,
+        "y": 20,
+        "wires": [
+            [
+                "4abddf2657d029ce"
+            ]
+        ]
+    },
+    {
+        "id": "4abddf2657d029ce",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "function 1",
+        "func": "msg.payload = \"timestamp,t1,t2,tavg,h1,h2,havg,soil,lux\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 20,
+        "wires": [
+            [
+                "887f4b565053691c"
             ]
         ]
     }
