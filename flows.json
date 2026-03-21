@@ -350,7 +350,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor line (JSON or key=val)",
-        "func": "function parseKeyVal(line) {\n    var o = {};\n    var parts = line.split(',');\n    for (var i = 0; i < parts.length; i++) {\n        var p = parts[i].trim();\n        if (!p) continue;\n        var kv = p.split('=');\n        if (kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif (!s) { return null; }\n\nvar data = null;\n\n// Try JSON first\nif (s[0] === '{') {\n    try {\n        data = JSON.parse(s);\n    } catch (e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif (!data) {\n    data = parseKeyVal(s);\n}\n\n// Normalize names\nfunction pick(obj, keys) {\n    for (var i = 0; i < keys.length; i++) {\n        if (obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\n// Existing fields\nvar t1 = pick(data, ['t1', 'T1', 'temp1', 'Temp1']);\nvar t2 = pick(data, ['t2', 'T2', 'temp2', 'Temp2']);\nvar h1 = pick(data, ['h1', 'H1', 'hum1', 'Hum1']);\nvar h2 = pick(data, ['h2', 'H2', 'hum2', 'Hum2']);\nvar soil = pick(data, ['soil', 'SOIL', 'sm', 'SM']);\nvar lux = pick(data, ['lux', 'LUX', 'light', 'LIGHT']);\nvar louvre_pct = pick(data, ['louvre_pct', 'LOUVRE_PCT']);\nvar louvre_state = pick(data, ['louvre_state', 'LOUVRE_STATE']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number')\n    ? (t1 + t2) / 2\n    : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\n\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number')\n    ? (h1 + h2) / 2\n    : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\n// Build output object (THIS is what DB + dashboard see)\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux,\n    louvre_pct: louvre_pct,\n    louvre_state: louvre_state\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;\n",
+        "func": "function parseKeyVal(line) {\n    var o = {};\n    var parts = line.split(',');\n    for (var i = 0; i < parts.length; i++) {\n        var p = parts[i].trim();\n        if (!p) continue;\n        var kv = p.split('=');\n        if (kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif (!s) { return null; }\n\nvar data = null;\n\n// Try JSON first\nif (s[0] === '{') {\n    try {\n        data = JSON.parse(s);\n    } catch (e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif (!data) {\n    data = parseKeyVal(s);\n}\n\n// Normalize names\nfunction pick(obj, keys) {\n    for (var i = 0; i < keys.length; i++) {\n        if (obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\n// Existing fields\nvar t1 = pick(data, ['t1', 'T1', 'temp1', 'Temp1']);\nvar t2 = pick(data, ['t2', 'T2', 'temp2', 'Temp2']);\nvar h1 = pick(data, ['h1', 'H1', 'hum1', 'Hum1']);\nvar h2 = pick(data, ['h2', 'H2', 'hum2', 'Hum2']);\nvar soil = pick(data, ['soil', 'SOIL', 'sm', 'SM']);\nvar lux = pick(data, ['lux', 'LUX', 'light', 'LIGHT']);\nvar louvre_pct = pick(data, ['louvre_pct', 'LOUVRE_PCT']);\nvar louvre_state = pick(data, ['louvre_state', 'LOUVRE_STATE']);\nvar fan_pct = pick(data, ['fan_pct', 'FAN_PCT', 'fan', 'FAN']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number')\n    ? (t1 + t2) / 2\n    : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\n\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number')\n    ? (h1 + h2) / 2\n    : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\n// Build output object (THIS is what DB + dashboard see)\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux,\n    louvre_pct: louvre_pct,\n    louvre_state: louvre_state,\n    fan_pct: fan_pct\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;\n",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -373,7 +373,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Format CSV line",
-        "func": "var p = msg.payload || {};\n\nconst columns = [\"timestamp\",\"t1\",\"t2\",\"tavg\",\"h1\",\"h2\",\"havg\",\"soil\",\"lux\"];\n\nfunction missing(x) {\n    return x === undefined || x === null || x === \"\";\n}\n\n// Reject incomplete rows so you stop getting timestamp-only lines\nif (\n    missing(p.ts)   ||\n    missing(p.t1)   ||\n    missing(p.t2)   ||\n    missing(p.tavg) ||\n    missing(p.h1)   ||\n    missing(p.h2)   ||\n    missing(p.havg) ||\n    missing(p.soil) ||\n    missing(p.lux)\n) {\n    return null;\n}\n\nvar d = new Date(p.ts);\nif (isNaN(d.getTime())) {\n    return null;\n}\n\nvar line = [\n    d.toISOString(),\n    p.t1, p.t2, p.tavg,\n    p.h1, p.h2, p.havg,\n    p.soil, p.lux\n].join(\",\") + \"\\n\";\n\nmsg.payload = line;\nmsg.csv_header = columns.join(\",\") + \"\\n\";\n\nreturn msg;",
+        "func": "var p = msg.payload || {};\n\nconst columns = [\"timestamp\",\"t1\",\"t2\",\"tavg\",\"h1\",\"h2\",\"havg\",\"soil\",\"lux\",\"louvre_pct\",\"louvre_state\",\"fan_pct\"];\n\nfunction missing(x) {\n    return x === undefined || x === null || x === \"\";\n}\n\n// Reject incomplete rows so you stop getting timestamp-only lines\nif (\n    missing(p.ts)   ||\n    missing(p.t1)   ||\n    missing(p.t2)   ||\n    missing(p.tavg) ||\n    missing(p.h1)   ||\n    missing(p.h2)   ||\n    missing(p.havg) ||\n    missing(p.soil) ||\n    missing(p.lux)  ||\n    missing(p.louvre_pct) ||\n    missing(p.louvre_state) ||\n    missing(p.fan_pct)\n) {\n    return null;\n}\n\nvar d = new Date(p.ts);\nif (isNaN(d.getTime())) {\n    return null;\n}\n\nvar line = [\n    d.toISOString(),\n    p.t1, p.t2, p.tavg,\n    p.h1, p.h2, p.havg,\n    p.soil, p.lux, p.louvre_pct, p.louvre_state, p.fan_pct\n].join(\",\") + \"\\n\";\n\nmsg.payload = line;\nmsg.csv_header = columns.join(\",\") + \"\\n\";\n\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -409,7 +409,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Split to chart points",
-        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('Temp (avg)', p.tavg);\npush('Humidity (avg)', p.havg);\npush('Soil Moisture', p.soil);\npush('Lighting', p.lux);\nreturn [out];",
+        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('Temp (avg)', p.tavg);\npush('Humidity (avg)', p.havg);\npush('Soil Moisture', p.soil);\npush('Lighting', p.lux);\npush('Fan %', p.fan_pct);\nreturn [out];",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -512,7 +512,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "db_function",
-        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Preserve original decoded sample for dashboard/other branches\nmsg.data = p;\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null,\n  p.louvre_pct ?? null,\n  p.louvre_state ?? null\n];\n\nreturn msg;\n",
+        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Preserve original decoded sample for dashboard/other branches\nmsg.data = p;\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state, fan_pct)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null,\n  p.louvre_pct ?? null,\n  p.louvre_state ?? null,\n  p.fan_pct ?? null\n];\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -621,7 +621,8 @@
                 "c5aa37be95cbd5f2",
                 "f2588d218f7169c5",
                 "744e76bedde5edb1",
-                "9c954700ec15527d"
+                "9c954700ec15527d",
+                "fanpctfunc000001"
             ]
         ]
     },
@@ -664,7 +665,7 @@
                 "t": "set",
                 "p": "topic",
                 "pt": "msg",
-                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
+                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state, fan_pct FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
                 "tot": "str"
             },
             {
@@ -699,7 +700,7 @@
         "height": "0",
         "gtype": "gage",
         "title": "Temperature",
-        "label": "°F",
+        "label": "\u00b0F",
         "format": "{{value}}",
         "min": "0",
         "max": "120",
@@ -1125,7 +1126,7 @@
         "title": "Temperature",
         "alwaysShowTitle": false,
         "floatingTitlePosition": "top-left",
-        "units": "°F",
+        "units": "\u00b0F",
         "icon": "",
         "prefix": "",
         "suffix": "",
@@ -1686,7 +1687,7 @@
         "once": true,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux",
+        "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux,louvre_pct,louvre_state,fan_pct",
         "payloadType": "str",
         "x": 640,
         "y": 20,
@@ -1701,7 +1702,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "function 1",
-        "func": "msg.payload = \"timestamp,t1,t2,tavg,h1,h2,havg,soil,lux\\n\";\nreturn msg;",
+        "func": "msg.payload = \"timestamp,t1,t2,tavg,h1,h2,havg,soil,lux,louvre_pct,louvre_state,fan_pct\\n\";\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1714,6 +1715,131 @@
             [
                 "887f4b565053691c"
             ]
+        ]
+    },
+    {
+        "id": "fanpctfunc000001",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "fan_pct",
+        "func": "msg.payload = Math.round(msg.payload.fan_pct);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 720,
+        "wires": [
+            [
+                "fanpctrbe000001"
+            ]
+        ]
+    },
+    {
+        "id": "fanpctrbe000001",
+        "type": "rbe",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": false,
+        "property": "payload",
+        "topi": "topic",
+        "x": 1070,
+        "y": 720,
+        "wires": [
+            [
+                "fanpctdelay00001"
+            ]
+        ]
+    },
+    {
+        "id": "fanpctdelay00001",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "12",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 720,
+        "wires": [
+            [
+                "fanpctgauge00001"
+            ]
+        ]
+    },
+    {
+        "id": "fanpctgauge00001",
+        "type": "ui-gauge",
+        "z": "6cda5a5f32196c63",
+        "name": "Fan Speed",
+        "group": "85dcddf4de18c2df",
+        "order": 8,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Fan Speed",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#969696",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "35",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "70",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "90",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1620,
+        "y": 720,
+        "wires": [
+            []
         ]
     }
 ]
