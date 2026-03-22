@@ -42,13 +42,14 @@ const uint8_t  FAN_PWM_MED      = 170;
 const uint8_t  FAN_PWM_HIGH     = 255;
 const uint8_t  ACT_PWM          = 255;     // actuators full speed for now
 const uint32_t FULL_TRAVEL_MS   = 2000;    // 0-100% estimate, tune later
-const int      SOIL_DRY_RAW     = 300;     // preserve dry LED behavior on pin 13
-const int      SOIL_DRY_CAL     = 780;     // raw value at dry end for soil % estimate
+const uint32_t STARTUP_CLOSE_MS  = 4000;    // force louvres closed at boot to establish known state
+const int      SOIL_DRY_RAW     = 212;     // preserve dry LED behavior on pin 13
+const int      SOIL_DRY_CAL     = 417;     // raw value at dry end for soil % estimate
 const int      SOIL_WET_CAL     = 380;     // raw value at wet end for soil % estimate
-const float    LIGHT_ON_LUX     = 100.0;
-const float    LIGHT_OFF_LUX    = 240.0;
+const float    LIGHT_ON_LUX     = 2000.0;  // tune with real outdoor light
+const float    LIGHT_OFF_LUX    = 4000.0;  // tune with real outdoor light
 const float    TEMP_OPEN_F      = 85.0;    // open above this average temperature
-const float    TEMP_CLOSE_F     = 65.0;    // close below this average temperature
+const float    TEMP_CLOSE_F     = 69.0;    // close below this average temperature
 const float    RH_OPEN_PCT      = 85.0;    // open above this average humidity
 const float    RH_CLOSE_PCT     = 83.0;    // close below this average humidity
 
@@ -69,6 +70,7 @@ float h2 = NAN;
 float tavg = NAN;
 float havg = NAN;
 int   soil = 0;
+int   soilRaw = 0;
 long  lux = 0;
 float louvre_pct = 0.0f;
 int8_t louvre_dir = 0; // +1 opening, -1 closing, 0 stopped
@@ -200,26 +202,33 @@ static void updateLouvreControl() {
   bool wantOpen = false;
   bool wantClose = false;
 
-  // Open the louvres when average temperature or humidity is high.
-  if (!isnan(tavg) && tavg >= TEMP_OPEN_F) wantOpen = true;
-  if (!isnan(havg) && havg >= RH_OPEN_PCT) wantOpen = true;
+  // Always force the louvres closed at or below the configured close temperature.
+  // This keeps reported state aligned with the physical actuators.
+  if (!isnan(tavg) && tavg <= TEMP_CLOSE_F) {
+    wantClose = true;
+  } else {
+    // Keep the original spirit of the logic for opening.
+    if (!isnan(tavg) && tavg >= TEMP_OPEN_F) wantOpen = true;
+    if (!isnan(havg) && havg >= RH_OPEN_PCT) wantOpen = true;
 
-  // Close the louvres only after both average temperature and humidity fall.
-  if (!wantOpen) {
-    if (!isnan(tavg) && !isnan(havg)) {
-      if (tavg <= TEMP_CLOSE_F && havg <= RH_CLOSE_PCT) {
-        wantClose = true;
+    // Preserve the original humidity-assisted close behavior when temperature
+    // is above the forced-close threshold.
+    if (!wantOpen) {
+      if (!isnan(tavg) && !isnan(havg)) {
+        if (tavg <= TEMP_CLOSE_F && havg <= RH_CLOSE_PCT) {
+          wantClose = true;
+        }
       }
     }
   }
 
-  if (wantOpen) {
-    if (louvreState != L_OPEN && louvreState != L_OPENING) {
-      actuators_open(ACT_PWM);
-    }
-  } else if (wantClose) {
+  if (wantClose) {
     if (louvreState != L_CLOSED && louvreState != L_CLOSING) {
       actuators_close(ACT_PWM);
+    }
+  } else if (wantOpen) {
+    if (louvreState != L_OPEN && louvreState != L_OPENING) {
+      actuators_open(ACT_PWM);
     }
   }
 }
@@ -270,7 +279,7 @@ static void updateDhts() {
 }
 
 static void updateSoil() {
-  int soilRaw = analogRead(cap_sense);
+  soilRaw = analogRead(cap_sense);
   soil = mapSoilRawToPct(soilRaw, SOIL_DRY_CAL, SOIL_WET_CAL);
   isDry = (soilRaw >= SOIL_DRY_RAW);
   digitalWrite(dry_light, isDry ? HIGH : LOW);
@@ -318,6 +327,9 @@ static void printTelemetry() {
   Serial.print(",\"soil\":");
   Serial.print(soil);
 
+  Serial.print(",\"soilRaw\":");
+  Serial.print(soilRaw);
+
   Serial.print(",\"lux\":");
   Serial.print(lux);
 
@@ -326,11 +338,16 @@ static void printTelemetry() {
 
   Serial.print(",\"louvre_state\":\"");
   Serial.print(louvreStateText());
+  Serial.print("\"");
 
   Serial.print(",\"fan_pct\":");
-  Serial.print((fanPWM / 255.0f) * 100.0f, 1);
+  Serial.print((fanPWM / 255.0) * 100.0, 1);
 
-  Serial.println("\"}");
+  // add light status
+  Serial.print(",\"lightOn\":");
+  Serial.print(lightOn ? "true" : "false");
+
+  Serial.println("}");
 }
 
 void setup() {
@@ -351,6 +368,9 @@ void setup() {
   pinMode(side_rpwm, OUTPUT);
   pinMode(side_lpwm, OUTPUT);
 
+  // Force the louvres fully closed before any sensor-based control starts.
+  actuators_close(ACT_PWM);
+  delay(STARTUP_CLOSE_MS);
   actuators_stop();
   louvreState = L_CLOSED;
   louvre_pct = 0.0f;

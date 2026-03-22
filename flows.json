@@ -7,24 +7,6 @@
         "info": ""
     },
     {
-        "id": "a7d1c3b2f4e5d001",
-        "type": "ui_tab",
-        "name": "Greenhouse",
-        "icon": "dashboard",
-        "order": 1
-    },
-    {
-        "id": "a7d1c3b2f4e5d002",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 7,
-        "disp": true,
-        "width": "12",
-        "collapse": false,
-        "className": ""
-    },
-    {
         "id": "9a8b7c6d5e4f3002",
         "type": "mqtt-broker",
         "name": "MQTT Broker",
@@ -177,72 +159,6 @@
         }
     },
     {
-        "id": "c450dd5b975415aa",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 1,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "8f9c87e658f6809c",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 2,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "1031a373083d4e4f",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 3,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "b47b5ede66d46c8c",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 4,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "23ae3d0ad7417bcd",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 5,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
-        "id": "6d20b73d09270a4d",
-        "type": "ui_group",
-        "name": "",
-        "tab": "a7d1c3b2f4e5d001",
-        "order": 6,
-        "disp": true,
-        "width": 6,
-        "collapse": false,
-        "className": ""
-    },
-    {
         "id": "062287387a26aec8",
         "type": "ui-base",
         "name": "My Dashboard",
@@ -337,8 +253,8 @@
         "z": "6cda5a5f32196c63",
         "name": "UNO",
         "serial": "f21e5fa854a87f38",
-        "x": 190,
-        "y": 120,
+        "x": 130,
+        "y": 180,
         "wires": [
             [
                 "0331b7e8018058e8"
@@ -350,7 +266,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor line (JSON or key=val)",
-        "func": "function parseKeyVal(line) {\n    var o = {};\n    var parts = line.split(',');\n    for (var i = 0; i < parts.length; i++) {\n        var p = parts[i].trim();\n        if (!p) continue;\n        var kv = p.split('=');\n        if (kv.length !== 2) continue;\n        var k = kv[0].trim();\n        var v = kv[1].trim();\n        var n = Number(v);\n        o[k] = isNaN(n) ? v : n;\n    }\n    return o;\n}\n\nvar s = (msg.payload || \"\").toString().trim();\nif (!s) { return null; }\n\nvar data = null;\n\n// Try JSON first\nif (s[0] === '{') {\n    try {\n        data = JSON.parse(s);\n    } catch (e) {\n        data = null;\n    }\n}\n\n// Fallback: key=val list\nif (!data) {\n    data = parseKeyVal(s);\n}\n\n// Normalize names\nfunction pick(obj, keys) {\n    for (var i = 0; i < keys.length; i++) {\n        if (obj.hasOwnProperty(keys[i])) return obj[keys[i]];\n    }\n    return undefined;\n}\n\n// Existing fields\nvar t1 = pick(data, ['t1', 'T1', 'temp1', 'Temp1']);\nvar t2 = pick(data, ['t2', 'T2', 'temp2', 'Temp2']);\nvar h1 = pick(data, ['h1', 'H1', 'hum1', 'Hum1']);\nvar h2 = pick(data, ['h2', 'H2', 'hum2', 'Hum2']);\nvar soil = pick(data, ['soil', 'SOIL', 'sm', 'SM']);\nvar lux = pick(data, ['lux', 'LUX', 'light', 'LIGHT']);\nvar louvre_pct = pick(data, ['louvre_pct', 'LOUVRE_PCT']);\nvar louvre_state = pick(data, ['louvre_state', 'LOUVRE_STATE']);\nvar fan_pct = pick(data, ['fan_pct', 'FAN_PCT', 'fan', 'FAN']);\n\n// Compute averages if both exist\nvar tavg = (typeof t1 === 'number' && typeof t2 === 'number')\n    ? (t1 + t2) / 2\n    : (typeof t1 === 'number' ? t1 : (typeof t2 === 'number' ? t2 : undefined));\n\nvar havg = (typeof h1 === 'number' && typeof h2 === 'number')\n    ? (h1 + h2) / 2\n    : (typeof h1 === 'number' ? h1 : (typeof h2 === 'number' ? h2 : undefined));\n\n// Build output object (THIS is what DB + dashboard see)\nvar out = {\n    ts: Date.now(),\n    t1: t1,\n    t2: t2,\n    tavg: tavg,\n    h1: h1,\n    h2: h2,\n    havg: havg,\n    soil: soil,\n    lux: lux,\n    louvre_pct: louvre_pct,\n    louvre_state: louvre_state,\n    fan_pct: fan_pct\n};\n\nflow.set('gh_last', out);\nmsg.payload = out;\nreturn msg;\n",
+        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\n\nif (!line) return null;\n\n// Try JSON first\nif (line.startsWith(\"{\") && line.endsWith(\"}\")) {\n    try {\n        let obj = JSON.parse(line);\n\n        msg.payload = {\n            ts: obj.ts,\n            t1: obj.t1,\n            t2: obj.t2,\n            tavg: obj.tavg,\n            h1: obj.h1,\n            h2: obj.h2,\n            havg: obj.havg,\n            soil: obj.soil,\n            lux: obj.lux,\n            louvre_pct: obj.louvre_pct,\n            louvre_state: obj.louvre_state,\n            fan_pct: obj.fan_pct,\n            lightOn: obj.lightOn\n        };\n\n        return msg;\n    } catch (e) {\n        node.warn(\"JSON parse failed: \" + e.message);\n        return null;\n    }\n}\n\nreturn null;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -358,13 +274,14 @@
         "finalize": "",
         "libs": [],
         "x": 420,
-        "y": 120,
+        "y": 180,
         "wires": [
             [
                 "f98d2f1f0673b101",
                 "ee12a869e25d83bb",
                 "4b266addf47812be",
-                "3999dea12c82b1a6"
+                "3999dea12c82b1a6",
+                "57ce7260347bd8de"
             ]
         ]
     },
@@ -381,7 +298,7 @@
         "finalize": "",
         "libs": [],
         "x": 820,
-        "y": 60,
+        "y": 120,
         "wires": [
             [
                 "887f4b565053691c"
@@ -399,7 +316,7 @@
         "overwriteFile": "false",
         "encoding": "none",
         "x": 1090,
-        "y": 40,
+        "y": 100,
         "wires": [
             []
         ]
@@ -417,55 +334,11 @@
         "finalize": "",
         "libs": [],
         "x": 690,
-        "y": 180,
+        "y": 240,
         "wires": [
             [
                 "f02dc28f81b719e3"
             ]
-        ]
-    },
-    {
-        "id": "0a7c0f9ce0c337cf",
-        "type": "ui_chart",
-        "z": "6cda5a5f32196c63",
-        "name": "Trends",
-        "group": "a7d1c3b2f4e5d002",
-        "order": 2,
-        "width": "12",
-        "height": "6",
-        "label": "Trends",
-        "chartType": "line",
-        "legend": "true",
-        "xformat": "HH:mm:ss",
-        "interpolate": "linear",
-        "nodata": "",
-        "dot": false,
-        "ymin": "",
-        "ymax": "",
-        "removeOlder": "12",
-        "removeOlderPoints": "",
-        "removeOlderUnit": "3600",
-        "cutout": 0,
-        "useOneColor": false,
-        "useUTC": false,
-        "colors": [
-            "#1f77b4",
-            "#aec7e8",
-            "#ff7f0e",
-            "#2ca02c",
-            "#98df8a",
-            "#d62728",
-            "#ff9896",
-            "#9467bd",
-            "#c5b0d5"
-        ],
-        "outputs": 1,
-        "useDifferentColor": false,
-        "className": "center-card",
-        "x": 1250,
-        "y": 180,
-        "wires": [
-            []
         ]
     },
     {
@@ -483,7 +356,7 @@
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
         "x": 1310,
-        "y": 100,
+        "y": 160,
         "wires": [],
         "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
     },
@@ -500,7 +373,7 @@
         "finalize": "",
         "libs": [],
         "x": 860,
-        "y": 100,
+        "y": 160,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -520,7 +393,7 @@
         "finalize": "",
         "libs": [],
         "x": 490,
-        "y": 240,
+        "y": 300,
         "wires": [
             [
                 "b91ca825f88143fb"
@@ -536,7 +409,7 @@
         "sql": "",
         "name": "greenhouse_db",
         "x": 700,
-        "y": 240,
+        "y": 300,
         "wires": [
             [
                 "a00e9e4ee9f938a1",
@@ -558,7 +431,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 920,
-        "y": 240,
+        "y": 300,
         "wires": []
     },
     {
@@ -574,7 +447,7 @@
         "finalize": "",
         "libs": [],
         "x": 960,
-        "y": 320,
+        "y": 380,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -594,8 +467,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1240,
-        "y": 400,
+        "x": 380,
+        "y": 460,
         "wires": []
     },
     {
@@ -611,18 +484,12 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 930,
-        "y": 400,
+        "x": 170,
+        "y": 620,
         "wires": [
             [
-                "0d1202f9041fb697",
-                "d4942742387dabb4",
-                "112b42a1704108f8",
-                "c5aa37be95cbd5f2",
-                "f2588d218f7169c5",
-                "744e76bedde5edb1",
                 "9c954700ec15527d",
-                "fanpctfunc000001"
+                "dd71f97f1b1584dd"
             ]
         ]
     },
@@ -647,7 +514,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 240,
+        "x": 180,
         "y": 380,
         "wires": [
             [
@@ -681,41 +548,13 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 520,
+        "x": 470,
         "y": 380,
         "wires": [
             [
                 "b91ca825f88143fb"
             ]
         ]
-    },
-    {
-        "id": "e74a16e9a0b7350e",
-        "type": "ui_gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "group": "c450dd5b975415aa",
-        "order": 0,
-        "width": "0",
-        "height": "0",
-        "gtype": "gage",
-        "title": "Temperature",
-        "label": "\u00b0F",
-        "format": "{{value}}",
-        "min": "0",
-        "max": "120",
-        "colors": [
-            "#ca3838",
-            "#e6e600",
-            "#00b500"
-        ],
-        "seg1": "65",
-        "seg2": "85",
-        "diff": false,
-        "className": "",
-        "x": 1630,
-        "y": 480,
-        "wires": []
     },
     {
         "id": "0d1202f9041fb697",
@@ -730,7 +569,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 480,
+        "y": 540,
         "wires": [
             [
                 "0c4e3ed893b58edf"
@@ -750,40 +589,12 @@
         "finalize": "",
         "libs": [],
         "x": 640,
-        "y": 520,
+        "y": 580,
         "wires": [
             [
                 "d410dc6f8bb74f8c"
             ]
         ]
-    },
-    {
-        "id": "4b154cde352e2f71",
-        "type": "ui_gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "group": "8f9c87e658f6809c",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Humidity",
-        "label": "units",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#00b500",
-            "#e6e600",
-            "#ca3838"
-        ],
-        "seg1": "40",
-        "seg2": "65",
-        "diff": false,
-        "className": "",
-        "x": 1640,
-        "y": 520,
-        "wires": []
     },
     {
         "id": "112b42a1704108f8",
@@ -798,7 +609,7 @@
         "finalize": "",
         "libs": [],
         "x": 630,
-        "y": 560,
+        "y": 620,
         "wires": [
             [
                 "d5a77765ea479973"
@@ -818,96 +629,12 @@
         "finalize": "",
         "libs": [],
         "x": 630,
-        "y": 600,
+        "y": 660,
         "wires": [
             [
                 "2ef95992cab18cd8"
             ]
         ]
-    },
-    {
-        "id": "13457caa1a5926a0",
-        "type": "ui_gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "group": "1031a373083d4e4f",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Light Level",
-        "label": "units",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "60000",
-        "colors": [
-            "#ca3838",
-            "#00b500",
-            "#ca3838"
-        ],
-        "seg1": "9999",
-        "seg2": "40000",
-        "diff": false,
-        "className": "",
-        "x": 1630,
-        "y": 560,
-        "wires": []
-    },
-    {
-        "id": "be2a678d7f59510c",
-        "type": "ui_gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "group": "b47b5ede66d46c8c",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Soil Moisture",
-        "label": "units",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#00b500",
-            "#e6e600",
-            "#ca3838"
-        ],
-        "seg1": "69",
-        "seg2": "89",
-        "diff": false,
-        "className": "",
-        "x": 1630,
-        "y": 600,
-        "wires": []
-    },
-    {
-        "id": "3eca00a5801c39fe",
-        "type": "ui_gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "group": "23ae3d0ad7417bcd",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Louvre Open PCT",
-        "label": "units",
-        "format": "{{value}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#00b500",
-            "#00b500",
-            "#00b500"
-        ],
-        "seg1": "",
-        "seg2": "",
-        "diff": true,
-        "className": "",
-        "x": 1650,
-        "y": 640,
-        "wires": []
     },
     {
         "id": "f2588d218f7169c5",
@@ -922,7 +649,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 640,
+        "y": 700,
         "wires": [
             [
                 "cf106de8c4ae7fa3"
@@ -934,7 +661,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "louve_state",
-        "func": "msg.payload = msg.payload.louvre_state;\nreturn msg;",
+        "func": "let state = msg.payload.louvre_state;\n\nif (state === \"open\") {\n    msg.payload = \"🟢 OPEN — Ventilating\";\n} else if (state === \"closed\") {\n    msg.payload = \"⚫ CLOSED — Sealed\";\n} else if (state === \"opening\") {\n    msg.payload = \"🟡 OPENING — Adjusting\";\n} else if (state === \"closing\") {\n    msg.payload = \"🟡 CLOSING — Adjusting\";\n} else {\n    msg.payload = \"⚪ UNKNOWN\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -942,33 +669,12 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 680,
+        "y": 740,
         "wires": [
             [
                 "305b260008f05bc2"
             ]
         ]
-    },
-    {
-        "id": "4dc8f66ba2cebe0b",
-        "type": "ui_text",
-        "z": "6cda5a5f32196c63",
-        "group": "6d20b73d09270a4d",
-        "order": 0,
-        "width": "4",
-        "height": "4",
-        "name": "",
-        "label": "Louvre State",
-        "format": "{{msg.payload}}",
-        "layout": "col-center",
-        "className": "center-card",
-        "style": false,
-        "font": "Times New Roman,Times,serif",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 1630,
-        "y": 680,
-        "wires": []
     },
     {
         "id": "d410dc6f8bb74f8c",
@@ -982,8 +688,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 520,
+        "x": 910,
+        "y": 580,
         "wires": [
             [
                 "a6d64198e6eaae62"
@@ -1002,10 +708,11 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 600,
+        "x": 910,
+        "y": 660,
         "wires": [
             [
+                "1e53d5d61ad2dcde",
                 "66c91ea4b80fc08f"
             ]
         ]
@@ -1022,8 +729,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 480,
+        "x": 910,
+        "y": 540,
         "wires": [
             [
                 "bb6a10ac977d0717"
@@ -1042,8 +749,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 560,
+        "x": 910,
+        "y": 620,
         "wires": [
             [
                 "3a5ee99f6baf7088"
@@ -1062,8 +769,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 640,
+        "x": 910,
+        "y": 700,
         "wires": [
             [
                 "66d981e6d96be52c"
@@ -1082,8 +789,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 850,
-        "y": 180,
+        "x": 870,
+        "y": 240,
         "wires": [
             [
                 "4af3079dbb6762fa"
@@ -1102,8 +809,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 680,
+        "x": 910,
+        "y": 740,
         "wires": [
             [
                 "072fb8dffe0e9dbc"
@@ -1116,7 +823,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Temperature",
         "group": "85dcddf4de18c2df",
-        "order": 4,
+        "order": 5,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1126,7 +833,7 @@
         "title": "Temperature",
         "alwaysShowTitle": false,
         "floatingTitlePosition": "top-left",
-        "units": "\u00b0F",
+        "units": "°F",
         "icon": "",
         "prefix": "",
         "suffix": "",
@@ -1170,8 +877,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1630,
-        "y": 740,
+        "x": 1570,
+        "y": 540,
         "wires": [
             []
         ]
@@ -1182,7 +889,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Humidity",
         "group": "85dcddf4de18c2df",
-        "order": 6,
+        "order": 7,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1204,13 +911,13 @@
                 "textType": "label"
             },
             {
-                "from": "44",
+                "from": "25",
                 "color": "#ffc800",
                 "text": "",
                 "textType": "label"
             },
             {
-                "from": "45",
+                "from": "35",
                 "color": "#5cd65c",
                 "text": "",
                 "textType": "label"
@@ -1222,7 +929,7 @@
                 "textType": "label"
             },
             {
-                "from": "100",
+                "from": "90",
                 "color": "#ea5353",
                 "text": "",
                 "textType": "label"
@@ -1236,8 +943,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1620,
-        "y": 780,
+        "x": 1560,
+        "y": 580,
         "wires": [
             []
         ]
@@ -1248,7 +955,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Lux",
         "group": "85dcddf4de18c2df",
-        "order": 5,
+        "order": 6,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1270,7 +977,7 @@
                 "textType": "label"
             },
             {
-                "from": "3000",
+                "from": "4000",
                 "color": "#ffc800",
                 "text": "",
                 "textType": "label"
@@ -1278,18 +985,6 @@
             {
                 "from": "10000",
                 "color": "#00c800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "40000",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "60000",
-                "color": "#ff0000",
                 "text": "",
                 "textType": "label"
             }
@@ -1302,8 +997,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1610,
-        "y": 820,
+        "x": 1550,
+        "y": 620,
         "wires": [
             []
         ]
@@ -1314,7 +1009,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Soil Moisture",
         "group": "85dcddf4de18c2df",
-        "order": 3,
+        "order": 4,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1356,8 +1051,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1630,
-        "y": 860,
+        "x": 1570,
+        "y": 660,
         "wires": [
             []
         ]
@@ -1368,7 +1063,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Louvre Open %",
         "group": "85dcddf4de18c2df",
-        "order": 2,
+        "order": 3,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1398,8 +1093,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1640,
-        "y": 900,
+        "x": 1580,
+        "y": 700,
         "wires": [
             []
         ]
@@ -1409,13 +1104,13 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "85dcddf4de18c2df",
-        "order": 1,
+        "order": 2,
         "width": 0,
         "height": 0,
         "name": "Louvre State",
         "label": "Louvre State",
         "format": "{{msg.payload}}",
-        "layout": "col-center",
+        "layout": "row-spread",
         "style": false,
         "font": "",
         "fontSize": 16,
@@ -1424,8 +1119,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1630,
-        "y": 940,
+        "x": 1570,
+        "y": 740,
         "wires": []
     },
     {
@@ -1435,7 +1130,7 @@
         "group": "85dcddf4de18c2df",
         "name": "History",
         "label": "History",
-        "order": 7,
+        "order": 9,
         "chartType": "line",
         "category": "topic",
         "categoryType": "msg",
@@ -1485,7 +1180,7 @@
         "className": "",
         "interpolation": "smooth",
         "x": 1260,
-        "y": 220,
+        "y": 240,
         "wires": [
             []
         ]
@@ -1498,8 +1193,8 @@
         "pauseType": "rate",
         "timeout": "5",
         "timeoutUnits": "seconds",
-        "rate": "10",
-        "nbRateUnits": "15",
+        "rate": "1",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1507,11 +1202,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1040,
-        "y": 180,
+        "x": 1030,
+        "y": 240,
         "wires": [
             [
-                "0a7c0f9ce0c337cf",
                 "4cb5f93570d7d0ca"
             ]
         ]
@@ -1525,7 +1219,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "12",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1533,11 +1227,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 560,
+        "x": 1330,
+        "y": 620,
         "wires": [
             [
-                "13457caa1a5926a0",
                 "05bba795903b4a55"
             ]
         ]
@@ -1551,7 +1244,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "10",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1559,11 +1252,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 480,
+        "x": 1330,
+        "y": 540,
         "wires": [
             [
-                "e74a16e9a0b7350e",
                 "911ba08b535d0c83"
             ]
         ]
@@ -1577,7 +1269,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "11",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1585,11 +1277,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 520,
+        "x": 1330,
+        "y": 580,
         "wires": [
             [
-                "4b154cde352e2f71",
                 "79974308ea82383b"
             ]
         ]
@@ -1603,7 +1294,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "10",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1611,11 +1302,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 600,
+        "x": 1330,
+        "y": 660,
         "wires": [
             [
-                "be2a678d7f59510c",
                 "b1163310511ba436"
             ]
         ]
@@ -1629,7 +1319,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "11",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1637,11 +1327,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 640,
+        "x": 1330,
+        "y": 700,
         "wires": [
             [
-                "3eca00a5801c39fe",
                 "022edd664dc4b3d5"
             ]
         ]
@@ -1655,7 +1344,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "12",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1663,11 +1352,10 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 680,
+        "x": 1330,
+        "y": 740,
         "wires": [
             [
-                "4dc8f66ba2cebe0b",
                 "6a9c73d878494885"
             ]
         ]
@@ -1690,7 +1378,7 @@
         "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux",
         "payloadType": "str",
         "x": 640,
-        "y": 20,
+        "y": 80,
         "wires": [
             [
                 "4abddf2657d029ce"
@@ -1710,7 +1398,7 @@
         "finalize": "",
         "libs": [],
         "x": 820,
-        "y": 20,
+        "y": 80,
         "wires": [
             [
                 "887f4b565053691c"
@@ -1730,7 +1418,7 @@
         "finalize": "",
         "libs": [],
         "x": 640,
-        "y": 720,
+        "y": 780,
         "wires": [
             [
                 "fanpctrbe000001"
@@ -1749,8 +1437,8 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 1070,
-        "y": 720,
+        "x": 910,
+        "y": 780,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1766,7 +1454,7 @@
         "timeout": "15",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "12",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1774,8 +1462,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1280,
-        "y": 720,
+        "x": 1330,
+        "y": 780,
         "wires": [
             [
                 "fanpctgauge00001"
@@ -1810,20 +1498,20 @@
                 "textType": "label"
             },
             {
-                "from": "35",
-                "color": "#5cd65c",
+                "from": "25",
+                "color": "#8ff0a4",
                 "text": "",
                 "textType": "label"
             },
             {
-                "from": "70",
-                "color": "#ffc800",
+                "from": "50",
+                "color": "#33d17a",
                 "text": "",
                 "textType": "label"
             },
             {
-                "from": "90",
-                "color": "#ea5353",
+                "from": "75",
+                "color": "#00c800",
                 "text": "",
                 "textType": "label"
             }
@@ -1836,10 +1524,160 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1620,
-        "y": 720,
+        "x": 1570,
+        "y": 780,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "57ce7260347bd8de",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 3",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "1e53d5d61ad2dcde",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "dd71f97f1b1584dd",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "function 2",
+        "func": "// Guard greenhouse payload\n// Purpose:\n// 1) Reject malformed payloads\n// 2) Hold last known good payload\n// 3) Prevent one bad lux/glitch sample from zeroing all gauges\n\nlet p = msg.payload;\nlet last = context.get(\"lastGood\") || null;\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\n// Payload must be an object\nif (typeof p !== \"object\" || p === null) {\n    if (last) {\n        msg.payload = last;\n        return msg;\n    }\n    return null;\n}\n\n// Required numeric fields\nlet required = [\n    \"t1\", \"t2\", \"tavg\",\n    \"h1\", \"h2\", \"havg\",\n    \"soil\", \"lux\",\n    \"louvre_pct\", \"fan_pct\"\n];\n\nfor (let k of required) {\n    if (!isNum(p[k])) {\n        if (last) {\n            msg.payload = last;\n            return msg;\n        }\n        return null;\n    }\n}\n\n// Optional string/state field check\nif (typeof p.louvre_state !== \"string\") {\n    if (last) {\n        msg.payload = last;\n        return msg;\n    }\n    return null;\n}\n\n// Range checks\nif (p.t1 < -40 || p.t1 > 150) { msg.payload = last || p; return last ? msg : null; }\nif (p.t2 < -40 || p.t2 > 150) { msg.payload = last || p; return last ? msg : null; }\nif (p.tavg < -40 || p.tavg > 150) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.h1 < 0 || p.h1 > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.h2 < 0 || p.h2 > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.havg < 0 || p.havg > 100) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.soil < 0 || p.soil > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.lux < 0 || p.lux > 150000) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.louvre_pct < 0 || p.louvre_pct > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.fan_pct < 0 || p.fan_pct > 100) { msg.payload = last || p; return last ? msg : null; }\n\n// Lux deglitch:\n// If lux suddenly drops to 0 from a normal reading, treat it as a glitch\nif (last && isNum(last.lux)) {\n    if (p.lux === 0 && last.lux > 5) {\n        msg.payload = last;\n        return msg;\n    }\n}\n\n// Save good payload\ncontext.set(\"lastGood\", p);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 620,
+        "wires": [
+            [
+                "0d1202f9041fb697",
+                "d4942742387dabb4",
+                "112b42a1704108f8",
+                "c5aa37be95cbd5f2",
+                "f2588d218f7169c5",
+                "744e76bedde5edb1",
+                "fanpctfunc000001",
+                "610ae0cd1478dcb8"
+            ]
+        ]
+    },
+    {
+        "id": "acb1ac1ac94383a3",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "85dcddf4de18c2df",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Grow Lights",
+        "label": "Grow Light Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1570,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "610ae0cd1478dcb8",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Grow LIght Status",
+        "func": "let on = msg.payload.lightOn;\n\nif (on === true) {\n    msg.payload = \"🟢 ON — Supplemental Lighting\";\n} else {\n    msg.payload = \"⚫ OFF — Ambient Light Sufficient\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 820,
+        "wires": [
+            [
+                "06c0c07df8a99733"
+            ]
+        ]
+    },
+    {
+        "id": "ef8c56ca1aaaa404",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1330,
+        "y": 820,
+        "wires": [
+            [
+                "acb1ac1ac94383a3"
+            ]
+        ]
+    },
+    {
+        "id": "06c0c07df8a99733",
+        "type": "rbe",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": false,
+        "property": "payload",
+        "topi": "topic",
+        "x": 910,
+        "y": 820,
+        "wires": [
+            [
+                "ef8c56ca1aaaa404"
+            ]
         ]
     }
 ]
