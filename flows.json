@@ -200,7 +200,7 @@
     {
         "id": "3f12950bc7b59498",
         "type": "ui-page",
-        "name": "Page 1",
+        "name": "Greenhouse Dashboard",
         "ui": "062287387a26aec8",
         "path": "/page1",
         "icon": "home",
@@ -209,35 +209,149 @@
         "breakpoints": [
             {
                 "name": "Default",
-                "px": 0,
-                "cols": 3
+                "px": "0",
+                "cols": "3"
             },
             {
                 "name": "Tablet",
-                "px": 576,
-                "cols": 6
+                "px": "576",
+                "cols": "6"
             },
             {
                 "name": "Small Desktop",
-                "px": 768,
-                "cols": 9
+                "px": "768",
+                "cols": "9"
             },
             {
                 "name": "Desktop",
-                "px": 1024,
-                "cols": 12
+                "px": "1024",
+                "cols": "12"
             }
         ],
         "order": 1,
+        "className": "",
+        "visible": true,
+        "disabled": false
+    },
+    {
+        "id": "85dcddf4de18c2df",
+        "type": "ui-group",
+        "name": "Gauges",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "2a41f864d2129443",
+        "type": "ui-group",
+        "name": "Fault Indication",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "ab05efb03ef6ba92",
+        "type": "ui-page",
+        "name": "History",
+        "ui": "062287387a26aec8",
+        "path": "/page2",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "ad1666f09e21ea6d",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 2,
         "className": "",
         "visible": "true",
         "disabled": "false"
     },
     {
-        "id": "85dcddf4de18c2df",
+        "id": "f48d03ed9e40aac6",
+        "type": "ui-page",
+        "name": "System Control",
+        "ui": "062287387a26aec8",
+        "path": "/page3",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "ad1666f09e21ea6d",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 3,
+        "className": "",
+        "visible": true,
+        "disabled": false
+    },
+    {
+        "id": "1278781a5f417ce4",
         "type": "ui-group",
-        "name": "GH Status",
-        "page": "3f12950bc7b59498",
+        "name": "Sys Control",
+        "page": "f48d03ed9e40aac6",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "db507c4f3e90976b",
+        "type": "ui-group",
+        "name": "HIstory",
+        "page": "ab05efb03ef6ba92",
         "width": 6,
         "height": 1,
         "order": 1,
@@ -265,7 +379,7 @@
         "id": "0331b7e8018058e8",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "Parse sensor line (JSON or key=val)",
+        "name": "Parse sensor",
         "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\n\nif (!line) return null;\n\n// Try JSON first\nif (line.startsWith(\"{\") && line.endsWith(\"}\")) {\n    try {\n        let obj = JSON.parse(line);\n\n        msg.payload = {\n            ts: obj.ts,\n            t1: obj.t1,\n            t2: obj.t2,\n            tavg: obj.tavg,\n            h1: obj.h1,\n            h2: obj.h2,\n            havg: obj.havg,\n            soil: obj.soil,\n            lux: obj.lux,\n            louvre_pct: obj.louvre_pct,\n            louvre_state: obj.louvre_state,\n            fan_pct: obj.fan_pct,\n            lightOn: obj.lightOn\n        };\n\n        return msg;\n    } catch (e) {\n        node.warn(\"JSON parse failed: \" + e.message);\n        return null;\n    }\n}\n\nreturn null;",
         "outputs": 1,
         "timeout": "",
@@ -273,15 +387,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 420,
+        "x": 290,
         "y": 180,
         "wires": [
             [
-                "f98d2f1f0673b101",
-                "ee12a869e25d83bb",
-                "4b266addf47812be",
-                "3999dea12c82b1a6",
-                "57ce7260347bd8de"
+                "56a18a3fe5e40a59"
             ]
         ]
     },
@@ -297,7 +407,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 820,
+        "x": 1040,
         "y": 120,
         "wires": [
             [
@@ -315,7 +425,7 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1090,
+        "x": 1310,
         "y": 100,
         "wires": [
             []
@@ -333,7 +443,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 690,
+        "x": 910,
         "y": 240,
         "wires": [
             [
@@ -355,7 +465,7 @@
         "correl": "",
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
-        "x": 1310,
+        "x": 1450,
         "y": 160,
         "wires": [],
         "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
@@ -372,7 +482,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 860,
+        "x": 1080,
         "y": 160,
         "wires": [
             [
@@ -392,7 +502,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 490,
+        "x": 710,
         "y": 300,
         "wires": [
             [
@@ -408,7 +518,7 @@
         "sqlquery": "msg.topic",
         "sql": "",
         "name": "greenhouse_db",
-        "x": 700,
+        "x": 920,
         "y": 300,
         "wires": [
             [
@@ -430,7 +540,7 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 920,
+        "x": 1140,
         "y": 300,
         "wires": []
     },
@@ -446,7 +556,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 960,
+        "x": 1240,
         "y": 380,
         "wires": [
             [
@@ -459,7 +569,7 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 2",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -467,8 +577,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 380,
-        "y": 460,
+        "x": 400,
+        "y": 540,
         "wires": []
     },
     {
@@ -514,7 +624,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 180,
+        "x": 400,
         "y": 380,
         "wires": [
             [
@@ -548,7 +658,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 470,
+        "x": 690,
         "y": 380,
         "wires": [
             [
@@ -661,7 +771,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "louve_state",
-        "func": "let state = msg.payload.louvre_state;\n\nif (state === \"open\") {\n    msg.payload = \"🟢 OPEN — Ventilating\";\n} else if (state === \"closed\") {\n    msg.payload = \"⚫ CLOSED — Sealed\";\n} else if (state === \"opening\") {\n    msg.payload = \"🟡 OPENING — Adjusting\";\n} else if (state === \"closing\") {\n    msg.payload = \"🟡 CLOSING — Adjusting\";\n} else {\n    msg.payload = \"⚪ UNKNOWN\";\n}\n\nreturn msg;",
+        "func": "let s = msg.payload.louvre_state;\nlet pct = msg.payload.louvre_pct;\n\nif (s === \"opening\") {\n    msg.payload = \"🟢 Opening\";\n} else if (s === \"closing\") {\n    msg.payload = \"🟠 Closing\";\n} else if (pct <= 5) {\n    msg.payload = \"⚫ Closed\";\n} else if (pct >= 95) {\n    msg.payload = \"🟢 Open\";\n} else {\n    msg.payload = \"🟡 Stopped @ \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -688,7 +798,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 580,
         "wires": [
             [
@@ -708,7 +818,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 660,
         "wires": [
             [
@@ -729,7 +839,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 540,
         "wires": [
             [
@@ -749,7 +859,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 620,
         "wires": [
             [
@@ -769,7 +879,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 700,
         "wires": [
             [
@@ -789,7 +899,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 870,
+        "x": 1090,
         "y": 240,
         "wires": [
             [
@@ -809,7 +919,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 740,
         "wires": [
             [
@@ -823,7 +933,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Temperature",
         "group": "85dcddf4de18c2df",
-        "order": 5,
+        "order": 3,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -877,7 +987,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1570,
+        "x": 1310,
         "y": 540,
         "wires": [
             []
@@ -889,7 +999,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Humidity",
         "group": "85dcddf4de18c2df",
-        "order": 7,
+        "order": 5,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -943,7 +1053,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1560,
+        "x": 1300,
         "y": 580,
         "wires": [
             []
@@ -955,7 +1065,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Lux",
         "group": "85dcddf4de18c2df",
-        "order": 6,
+        "order": 4,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -997,7 +1107,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1550,
+        "x": 1290,
         "y": 620,
         "wires": [
             []
@@ -1009,7 +1119,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Soil Moisture",
         "group": "85dcddf4de18c2df",
-        "order": 4,
+        "order": 2,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1051,7 +1161,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1570,
+        "x": 1310,
         "y": 660,
         "wires": [
             []
@@ -1063,7 +1173,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Louvre Open %",
         "group": "85dcddf4de18c2df",
-        "order": 3,
+        "order": 1,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1093,7 +1203,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1580,
+        "x": 1320,
         "y": 700,
         "wires": [
             []
@@ -1103,8 +1213,8 @@
         "id": "6a9c73d878494885",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "85dcddf4de18c2df",
-        "order": 2,
+        "group": "2a41f864d2129443",
+        "order": 1,
         "width": 0,
         "height": 0,
         "name": "Louvre State",
@@ -1119,7 +1229,7 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1570,
+        "x": 1310,
         "y": 740,
         "wires": []
     },
@@ -1127,10 +1237,10 @@
         "id": "4cb5f93570d7d0ca",
         "type": "ui-chart",
         "z": "6cda5a5f32196c63",
-        "group": "85dcddf4de18c2df",
+        "group": "db507c4f3e90976b",
         "name": "History",
         "label": "History",
-        "order": 9,
+        "order": 1,
         "chartType": "line",
         "category": "topic",
         "categoryType": "msg",
@@ -1179,7 +1289,7 @@
         "height": 8,
         "className": "",
         "interpolation": "smooth",
-        "x": 1260,
+        "x": 1480,
         "y": 240,
         "wires": [
             []
@@ -1202,7 +1312,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1030,
+        "x": 1250,
         "y": 240,
         "wires": [
             [
@@ -1227,7 +1337,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 620,
         "wires": [
             [
@@ -1252,7 +1362,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 540,
         "wires": [
             [
@@ -1277,7 +1387,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 580,
         "wires": [
             [
@@ -1302,7 +1412,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 660,
         "wires": [
             [
@@ -1327,7 +1437,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 700,
         "wires": [
             [
@@ -1352,7 +1462,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 740,
         "wires": [
             [
@@ -1377,7 +1487,7 @@
         "topic": "",
         "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux",
         "payloadType": "str",
-        "x": 640,
+        "x": 880,
         "y": 80,
         "wires": [
             [
@@ -1397,7 +1507,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 820,
+        "x": 1060,
         "y": 80,
         "wires": [
             [
@@ -1437,7 +1547,7 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 780,
         "wires": [
             [
@@ -1462,7 +1572,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 780,
         "wires": [
             [
@@ -1476,7 +1586,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Fan Speed",
         "group": "85dcddf4de18c2df",
-        "order": 8,
+        "order": 6,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -1524,7 +1634,7 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1570,
+        "x": 1310,
         "y": 780,
         "wires": [
             []
@@ -1535,7 +1645,7 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 3",
-        "active": false,
+        "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -1543,8 +1653,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 420,
-        "y": 120,
+        "x": 640,
+        "y": 80,
         "wires": []
     },
     {
@@ -1552,7 +1662,7 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 4",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -1560,7 +1670,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1100,
+        "x": 1020,
         "y": 460,
         "wires": []
     },
@@ -1568,15 +1678,15 @@
         "id": "dd71f97f1b1584dd",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "function 2",
-        "func": "// Guard greenhouse payload\n// Purpose:\n// 1) Reject malformed payloads\n// 2) Hold last known good payload\n// 3) Prevent one bad lux/glitch sample from zeroing all gauges\n\nlet p = msg.payload;\nlet last = context.get(\"lastGood\") || null;\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\n// Payload must be an object\nif (typeof p !== \"object\" || p === null) {\n    if (last) {\n        msg.payload = last;\n        return msg;\n    }\n    return null;\n}\n\n// Required numeric fields\nlet required = [\n    \"t1\", \"t2\", \"tavg\",\n    \"h1\", \"h2\", \"havg\",\n    \"soil\", \"lux\",\n    \"louvre_pct\", \"fan_pct\"\n];\n\nfor (let k of required) {\n    if (!isNum(p[k])) {\n        if (last) {\n            msg.payload = last;\n            return msg;\n        }\n        return null;\n    }\n}\n\n// Optional string/state field check\nif (typeof p.louvre_state !== \"string\") {\n    if (last) {\n        msg.payload = last;\n        return msg;\n    }\n    return null;\n}\n\n// Range checks\nif (p.t1 < -40 || p.t1 > 150) { msg.payload = last || p; return last ? msg : null; }\nif (p.t2 < -40 || p.t2 > 150) { msg.payload = last || p; return last ? msg : null; }\nif (p.tavg < -40 || p.tavg > 150) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.h1 < 0 || p.h1 > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.h2 < 0 || p.h2 > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.havg < 0 || p.havg > 100) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.soil < 0 || p.soil > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.lux < 0 || p.lux > 150000) { msg.payload = last || p; return last ? msg : null; }\n\nif (p.louvre_pct < 0 || p.louvre_pct > 100) { msg.payload = last || p; return last ? msg : null; }\nif (p.fan_pct < 0 || p.fan_pct > 100) { msg.payload = last || p; return last ? msg : null; }\n\n// Lux deglitch:\n// If lux suddenly drops to 0 from a normal reading, treat it as a glitch\nif (last && isNum(last.lux)) {\n    if (p.lux === 0 && last.lux > 5) {\n        msg.payload = last;\n        return msg;\n    }\n}\n\n// Save good payload\ncontext.set(\"lastGood\", p);\nreturn msg;",
+        "name": "GH_Data Function",
+        "func": "// Guard greenhouse payload\n// Purpose:\n// 1) Reject malformed payloads\n// 2) Hold last known good payload\n// 3) Prevent one bad lux/glitch sample from zeroing all gauges\n// 4) Preserve fault metadata so faults can be shown on the dashboard\n\nlet p = msg.payload;\nlet last = context.get(\"lastGood\") || null;\nlet lastGoodLux = context.get(\"lastGoodLux\");\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nfunction cloneObj(obj) {\n    return JSON.parse(JSON.stringify(obj));\n}\n\nfunction addFaultMeta(target, source) {\n    if (!target || typeof target !== \"object\") {\n        target = {};\n    }\n\n    if (source && typeof source === \"object\") {\n        target.faults = source.faults || {};\n        target.fault_count = source.fault_count || 0;\n        target.system_fault = source.system_fault || 0;\n        target.missing_fields = source.missing_fields || \"\";\n    } else {\n        target.faults = {};\n        target.fault_count = 0;\n        target.system_fault = 0;\n        target.missing_fields = \"\";\n    }\n\n    return target;\n}\n\n// Payload must be an object\nif (typeof p !== \"object\" || p === null) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Required numeric fields\nlet required = [\n    \"t1\", \"t2\", \"tavg\",\n    \"h1\", \"h2\", \"havg\",\n    \"soil\", \"lux\",\n    \"louvre_pct\", \"fan_pct\"\n];\n\nfor (let i = 0; i < required.length; i++) {\n    let k = required[i];\n    if (!isNum(p[k])) {\n        if (last) {\n            msg.payload = addFaultMeta(cloneObj(last), p);\n            return msg;\n        }\n        return null;\n    }\n}\n\n// Optional string/state field check\nif (typeof p.louvre_state !== \"string\") {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Range checks for temperatures\nif (p.t1 < -40 || p.t1 > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.t2 < -40 || p.t2 > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.tavg < -40 || p.tavg > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Range checks for humidity\nif (p.h1 < 0 || p.h1 > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.h2 < 0 || p.h2 > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.havg < 0 || p.havg > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Soil range check\nif (p.soil < 0 || p.soil > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Lux range check\n// If lux is invalid, keep the last known good lux for the gauge,\n// but preserve the incoming fault metadata.\nif (p.lux < 0 || p.lux > 150000) {\n    let out;\n\n    if (last) {\n        out = cloneObj(last);\n    } else {\n        out = cloneObj(p);\n    }\n\n    if (isNum(lastGoodLux)) {\n        out.lux = lastGoodLux;\n    }\n\n    msg.payload = addFaultMeta(out, p);\n    return msg;\n}\n\n// Louvre/fan range checks\nif (p.louvre_pct < 0 || p.louvre_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.fan_pct < 0 || p.fan_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Lux deglitch:\n// If lux suddenly drops to 0 from a normal reading, treat it as a glitch\nif (last && isNum(last.lux)) {\n    if (p.lux === 0 && last.lux > 5) {\n        let out = cloneObj(last);\n        msg.payload = addFaultMeta(out, p);\n        return msg;\n    }\n}\n\n// Save good payload\ncontext.set(\"lastGood\", cloneObj(p));\n\nif (isNum(p.lux) && p.lux >= 0 && p.lux <= 150000) {\n    context.set(\"lastGoodLux\", p.lux);\n}\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
+        "x": 430,
         "y": 620,
         "wires": [
             [
@@ -1587,7 +1697,8 @@
                 "f2588d218f7169c5",
                 "744e76bedde5edb1",
                 "fanpctfunc000001",
-                "610ae0cd1478dcb8"
+                "610ae0cd1478dcb8",
+                "5af17cb50fcfd049"
             ]
         ]
     },
@@ -1595,8 +1706,8 @@
         "id": "acb1ac1ac94383a3",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "85dcddf4de18c2df",
-        "order": 1,
+        "group": "2a41f864d2129443",
+        "order": 3,
         "width": 0,
         "height": 0,
         "name": "Grow Lights",
@@ -1611,7 +1722,7 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1570,
+        "x": 1310,
         "y": 820,
         "wires": []
     },
@@ -1620,7 +1731,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Grow LIght Status",
-        "func": "let on = msg.payload.lightOn;\n\nif (on === true) {\n    msg.payload = \"🟢 ON — Supplemental Lighting\";\n} else {\n    msg.payload = \"⚫ OFF — Ambient Light Sufficient\";\n}\n\nreturn msg;",
+        "func": "let on = msg.payload.lightOn;\n\nif (on === true) {\n    msg.payload = \"🟢 Grow Lights On\";\n} else {\n    msg.payload = \"⚫ Grow Lights Off\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1652,7 +1763,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1330,
+        "x": 1070,
         "y": 820,
         "wires": [
             [
@@ -1672,11 +1783,376 @@
         "septopics": false,
         "property": "payload",
         "topi": "topic",
-        "x": 910,
+        "x": 850,
         "y": 820,
         "wires": [
             [
                 "ef8c56ca1aaaa404"
+            ]
+        ]
+    },
+    {
+        "id": "455c2db561300a8c",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Fault Detection",
+        "func": "let p = msg.payload || {};\n\nlet required = [\n    \"t1\",\n    \"t2\",\n    \"tavg\",\n    \"h1\",\n    \"h2\",\n    \"havg\",\n    \"soil\",\n    \"lux\",\n    \"louvre_pct\",\n    \"louvre_state\",\n    \"fan_pct\",\n    \"lightOn\"\n];\n\nlet faults = {};\nlet missing = [];\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\n// Step 1: missing field detection\nrequired.forEach(name => {\n    if (!(name in p) || p[name] === null || p[name] === \"\") {\n        faults[name] = \"MISSING\";\n        missing.push(name);\n    }\n});\n\n// Step 2: invalid value detection\nif (\"lux\" in p && isNum(p.lux) && p.lux < 0) {\n    faults.lux = \"INVALID\";\n}\n\nif (\"soil\" in p && isNum(p.soil) && (p.soil < 0 || p.soil > 100)) {\n    faults.soil = \"INVALID\";\n}\n\nif (\"louvre_pct\" in p && isNum(p.louvre_pct) && (p.louvre_pct < 0 || p.louvre_pct > 100)) {\n    faults.louvre_pct = \"INVALID\";\n}\n\nif (\"fan_pct\" in p && isNum(p.fan_pct) && (p.fan_pct < 0 || p.fan_pct > 100)) {\n    faults.fan_pct = \"INVALID\";\n}\n\nif (\"h1\" in p && isNum(p.h1) && (p.h1 < 0 || p.h1 > 100)) {\n    faults.h1 = \"INVALID\";\n}\n\nif (\"h2\" in p && isNum(p.h2) && (p.h2 < 0 || p.h2 > 100)) {\n    faults.h2 = \"INVALID\";\n}\n\nif (\"havg\" in p && isNum(p.havg) && (p.havg < 0 || p.havg > 100)) {\n    faults.havg = \"INVALID\";\n}\n\n// Step 3: soil erratic behavior detection\n// If soil jumps too far between consecutive samples, flag it.\n// This catches floating analog input behavior when the sensor is removed.\nlet lastSoil = context.get(\"lastSoil\");\nlet soilJumpThreshold = 40;\n\nif (\"soil\" in p && isNum(p.soil)) {\n    if (isNum(lastSoil)) {\n        if (Math.abs(p.soil - lastSoil) > soilJumpThreshold) {\n            faults.soil = \"FLOATING\";\n        }\n    }\n    context.set(\"lastSoil\", p.soil);\n}\n\np.faults = faults;\np.fault_count = Object.keys(faults).length;\np.system_fault = p.fault_count > 0 ? 1 : 0;\np.missing_fields = missing.join(\",\");\n\nmsg.payload = p;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 180,
+        "wires": [
+            [
+                "57ce7260347bd8de",
+                "f98d2f1f0673b101",
+                "3999dea12c82b1a6",
+                "ee12a869e25d83bb",
+                "4b266addf47812be"
+            ]
+        ]
+    },
+    {
+        "id": "5af17cb50fcfd049",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Fault Status Text",
+        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet hasFault = p.system_fault === 1;\n\n// NEW: read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\n// Build list of faults\nlet faultList = [];\n\n// Add existing sensor faults (your original behavior)\nif (hasFault) {\n    let keys = Object.keys(faults);\n\n    if (keys.length) {\n        faultList = faultList.concat(\n            keys.map(k => k + \": \" + faults[k])\n        );\n    } else {\n        faultList.push(\"FAULT ACTIVE\");\n    }\n}\n\n// NEW: add comm fault\nif (commFault === 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final output (same style as yours)\nif (faultList.length > 0) {\n    msg.payload = \"🔴 FAULT — \" + faultList.join(\" | \");\n} else {\n    msg.payload = \"🟢 All Systems Normal\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 900,
+        "wires": [
+            [
+                "68f3fed977ad9f73"
+            ]
+        ]
+    },
+    {
+        "id": "68f3fed977ad9f73",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "2a41f864d2129443",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "System Fault",
+        "label": "Fault",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 910,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "389f7f198ed6e0fa",
+        "type": "ui-button-group",
+        "z": "6cda5a5f32196c63",
+        "name": "Louvre Button GP",
+        "group": "1278781a5f417ce4",
+        "order": 3,
+        "width": "6",
+        "height": "3",
+        "label": "Louvre Control",
+        "className": "",
+        "rounded": true,
+        "useThemeColors": true,
+        "passthru": false,
+        "options": [
+            {
+                "label": "Open",
+                "icon": "",
+                "value": "OPEN",
+                "valueType": "str",
+                "color": "#009933"
+            },
+            {
+                "label": "Half",
+                "icon": "",
+                "value": "HALF",
+                "valueType": "str",
+                "color": "#999999"
+            },
+            {
+                "label": "Close",
+                "icon": "",
+                "value": "CLOSE",
+                "valueType": "str",
+                "color": "#ff6666"
+            },
+            {
+                "label": "Stop",
+                "icon": "",
+                "value": "STOP",
+                "valueType": "str",
+                "color": "#009999"
+            },
+            {
+                "label": "Auto",
+                "icon": "",
+                "value": "AUTO",
+                "valueType": "str",
+                "color": "#cccc00"
+            }
+        ],
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 770,
+        "y": 1000,
+        "wires": [
+            [
+                "82cb2ac5ce541d87"
+            ]
+        ]
+    },
+    {
+        "id": "82cb2ac5ce541d87",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Louvre Command ",
+        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 1000,
+        "wires": [
+            [
+                "12cca41621c67cb4"
+            ]
+        ]
+    },
+    {
+        "id": "12cca41621c67cb4",
+        "type": "serial out",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "serial": "f21e5fa854a87f38",
+        "x": 1320,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "3103229fe7ad40af",
+        "type": "ui-button-group",
+        "z": "6cda5a5f32196c63",
+        "name": "Fan Control",
+        "group": "1278781a5f417ce4",
+        "order": 2,
+        "width": 6,
+        "height": "3",
+        "label": "Fan Control",
+        "className": "",
+        "rounded": true,
+        "useThemeColors": true,
+        "passthru": false,
+        "options": [
+            {
+                "label": "On (50%)",
+                "icon": "",
+                "value": "FAN_50",
+                "valueType": "str",
+                "color": "#009933"
+            },
+            {
+                "label": "On (100%)",
+                "icon": "",
+                "value": "FAN_100",
+                "valueType": "str",
+                "color": "#999999"
+            },
+            {
+                "label": "Off",
+                "icon": "",
+                "value": "FAN_OFF",
+                "valueType": "str",
+                "color": "#ff6666"
+            },
+            {
+                "label": "Auto",
+                "icon": "",
+                "value": "FAN_AUTO",
+                "valueType": "str",
+                "color": "#009999"
+            }
+        ],
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 750,
+        "y": 1060,
+        "wires": [
+            [
+                "dc183ed1b109c77e"
+            ]
+        ]
+    },
+    {
+        "id": "dc183ed1b109c77e",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Fan Command",
+        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1020,
+        "y": 1060,
+        "wires": [
+            [
+                "12cca41621c67cb4"
+            ]
+        ]
+    },
+    {
+        "id": "2bc4071fb60e172f",
+        "type": "ui-button-group",
+        "z": "6cda5a5f32196c63",
+        "name": "Light Control",
+        "group": "1278781a5f417ce4",
+        "order": 1,
+        "width": 6,
+        "height": "2",
+        "label": "Light Control",
+        "className": "",
+        "rounded": true,
+        "useThemeColors": true,
+        "passthru": false,
+        "options": [
+            {
+                "label": "On",
+                "icon": "",
+                "value": "LIGHT_ON",
+                "valueType": "str",
+                "color": "#009933"
+            },
+            {
+                "label": "Off",
+                "icon": "",
+                "value": "LIGHT_OFF",
+                "valueType": "str",
+                "color": "#999999"
+            },
+            {
+                "label": "Auto",
+                "icon": "",
+                "value": "LIGHT_AUTO",
+                "valueType": "str",
+                "color": "#ff6666"
+            }
+        ],
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 750,
+        "y": 1120,
+        "wires": [
+            [
+                "3803f18308f137a5"
+            ]
+        ]
+    },
+    {
+        "id": "3803f18308f137a5",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Light Command",
+        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1020,
+        "y": 1120,
+        "wires": [
+            [
+                "12cca41621c67cb4"
+            ]
+        ]
+    },
+    {
+        "id": "56a18a3fe5e40a59",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "heartbeat",
+        "func": "flow.set(\"arduino_last_rx\", Date.now());\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 180,
+        "wires": [
+            [
+                "455c2db561300a8c"
+            ]
+        ]
+    },
+    {
+        "id": "50160d76c0833a11",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "Comm Check",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "2",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 240,
+        "y": 900,
+        "wires": [
+            [
+                "36a8046ed184ac87"
+            ]
+        ]
+    },
+    {
+        "id": "36a8046ed184ac87",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "comm watchdog",
+        "func": "let last = flow.get(\"arduino_last_rx\") || 0;\nlet now = Date.now();\nlet timeoutMs = 5000;\n\nlet faultActive = (now - last) > timeoutMs;\n\nflow.set(\"arduino_comm_fault\", faultActive ? 1 : 0);\n\n// trigger dashboard refresh\nmsg.payload = {};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 900,
+        "wires": [
+            [
+                "5af17cb50fcfd049"
             ]
         ]
     }
