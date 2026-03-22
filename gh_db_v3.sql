@@ -1,5 +1,3 @@
-PRAGMA foreign_keys=OFF;
-BEGIN TRANSACTION;
 CREATE TABLE greenhouse_samples (
   ts INTEGER PRIMARY KEY,        -- epoch ms (or seconds; pick one and stick to it)
   t1   REAL,
@@ -10,7 +8,6 @@ CREATE TABLE greenhouse_samples (
   havg REAL,
   soil REAL,
   lux  REAL
-);
+, louvre_pct REAL, louvre_state TEXT, fan_pct REAL);
 CREATE INDEX idx_greenhouse_samples_ts
 ON greenhouse_samples(ts);
-COMMIT;
