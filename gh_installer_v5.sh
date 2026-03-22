@@ -36,7 +36,7 @@ NR_USERDIR="${GH_HOME}/.node-red"
 # Files expected in the repo directory you run from
 REPO_FLOWS="flows.json"
 REPO_CREDS="flows_cred.json"     # optional
-REPO_DB_SCHEMA="gh_db_v2.sql"
+REPO_DB_SCHEMA="gh_db_v3.sql"
 
 # Node-RED nodes to install (NO unsafe-perm; correct RBE; includes serial)
 NR_NODES=(
