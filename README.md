@@ -1,222 +1,126 @@
-SMART GREENHOUSE CONTROL SYSTEM
-Customer Deployment & Technical Reference Guide
-================================================
+Smart Greenhouse Control System
 
-1. SYSTEM OVERVIEW
-------------------
+Overview
+This project implements a distributed smart greenhouse system using an Arduino Mega 2560 and a Raspberry Pi. 
+The Arduino performs real-time sensor acquisition and actuator control, while the Raspberry Pi handles data 
+processing, Node-RED dashboard visualization, MQTT messaging, and SQLite database logging.
 
-This repository provisions a Raspberry Pi–based Smart Greenhouse Control System designed for:
+The system monitors environmental conditions and automatically controls ventilation, airflow, and lighting 
+while providing real-time fault detection.
 
-• Environmental data acquisition
-• Real-time dashboard visualization
-• Local data logging (SQLite)
-• Arduino-based sensor interface
-• Secure remote access (optional via Tailscale)
-• Firewall-protected network exposure
+System Architecture
+Architectural drawings can be found in /Docs_Drawings
+Arduino wiring can be found in /Docs_Drawings
 
-The system is designed for fresh Raspberry Pi OS installations and provides a fully automated deployment process.
+Key Design Features
+- Real-time control loop on Arduino
+- Distributed architecture (embedded + edge processing)
+- Node-RED dashboard for visualization and control
+- MQTT messaging for data flow
+- SQLite database for historical logging
+- Fault detection system with prioritization logic
 
-2. SYSTEM ARCHITECTURE
-----------------------
+Hardware Components
 
-Hardware Components:
-• Raspberry Pi (Raspberry Pi OS)
-• Arduino Uno (USB connected)
-• Environmental sensors connected to Arduino
-• Local network (Ethernet or Wi-Fi)
+Sensors
+- 2 × DHT22 (Temperature / Humidity)
+- BH1750 (Ambient Light Sensor, I2C)
+- Capacitive Soil Moisture Sensor
+- Voltage Divider (planned for system voltage monitoring, v7)
 
-Software Stack:
-• Node-RED (Application Layer)
-• SQLite3 (Data Layer)
-• Mosquitto (MQTT Broker)
-• Arduino CLI (Embedded Interface)
-• UFW Firewall (Network Security)
-• Optional: Tailscale (Remote Access)
+Actuators
+- Linear Actuators (Louvre / Skirt control via BTS7960)
+- Fans (PWM via MOSFET drivers)
+- Grow Light (Relay controlled)
 
-3. INSTALLATION PROCEDURE (Fresh Raspberry Pi OS)
--------------------------------------------------
+Control Hardware
+- Arduino Mega 2560
+- Raspberry Pi
+- BTS7960 Motor Drivers
+- IRLB8721 MOSFETs
+- Relay Module
 
-Step 1 – Install Git
+Software Components
+- Arduino Firmware (v6)
+- Node-RED (dashboard + logic)
+- MQTT (data transport)
+- SQLite (data storage)
+- Bash Scripts (system installation and automation)
 
-sudo apt update
-sudo apt install -y git
+Fault Detection System
 
+Sensor Faults
+- Triggered when sensor readings are invalid (e.g., -1, NaN, or out-of-range)
+- Averaging logic disabled when any sensor fails
 
-Step 2 – Clone Repository
+Communication Faults
+- Triggered when serial communication between Arduino and Raspberry Pi is lost
+- Watchdog timer detects stale data
+- Communication faults override sensor faults to prevent stale data display
 
-mkdir -p ~/git_repo
-cd ~/git_repo
+Installation
+
+1. Clone the Repository
 git clone https://github.com/jujuwasmydog/gh-project-dashboard.git
 cd gh-project-dashboard
 
+2. Run Installer
+cd scripts
+chmod +x gh_installer_v5.sh
+./gh_installer_v5.sh
 
-Step 3 – Execute Installer
+3. Restart the Machine
+sudo reboot now
 
-sudo ./gh_installer_v5.sh
+4. Upload Arduino Firmware
+cd ~/git_repo/gh-project-dashboard/scripts
+chmod +x upload_arduino_v4.sh
+./upload_arduino_v4.sh
 
-The installer performs the following:
-• System package update
-• Node.js 22 LTS installation
-• Node-RED installation and configuration
-• Systemd override to ensure non-root execution
-• Installation of required Node-RED nodes
-• SQLite installation
-• Mosquitto installation
-• Arduino CLI installation
-• Firewall configuration (UFW)
-• Deployment of flows and database schema
-• Service enablement at boot
+Optional: Remote Access Setup (Tailscale)
+cd ~/git_repo/gh-project-dashboard/scripts
+chmod +x tailscale.sh
+./tailscale.sh
 
+Validation
 
-Step 4 – Reboot System
+Local Network:
+http://192.168.1.xxx:1880/dashboard
 
-sudo reboot
+Tailscale Network:
+http://xxx.xxx.xxx.xxx:1880/dashboard - replace xxx with the IP address provided by Tailscale
 
-This ensures:
-• Group membership (dialout) becomes active
-• Services initialize cleanly from boot
+Repository Structure
 
+Arduino/
+   Arduino_MEGA_2560_gh_v6.ino - for use on Arduino Mega 2560
 
-4. ACCESSING THE DASHBOARD
---------------------------
+ATMega32/
+   Smart_Greenhouse_Sketch_Updated.ino - for use on cusom ATMega32A MC (not tested)
 
-After installation:
+node-red/
+  flows.json - dashboard configuration
 
-http://<raspberry-pi-ip>:1880
+scripts/
+  gh_installer_v5.sh - install all dependencies required to run this program
+  upload_arduino_v4.sh - displays all .inos in this repo
+  tailscale.sh - download and install all required items for tailscale vpn
+  data_analysis.py - view GH stats (last: 24 hours, day, week, month, all time)
 
-If using Dashboard 2:
+database/
+  gh_db_v3.sql - database schema 
 
-http://<raspberry-pi-ip>:1880/dashboard
+archive/
+  Previous firmware versions
 
+docs/
+  diagrams/
+    GH_wiring_diagram_arduino.pdf - pinout for Arduino Mega 2560 Use
 
-5. ARDUINO INTEGRATION
-----------------------
+Notes
+- Voltage sensing hardware is included but not yet implemented in firmware (planned for v7)
+- System is designed for modular expansion and future enhancements
 
-Requirements:
-• Arduino Uno connected via USB
-• Arduino recognized as /dev/ttyACM0 (typical)
-
-Verify detection:
-
-ls /dev/ttyACM*
-arduino-cli board list
-
-
-Uploading a Sketch:
-
-./upload_arduino.sh
-
-The utility will:
-1. Detect available .ino files
-2. Prompt for selection
-3. Compile using arduino-cli
-4. Detect connected Arduino port
-5. Upload automatically
-
-
-6. DATABASE LOGGING
--------------------
-
-SQLite database schema is deployed to:
-
-~/greenhouse/db/gh_db_v2.sql
-
-Node-RED logs environmental data locally for academic project requirements.
-
-
-7. SERVICE RESILIENCE
----------------------
-
-The following services are enabled at boot:
-• Node-RED
-• Mosquitto
-• Optional: Tailscale
-
-Verify service status:
-
-systemctl status nodered
-systemctl status mosquitto
-
-Verify boot enablement:
-
-systemctl is-enabled nodered mosquitto
-
-
-8. FIREWALL CONFIGURATION
--------------------------
-
-UFW (Uncomplicated Firewall) is enabled.
-
-Allowed ports:
-• OpenSSH
-• TCP 1880 (Node-RED)
-
-Verify:
-
-sudo ufw status verbose
-
-
-9. OPTIONAL REMOTE ACCESS (TAILSCALE)
---------------------------------------
-
-If remote access is desired:
-
-sudo ./tailscale.sh
-
-The script will:
-• Install Tailscale
-• Start tailscaled service
-• Present a login URL / QR code
-• Join device to secure tailnet
-
-
-10. UPDATING THE SYSTEM
------------------------
-
-To synchronize with the latest repository version:
-
-cd ~/git_repo/gh-project-dashboard
-git fetch origin
-git reset --hard origin/main
-git clean -fd
-
-
-11. OPERATIONAL NOTES
----------------------
-
-• Node-RED currently does not enforce dashboard authentication.
-• LAN access to port 1880 is permitted by design.
-• SQLite logging writes to SD card (long-term deployments should consider external storage).
-• Arduino must remain connected for serial data acquisition.
-
-
-12. INTENDED USE
-----------------
-
-This system is intended for:
-• Educational demonstration
-• Controlled greenhouse monitoring
-• Embedded systems coursework
-• Prototype environmental control deployments
-
-
-13. TROUBLESHOOTING
--------------------
-
-Node-RED logs:
-
-sudo journalctl -u nodered -n 150 --no-pager
-
-Arduino detection:
-
-arduino-cli board list
-
-Firewall status:
-
-sudo ufw status
-
-
-14. LICENSE
------------
-
-See LICENSE file for distribution terms.
+Author pff
+Smart Greenhouse Project
+BSEE Capstone Project
