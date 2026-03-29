@@ -45,7 +45,7 @@
         "type": "serial-port",
         "name": "",
         "serialport": "/dev/ttyACM0",
-        "serialbaud": "9600",
+        "serialbaud": "115200",
         "databits": 8,
         "parity": "none",
         "stopbits": 1,
@@ -367,7 +367,7 @@
         "z": "6cda5a5f32196c63",
         "name": "UNO",
         "serial": "f21e5fa854a87f38",
-        "x": 130,
+        "x": 150,
         "y": 180,
         "wires": [
             [
@@ -380,14 +380,14 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor",
-        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\n\nif (!line) return null;\n\n// Try JSON first\nif (line.startsWith(\"{\") && line.endsWith(\"}\")) {\n    try {\n        let obj = JSON.parse(line);\n\n        msg.payload = {\n            ts: obj.ts,\n            t1: obj.t1,\n            t2: obj.t2,\n            tavg: obj.tavg,\n            h1: obj.h1,\n            h2: obj.h2,\n            havg: obj.havg,\n            soil: obj.soil,\n            lux: obj.lux,\n            louvre_pct: obj.louvre_pct,\n            louvre_state: obj.louvre_state,\n            fan_pct: obj.fan_pct,\n            lightOn: obj.lightOn\n        };\n\n        return msg;\n    } catch (e) {\n        node.warn(\"JSON parse failed: \" + e.message);\n        return null;\n    }\n}\n\nreturn null;",
+        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line || \"\").trim();\nif (!line) return null;\n\n// Ignore echoed command responses or blank noise\nif (!line.includes(\",\")) return null;\n\n// Capture and skip CSV header\nif (line.startsWith(\"ts_ms,\")) {\n    flow.set(\"gh_csv_header\", line);\n    return null;\n}\n\nconst cols = line.split(\",\");\nconst EXPECTED = 55;\nif (cols.length !== EXPECTED) {\n    node.warn(\"CSV field count mismatch: got \" + cols.length + \", expected \" + EXPECTED + \" :: \" + line);\n    return null;\n}\n\nfunction toNum(v) {\n    if (v === undefined || v === null || v === \"\") return null;\n    const n = Number(v);\n    return Number.isFinite(n) ? n : null;\n}\n\nfunction toInt(v) {\n    const n = toNum(v);\n    return n === null ? null : Math.trunc(n);\n}\n\nfunction toBool(v) {\n    if (v === true || v === false) return v;\n    if (v === 1 || v === \"1\") return true;\n    if (v === 0 || v === \"0\") return false;\n    return null;\n}\n\nfunction avgValid(arr) {\n    const vals = arr.filter(v => typeof v === \"number\" && isFinite(v));\n    if (!vals.length) return null;\n    return vals.reduce((a, b) => a + b, 0) / vals.length;\n}\n\nfunction louvreStateText(raw, pct) {\n    if (typeof raw === \"string\" && raw !== \"\") {\n        const s = raw.toLowerCase();\n        if ([\"opening\",\"closing\",\"stopped\",\"open\",\"closed\"].includes(s)) return s;\n        if (s === \"0\") raw = 0;\n        else if (s === \"1\") raw = 1;\n        else if (s === \"2\") raw = 2;\n    }\n\n    const n = Number(raw);\n    if (Number.isFinite(n)) {\n        if (n === 0) return \"opening\";\n        if (n === 1) return \"closing\";\n        if (n === 2) {\n            if (typeof pct === \"number\") {\n                if (pct <= 5) return \"closed\";\n                if (pct >= 95) return \"open\";\n            }\n            return \"stopped\";\n        }\n    }\n\n    if (typeof pct === \"number\") {\n        if (pct <= 5) return \"closed\";\n        if (pct >= 95) return \"open\";\n    }\n    return \"stopped\";\n}\n\nconst p = {\n    // native Arduino CSV fields\n    ts_ms: toInt(cols[0]),\n    mode: cols[1],\n    irrigation_mode: cols[2],\n    temp_f: toNum(cols[3]),\n    rh_pct: toNum(cols[4]),\n    tank_temp_f: toNum(cols[5]),\n    lux: toInt(cols[6]),\n    soil1_raw: toInt(cols[7]),\n    soil1_pct: toNum(cols[8]),\n    soil2_raw: toInt(cols[9]),\n    soil2_pct: toNum(cols[10]),\n    soil3_raw: toInt(cols[11]),\n    soil3_pct: toNum(cols[12]),\n    soil4_raw: toInt(cols[13]),\n    soil4_pct: toNum(cols[14]),\n    batt_v: toNum(cols[15]),\n    pv_v: toNum(cols[16]),\n    pv_present: toBool(cols[17]),\n    louvre_state_raw: cols[18],\n    louvre_pos_pct: toNum(cols[19]),\n    row1: toBool(cols[20]),\n    row2: toBool(cols[21]),\n    row3: toBool(cols[22]),\n    row4: toBool(cols[23]),\n    row1_en: toBool(cols[24]),\n    row2_en: toBool(cols[25]),\n    row3_en: toBool(cols[26]),\n    row4_en: toBool(cols[27]),\n    row1_ms: toInt(cols[28]),\n    row2_ms: toInt(cols[29]),\n    row3_ms: toInt(cols[30]),\n    row4_ms: toInt(cols[31]),\n    row1_start_pct: toNum(cols[32]),\n    row2_start_pct: toNum(cols[33]),\n    row3_start_pct: toNum(cols[34]),\n    row4_start_pct: toNum(cols[35]),\n    row1_stop_pct: toNum(cols[36]),\n    row2_stop_pct: toNum(cols[37]),\n    row3_stop_pct: toNum(cols[38]),\n    row4_stop_pct: toNum(cols[39]),\n    pump_on: toBool(cols[40]),\n    heater_on: toBool(cols[41]),\n    light_on: toBool(cols[42]),\n    fan_pwm: toInt(cols[43]),\n    rows_run_active: toBool(cols[44]),\n    rows_run_auto: toBool(cols[45]),\n    active_row: toInt(cols[46]),\n    temp_open_f: toNum(cols[47]),\n    temp_close_f: toNum(cols[48]),\n    rh_open_pct: toNum(cols[49]),\n    tank_heat_on_f: toNum(cols[50]),\n    tank_heat_off_f: toNum(cols[51]),\n    schedule_interval_ms: toInt(cols[52]),\n    eco_mode: toBool(cols[53]),\n    fault: toInt(cols[54])\n};\n\np.ts = Date.now();  // wall-clock timestamp for DB/charting on Pi\np.controller_uptime_ms = p.ts_ms;\n\np.louvre_state = louvreStateText(p.louvre_state_raw, p.louvre_pos_pct);\np.louvre_pct = p.louvre_pos_pct;\n\nconst soilVals = [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct];\np.soil_avg_pct = avgValid(soilVals);\np.soil = p.soil_avg_pct;\n\np.tavg = p.temp_f;\np.havg = p.rh_pct;\np.t1 = p.temp_f;\np.t2 = p.temp_f;\np.h1 = p.rh_pct;\np.h2 = p.rh_pct;\n\nconst fanPct = (typeof p.fan_pwm === \"number\") ? Math.round((p.fan_pwm / 255) * 100) : null;\np.fan_pct = fanPct;\np.lightOn = !!p.light_on;\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 290,
+        "x": 310,
         "y": 180,
         "wires": [
             [
@@ -400,7 +400,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Format CSV line",
-        "func": "var p = msg.payload || {};\n\nconst columns = [\"timestamp\",\"t1\",\"t2\",\"tavg\",\"h1\",\"h2\",\"havg\",\"soil\",\"lux\"];\n\nfunction missing(x) {\n    return x === undefined || x === null || x === \"\";\n}\n\n// Reject incomplete rows so you stop getting timestamp-only lines\nif (\n    missing(p.ts)   ||\n    missing(p.t1)   ||\n    missing(p.t2)   ||\n    missing(p.tavg) ||\n    missing(p.h1)   ||\n    missing(p.h2)   ||\n    missing(p.havg) ||\n    missing(p.soil) ||\n    missing(p.lux)\n) {\n    return null;\n}\n\nvar d = new Date(p.ts);\nif (isNaN(d.getTime())) {\n    return null;\n}\n\nvar line = [\n    d.toISOString(),\n    p.t1, p.t2, p.tavg,\n    p.h1, p.h2, p.havg,\n    p.soil, p.lux\n].join(\",\") + \"\\n\";\n\nmsg.payload = line;\nmsg.csv_header = columns.join(\",\") + \"\\n\";\n\nreturn msg;",
+        "func": "var p = msg.payload || {};\n\nconst columns = [\n    \"timestamp\",\"ts_ms\",\"mode\",\"irrigation_mode\",\n    \"temp_f\",\"rh_pct\",\"tank_temp_f\",\"lux\",\n    \"soil1_raw\",\"soil1_pct\",\"soil2_raw\",\"soil2_pct\",\n    \"soil3_raw\",\"soil3_pct\",\"soil4_raw\",\"soil4_pct\",\n    \"soil_avg_pct\",\n    \"batt_v\",\"pv_v\",\"pv_present\",\n    \"louvre_state\",\"louvre_pos_pct\",\n    \"row1\",\"row2\",\"row3\",\"row4\",\n    \"row1_en\",\"row2_en\",\"row3_en\",\"row4_en\",\n    \"row1_ms\",\"row2_ms\",\"row3_ms\",\"row4_ms\",\n    \"row1_start_pct\",\"row2_start_pct\",\"row3_start_pct\",\"row4_start_pct\",\n    \"row1_stop_pct\",\"row2_stop_pct\",\"row3_stop_pct\",\"row4_stop_pct\",\n    \"pump_on\",\"heater_on\",\"light_on\",\n    \"fan_pwm\",\"fan_pct\",\n    \"rows_run_active\",\"rows_run_auto\",\"active_row\",\n    \"temp_open_f\",\"temp_close_f\",\"rh_open_pct\",\n    \"tank_heat_on_f\",\"tank_heat_off_f\",\"schedule_interval_ms\",\n    \"eco_mode\",\"fault\"\n];\n\nfunction missing(x) {\n    return x === undefined || x === null || x === \"\";\n}\n\nif (\n    missing(p.ts) ||\n    missing(p.ts_ms) ||\n    missing(p.temp_f) ||\n    missing(p.rh_pct) ||\n    missing(p.lux)\n) {\n    return null;\n}\n\nvar d = new Date(p.ts);\nif (isNaN(d.getTime())) return null;\n\nfunction val(v) {\n    return missing(v) ? \"\" : v;\n}\n\nvar line = [\n    d.toISOString(), val(p.ts_ms), val(p.mode), val(p.irrigation_mode),\n    val(p.temp_f), val(p.rh_pct), val(p.tank_temp_f), val(p.lux),\n    val(p.soil1_raw), val(p.soil1_pct), val(p.soil2_raw), val(p.soil2_pct),\n    val(p.soil3_raw), val(p.soil3_pct), val(p.soil4_raw), val(p.soil4_pct),\n    val(p.soil_avg_pct),\n    val(p.batt_v), val(p.pv_v), val(p.pv_present ? 1 : 0),\n    val(p.louvre_state), val(p.louvre_pos_pct),\n    val(p.row1 ? 1 : 0), val(p.row2 ? 1 : 0), val(p.row3 ? 1 : 0), val(p.row4 ? 1 : 0),\n    val(p.row1_en ? 1 : 0), val(p.row2_en ? 1 : 0), val(p.row3_en ? 1 : 0), val(p.row4_en ? 1 : 0),\n    val(p.row1_ms), val(p.row2_ms), val(p.row3_ms), val(p.row4_ms),\n    val(p.row1_start_pct), val(p.row2_start_pct), val(p.row3_start_pct), val(p.row4_start_pct),\n    val(p.row1_stop_pct), val(p.row2_stop_pct), val(p.row3_stop_pct), val(p.row4_stop_pct),\n    val(p.pump_on ? 1 : 0), val(p.heater_on ? 1 : 0), val(p.light_on ? 1 : 0),\n    val(p.fan_pwm), val(p.fan_pct),\n    val(p.rows_run_active ? 1 : 0), val(p.rows_run_auto ? 1 : 0), val(p.active_row),\n    val(p.temp_open_f), val(p.temp_close_f), val(p.rh_open_pct),\n    val(p.tank_heat_on_f), val(p.tank_heat_off_f), val(p.schedule_interval_ms),\n    val(p.eco_mode ? 1 : 0), val(p.fault)\n].join(\",\") + \"\\n\";\n\nmsg.payload = line;\nmsg.csv_header = columns.join(\",\") + \"\\n\";\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -411,7 +411,7 @@
         "y": 120,
         "wires": [
             [
-                "887f4b565053691c"
+                "6b81021f817b48c5"
             ]
         ]
     },
@@ -421,12 +421,13 @@
         "z": "6cda5a5f32196c63",
         "name": "Append CSV log",
         "filename": "/home/pff/greenhouse/logs/sensors.csv",
+        "filenameType": "str",
         "appendNewline": false,
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1310,
-        "y": 100,
+        "x": 1430,
+        "y": 80,
         "wires": [
             []
         ]
@@ -436,7 +437,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Split to chart points",
-        "func": "var p = msg.payload;\nvar ts = p.ts;\nvar out = [];\nfunction push(topic, val){\n    if(typeof val === 'number'){\n        out.push({topic: topic, payload: val, timestamp: ts});\n    }\n}\npush('Temp (avg)', p.tavg);\npush('Humidity (avg)', p.havg);\npush('Soil Moisture', p.soil);\npush('Lighting', p.lux);\npush('Fan %', p.fan_pct);\nreturn [out];",
+        "func": "var p = msg.payload || {};\nvar ts = p.ts || Date.now();\nvar out = [];\n\nfunction push(topic, val) {\n    if (typeof val === \"number\" && isFinite(val)) {\n        out.push({ topic: topic, payload: val, timestamp: ts });\n    }\n}\n\npush(\"Temp (avg)\", p.temp_f);\npush(\"Humidity (avg)\", p.rh_pct);\npush(\"Soil Moisture\", p.soil_avg_pct);\npush(\"Lighting\", p.lux);\npush(\"Fan %\", p.fan_pct);\n\nreturn [out];",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -444,10 +445,10 @@
         "finalize": "",
         "libs": [],
         "x": 910,
-        "y": 240,
+        "y": 200,
         "wires": [
             [
-                "f02dc28f81b719e3"
+                "4af3079dbb6762fa"
             ]
         ]
     },
@@ -495,15 +496,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "db_function",
-        "func": "let p = msg.payload;\n\n// Ensure timestamp exists (epoch ms)\nif (!p.ts) {\n    p.ts = Date.now();\n}\n\n// Preserve original decoded sample for dashboard/other branches\nmsg.data = p;\n\n// Build parameterized SQL\nmsg.topic = `\nINSERT INTO greenhouse_samples\n(ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state)\nVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n`;\n\nmsg.payload = [\n  p.ts,\n  p.t1 ?? null,\n  p.t2 ?? null,\n  p.tavg ?? null,\n  p.h1 ?? null,\n  p.h2 ?? null,\n  p.havg ?? null,\n  p.soil ?? null,\n  p.lux ?? null,\n  p.louvre_pct ?? null,\n  p.louvre_state ?? null\n];\n\nreturn msg;\n",
+        "func": "let p = msg.payload || {};\n\nfunction sqlNum(v) {\n    return (v === undefined || v === null || v === \"\" || Number.isNaN(Number(v)))\n        ? \"NULL\"\n        : Number(v);\n}\n\nfunction sqlBool(v) {\n    if (v === true) return 1;\n    if (v === false) return 0;\n    return \"NULL\";\n}\n\nfunction sqlText(v) {\n    if (v === undefined || v === null || v === \"\") return \"NULL\";\n    return \"'\" + String(v).replace(/'/g, \"''\") + \"'\";\n}\n\nconst ts = Number.isFinite(Number(p.ts)) ? Number(p.ts) : Date.now();\n\nmsg.data = p;\n\nmsg.topic = `\nINSERT INTO greenhouse_samples (\n  ts, t1, t2, tavg, h1, h2, havg, soil, lux,\n  louvre_pct, louvre_state, fan_pct, lightOn,\n  fault_count, system_fault\n) VALUES (\n  ${sqlNum(ts)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.soil_avg_pct)},\n  ${sqlNum(p.lux)},\n  ${sqlNum(p.louvre_pos_pct)},\n  ${sqlText(p.louvre_state)},\n  ${sqlNum(p.fan_pct)},\n  ${sqlBool(p.light_on)},\n  ${sqlNum(p.fault_count ?? ((p.fault ?? 0) !== 0 ? 1 : 0))},\n  ${sqlNum(p.system_fault ?? ((p.fault ?? 0) !== 0 ? 1 : 0))}\n);\n`;\n\nmsg.payload = [];\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 710,
-        "y": 300,
+        "x": 890,
+        "y": 240,
         "wires": [
             [
                 "b91ca825f88143fb"
@@ -518,8 +519,8 @@
         "sqlquery": "msg.topic",
         "sql": "",
         "name": "greenhouse_db",
-        "x": 920,
-        "y": 300,
+        "x": 1100,
+        "y": 240,
         "wires": [
             [
                 "a00e9e4ee9f938a1",
@@ -540,8 +541,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1140,
-        "y": 300,
+        "x": 1320,
+        "y": 240,
         "wires": []
     },
     {
@@ -556,8 +557,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1240,
-        "y": 380,
+        "x": 1360,
+        "y": 280,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -577,8 +578,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 400,
-        "y": 540,
+        "x": 380,
+        "y": 500,
         "wires": []
     },
     {
@@ -594,8 +595,8 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 170,
-        "y": 620,
+        "x": 190,
+        "y": 540,
         "wires": [
             [
                 "9c954700ec15527d",
@@ -624,8 +625,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 400,
-        "y": 380,
+        "x": 420,
+        "y": 300,
         "wires": [
             [
                 "8def210fb4efeb3c"
@@ -642,7 +643,7 @@
                 "t": "set",
                 "p": "topic",
                 "pt": "msg",
-                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
+                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state, fan_pct, lightOn, fault_count, system_fault FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
                 "tot": "str"
             },
             {
@@ -659,7 +660,7 @@
         "to": "",
         "reg": false,
         "x": 690,
-        "y": 380,
+        "y": 300,
         "wires": [
             [
                 "b91ca825f88143fb"
@@ -671,7 +672,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Temperature",
-        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.tavg);\nreturn msg;\n",
+        "func": "msg.payload = Math.round(msg.payload.temp_f);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -679,10 +680,10 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 540,
+        "y": 460,
         "wires": [
             [
-                "0c4e3ed893b58edf"
+                "bb6a10ac977d0717"
             ]
         ]
     },
@@ -691,7 +692,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Humidity",
-        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.havg);\nreturn msg;\n",
+        "func": "msg.payload = Math.round(msg.payload.rh_pct);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -699,10 +700,10 @@
         "finalize": "",
         "libs": [],
         "x": 640,
-        "y": 580,
+        "y": 500,
         "wires": [
             [
-                "d410dc6f8bb74f8c"
+                "a6d64198e6eaae62"
             ]
         ]
     },
@@ -711,7 +712,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Lux",
-        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.lux);\nreturn msg;\n",
+        "func": "msg.payload = Math.round(msg.payload.lux);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -719,10 +720,10 @@
         "finalize": "",
         "libs": [],
         "x": 630,
-        "y": 620,
+        "y": 540,
         "wires": [
             [
-                "d5a77765ea479973"
+                "3a5ee99f6baf7088"
             ]
         ]
     },
@@ -731,7 +732,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "soil",
-        "func": "// if msg.payload is already an object\nmsg.payload = Math.round(msg.payload.soil);\nreturn msg;\n",
+        "func": "msg.payload = Math.round(msg.payload.soil_avg_pct);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -739,10 +740,10 @@
         "finalize": "",
         "libs": [],
         "x": 630,
-        "y": 660,
+        "y": 580,
         "wires": [
             [
-                "2ef95992cab18cd8"
+                "66c91ea4b80fc08f"
             ]
         ]
     },
@@ -751,7 +752,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "louvre_pct",
-        "func": "msg.payload = msg.payload.louvre_pct;\nreturn msg;",
+        "func": "msg.payload = msg.payload.louvre_pos_pct;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -759,10 +760,10 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 700,
+        "y": 620,
         "wires": [
             [
-                "cf106de8c4ae7fa3"
+                "66d981e6d96be52c"
             ]
         ]
     },
@@ -771,7 +772,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "louve_state",
-        "func": "let s = msg.payload.louvre_state;\nlet pct = msg.payload.louvre_pct;\n\nif (s === \"opening\") {\n    msg.payload = \"🟢 Opening\";\n} else if (s === \"closing\") {\n    msg.payload = \"🟠 Closing\";\n} else if (pct <= 5) {\n    msg.payload = \"⚫ Closed\";\n} else if (pct >= 95) {\n    msg.payload = \"🟢 Open\";\n} else {\n    msg.payload = \"🟡 Stopped @ \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
+        "func": "let s = msg.payload.louvre_state;\nlet pct = msg.payload.louvre_pos_pct;\n\nif (s === \"opening\") {\n    msg.payload = \"\ud83d\udfe2 Opening\";\n} else if (s === \"closing\") {\n    msg.payload = \"\ud83d\udfe0 Closing\";\n} else if (pct <= 5) {\n    msg.payload = \"\u26ab Closed\";\n} else if (pct >= 95) {\n    msg.payload = \"\ud83d\udfe2 Open\";\n} else {\n    msg.payload = \"\ud83d\udfe1 Stopped @ \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -779,148 +780,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 740,
-        "wires": [
-            [
-                "305b260008f05bc2"
-            ]
-        ]
-    },
-    {
-        "id": "d410dc6f8bb74f8c",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 580,
-        "wires": [
-            [
-                "a6d64198e6eaae62"
-            ]
-        ]
-    },
-    {
-        "id": "2ef95992cab18cd8",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
         "y": 660,
-        "wires": [
-            [
-                "1e53d5d61ad2dcde",
-                "66c91ea4b80fc08f"
-            ]
-        ]
-    },
-    {
-        "id": "0c4e3ed893b58edf",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 540,
-        "wires": [
-            [
-                "bb6a10ac977d0717"
-            ]
-        ]
-    },
-    {
-        "id": "d5a77765ea479973",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 620,
-        "wires": [
-            [
-                "3a5ee99f6baf7088"
-            ]
-        ]
-    },
-    {
-        "id": "cf106de8c4ae7fa3",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 700,
-        "wires": [
-            [
-                "66d981e6d96be52c"
-            ]
-        ]
-    },
-    {
-        "id": "f02dc28f81b719e3",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 1090,
-        "y": 240,
-        "wires": [
-            [
-                "4af3079dbb6762fa"
-            ]
-        ]
-    },
-    {
-        "id": "305b260008f05bc2",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 740,
         "wires": [
             [
                 "072fb8dffe0e9dbc"
@@ -943,7 +803,7 @@
         "title": "Temperature",
         "alwaysShowTitle": false,
         "floatingTitlePosition": "top-left",
-        "units": "°F",
+        "units": "\u00b0F",
         "icon": "",
         "prefix": "",
         "suffix": "",
@@ -987,8 +847,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1310,
-        "y": 540,
+        "x": 1190,
+        "y": 460,
         "wires": [
             []
         ]
@@ -1053,8 +913,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1300,
-        "y": 580,
+        "x": 1180,
+        "y": 500,
         "wires": [
             []
         ]
@@ -1107,8 +967,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1290,
-        "y": 620,
+        "x": 1170,
+        "y": 540,
         "wires": [
             []
         ]
@@ -1161,8 +1021,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1310,
-        "y": 660,
+        "x": 1190,
+        "y": 580,
         "wires": [
             []
         ]
@@ -1203,8 +1063,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1320,
-        "y": 700,
+        "x": 1200,
+        "y": 620,
         "wires": [
             []
         ]
@@ -1229,8 +1089,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1310,
-        "y": 740,
+        "x": 1190,
+        "y": 660,
         "wires": []
     },
     {
@@ -1239,7 +1099,7 @@
         "z": "6cda5a5f32196c63",
         "group": "db507c4f3e90976b",
         "name": "History",
-        "label": "History",
+        "label": "Last 12 Hours",
         "order": 1,
         "chartType": "line",
         "category": "topic",
@@ -1285,12 +1145,12 @@
             "#e5e5e5"
         ],
         "gridColorDefault": true,
-        "width": 6,
-        "height": 8,
+        "width": "6",
+        "height": "6",
         "className": "",
         "interpolation": "smooth",
         "x": 1480,
-        "y": 240,
+        "y": 200,
         "wires": [
             []
         ]
@@ -1313,7 +1173,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1250,
-        "y": 240,
+        "y": 200,
         "wires": [
             [
                 "4cb5f93570d7d0ca"
@@ -1337,8 +1197,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 620,
+        "x": 1010,
+        "y": 540,
         "wires": [
             [
                 "05bba795903b4a55"
@@ -1362,8 +1222,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 540,
+        "x": 1010,
+        "y": 460,
         "wires": [
             [
                 "911ba08b535d0c83"
@@ -1387,8 +1247,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 580,
+        "x": 1010,
+        "y": 500,
         "wires": [
             [
                 "79974308ea82383b"
@@ -1412,8 +1272,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 660,
+        "x": 1010,
+        "y": 580,
         "wires": [
             [
                 "b1163310511ba436"
@@ -1437,8 +1297,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 700,
+        "x": 1010,
+        "y": 620,
         "wires": [
             [
                 "022edd664dc4b3d5"
@@ -1462,8 +1322,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 740,
+        "x": 1010,
+        "y": 660,
         "wires": [
             [
                 "6a9c73d878494885"
@@ -1485,7 +1345,7 @@
         "once": true,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "timestamp,t1,t2,tavg,h1,h2,havg,soil,lux",
+        "payload": "timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault",
         "payloadType": "str",
         "x": 880,
         "y": 80,
@@ -1500,7 +1360,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "function 1",
-        "func": "msg.payload = \"timestamp,t1,t2,tavg,h1,h2,havg,soil,lux\\n\";\nreturn msg;",
+        "func": "msg.payload = \"timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault\\n\";\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1528,27 +1388,7 @@
         "finalize": "",
         "libs": [],
         "x": 640,
-        "y": 780,
-        "wires": [
-            [
-                "fanpctrbe000001"
-            ]
-        ]
-    },
-    {
-        "id": "fanpctrbe000001",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 780,
+        "y": 700,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1572,8 +1412,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 780,
+        "x": 1010,
+        "y": 700,
         "wires": [
             [
                 "fanpctgauge00001"
@@ -1634,8 +1474,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 1310,
-        "y": 780,
+        "x": 1190,
+        "y": 700,
         "wires": [
             []
         ]
@@ -1645,12 +1485,12 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 3",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
         "x": 640,
@@ -1670,8 +1510,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1020,
-        "y": 460,
+        "x": 1360,
+        "y": 400,
         "wires": []
     },
     {
@@ -1679,15 +1519,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "GH_Data Function",
-        "func": "// Guard greenhouse payload\n// Purpose:\n// 1) Reject malformed payloads\n// 2) Hold last known good payload\n// 3) Prevent one bad lux/glitch sample from zeroing all gauges\n// 4) Preserve fault metadata so faults can be shown on the dashboard\n\nlet p = msg.payload;\nlet last = context.get(\"lastGood\") || null;\nlet lastGoodLux = context.get(\"lastGoodLux\");\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nfunction cloneObj(obj) {\n    return JSON.parse(JSON.stringify(obj));\n}\n\nfunction addFaultMeta(target, source) {\n    if (!target || typeof target !== \"object\") {\n        target = {};\n    }\n\n    if (source && typeof source === \"object\") {\n        target.faults = source.faults || {};\n        target.fault_count = source.fault_count || 0;\n        target.system_fault = source.system_fault || 0;\n        target.missing_fields = source.missing_fields || \"\";\n    } else {\n        target.faults = {};\n        target.fault_count = 0;\n        target.system_fault = 0;\n        target.missing_fields = \"\";\n    }\n\n    return target;\n}\n\n// Payload must be an object\nif (typeof p !== \"object\" || p === null) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Required numeric fields\nlet required = [\n    \"t1\", \"t2\", \"tavg\",\n    \"h1\", \"h2\", \"havg\",\n    \"soil\", \"lux\",\n    \"louvre_pct\", \"fan_pct\"\n];\n\nfor (let i = 0; i < required.length; i++) {\n    let k = required[i];\n    if (!isNum(p[k])) {\n        if (last) {\n            msg.payload = addFaultMeta(cloneObj(last), p);\n            return msg;\n        }\n        return null;\n    }\n}\n\n// Optional string/state field check\nif (typeof p.louvre_state !== \"string\") {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Range checks for temperatures\nif (p.t1 < -40 || p.t1 > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.t2 < -40 || p.t2 > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.tavg < -40 || p.tavg > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Range checks for humidity\nif (p.h1 < 0 || p.h1 > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.h2 < 0 || p.h2 > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.havg < 0 || p.havg > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Soil range check\nif (p.soil < 0 || p.soil > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Lux range check\n// If lux is invalid, keep the last known good lux for the gauge,\n// but preserve the incoming fault metadata.\nif (p.lux < 0 || p.lux > 150000) {\n    let out;\n\n    if (last) {\n        out = cloneObj(last);\n    } else {\n        out = cloneObj(p);\n    }\n\n    if (isNum(lastGoodLux)) {\n        out.lux = lastGoodLux;\n    }\n\n    msg.payload = addFaultMeta(out, p);\n    return msg;\n}\n\n// Louvre/fan range checks\nif (p.louvre_pct < 0 || p.louvre_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.fan_pct < 0 || p.fan_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n// Lux deglitch:\n// If lux suddenly drops to 0 from a normal reading, treat it as a glitch\nif (last && isNum(last.lux)) {\n    if (p.lux === 0 && last.lux > 5) {\n        let out = cloneObj(last);\n        msg.payload = addFaultMeta(out, p);\n        return msg;\n    }\n}\n\n// Save good payload\ncontext.set(\"lastGood\", cloneObj(p));\n\nif (isNum(p.lux) && p.lux >= 0 && p.lux <= 150000) {\n    context.set(\"lastGoodLux\", p.lux);\n}\n\nmsg.payload = p;\nreturn msg;",
+        "func": "let p = msg.payload;\nlet last = context.get(\"lastGood\") || null;\nlet lastGoodLux = context.get(\"lastGoodLux\");\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nfunction cloneObj(obj) {\n    return JSON.parse(JSON.stringify(obj));\n}\n\nfunction addFaultMeta(target, source) {\n    if (!target || typeof target !== \"object\") {\n        target = {};\n    }\n\n    const srcFault = source && typeof source === \"object\" ? source : {};\n    target.fault = srcFault.fault ?? target.fault ?? 0;\n    target.faults = srcFault.faults || target.faults || {};\n    target.fault_count = srcFault.fault_count ?? target.fault_count ?? ((target.fault || 0) !== 0 ? 1 : 0);\n    target.system_fault = srcFault.system_fault ?? target.system_fault ?? ((target.fault || 0) !== 0 ? 1 : 0);\n    target.missing_fields = srcFault.missing_fields || target.missing_fields || \"\";\n\n    return target;\n}\n\nif (typeof p !== \"object\" || p === null) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nlet required = [\n    \"temp_f\", \"rh_pct\", \"lux\",\n    \"soil1_pct\", \"soil2_pct\", \"soil3_pct\", \"soil4_pct\",\n    \"louvre_pos_pct\", \"fan_pct\"\n];\n\nfor (let i = 0; i < required.length; i++) {\n    let k = required[i];\n    if (!isNum(p[k])) {\n        if (last) {\n            msg.payload = addFaultMeta(cloneObj(last), p);\n            return msg;\n        }\n        return null;\n    }\n}\n\nif (typeof p.louvre_state !== \"string\") {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.temp_f < -40 || p.temp_f > 150) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.rh_pct < 0 || p.rh_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\n[\"soil1_pct\",\"soil2_pct\",\"soil3_pct\",\"soil4_pct\"].forEach(k => {\n    if (msg._invalidSoil) return;\n    if (p[k] < 0 || p[k] > 100) {\n        msg._invalidSoil = true;\n    }\n});\nif (msg._invalidSoil) {\n    delete msg._invalidSoil;\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.lux < 0 || p.lux > 150000) {\n    let out = last ? cloneObj(last) : cloneObj(p);\n    if (isNum(lastGoodLux)) {\n        out.lux = lastGoodLux;\n    }\n    msg.payload = addFaultMeta(out, p);\n    return msg;\n}\n\nif (p.louvre_pos_pct < 0 || p.louvre_pos_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (p.fan_pct < 0 || p.fan_pct > 100) {\n    if (last) {\n        msg.payload = addFaultMeta(cloneObj(last), p);\n        return msg;\n    }\n    return null;\n}\n\nif (last && isNum(last.lux)) {\n    if (p.lux === 0 && last.lux > 5) {\n        let out = cloneObj(last);\n        msg.payload = addFaultMeta(out, p);\n        return msg;\n    }\n}\n\ncontext.set(\"lastGood\", cloneObj(p));\n\nif (isNum(p.lux) && p.lux >= 0 && p.lux <= 150000) {\n    context.set(\"lastGoodLux\", p.lux);\n}\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 430,
-        "y": 620,
+        "x": 390,
+        "y": 540,
         "wires": [
             [
                 "0d1202f9041fb697",
@@ -1697,8 +1537,7 @@
                 "f2588d218f7169c5",
                 "744e76bedde5edb1",
                 "fanpctfunc000001",
-                "610ae0cd1478dcb8",
-                "5af17cb50fcfd049"
+                "610ae0cd1478dcb8"
             ]
         ]
     },
@@ -1722,8 +1561,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1310,
-        "y": 820,
+        "x": 1190,
+        "y": 740,
         "wires": []
     },
     {
@@ -1731,7 +1570,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Grow LIght Status",
-        "func": "let on = msg.payload.lightOn;\n\nif (on === true) {\n    msg.payload = \"🟢 Grow Lights On\";\n} else {\n    msg.payload = \"⚫ Grow Lights Off\";\n}\n\nreturn msg;",
+        "func": "let on = msg.payload.light_on;\n\nif (on === true) {\n    msg.payload = \"\ud83d\udfe2 Grow Lights On\";\n} else {\n    msg.payload = \"\u26ab Grow Lights Off\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1739,10 +1578,10 @@
         "finalize": "",
         "libs": [],
         "x": 670,
-        "y": 820,
+        "y": 740,
         "wires": [
             [
-                "06c0c07df8a99733"
+                "ef8c56ca1aaaa404"
             ]
         ]
     },
@@ -1763,31 +1602,11 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1070,
-        "y": 820,
+        "x": 1010,
+        "y": 740,
         "wires": [
             [
                 "acb1ac1ac94383a3"
-            ]
-        ]
-    },
-    {
-        "id": "06c0c07df8a99733",
-        "type": "rbe",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": false,
-        "property": "payload",
-        "topi": "topic",
-        "x": 850,
-        "y": 820,
-        "wires": [
-            [
-                "ef8c56ca1aaaa404"
             ]
         ]
     },
@@ -1796,22 +1615,23 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Detection",
-        "func": "let p = msg.payload || {};\n\nlet required = [\n    \"t1\",\n    \"t2\",\n    \"tavg\",\n    \"h1\",\n    \"h2\",\n    \"havg\",\n    \"soil\",\n    \"lux\",\n    \"louvre_pct\",\n    \"louvre_state\",\n    \"fan_pct\",\n    \"lightOn\"\n];\n\nlet faults = {};\nlet missing = [];\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\n// Step 1: missing field detection\nrequired.forEach(name => {\n    if (!(name in p) || p[name] === null || p[name] === \"\") {\n        faults[name] = \"MISSING\";\n        missing.push(name);\n    }\n});\n\n// Step 2: invalid value detection\nif (\"lux\" in p && isNum(p.lux) && p.lux < 0) {\n    faults.lux = \"INVALID\";\n}\n\nif (\"soil\" in p && isNum(p.soil) && (p.soil < 0 || p.soil > 100)) {\n    faults.soil = \"INVALID\";\n}\n\nif (\"louvre_pct\" in p && isNum(p.louvre_pct) && (p.louvre_pct < 0 || p.louvre_pct > 100)) {\n    faults.louvre_pct = \"INVALID\";\n}\n\nif (\"fan_pct\" in p && isNum(p.fan_pct) && (p.fan_pct < 0 || p.fan_pct > 100)) {\n    faults.fan_pct = \"INVALID\";\n}\n\nif (\"h1\" in p && isNum(p.h1) && (p.h1 < 0 || p.h1 > 100)) {\n    faults.h1 = \"INVALID\";\n}\n\nif (\"h2\" in p && isNum(p.h2) && (p.h2 < 0 || p.h2 > 100)) {\n    faults.h2 = \"INVALID\";\n}\n\nif (\"havg\" in p && isNum(p.havg) && (p.havg < 0 || p.havg > 100)) {\n    faults.havg = \"INVALID\";\n}\n\n// Step 3: soil erratic behavior detection\n// If soil jumps too far between consecutive samples, flag it.\n// This catches floating analog input behavior when the sensor is removed.\nlet lastSoil = context.get(\"lastSoil\");\nlet soilJumpThreshold = 40;\n\nif (\"soil\" in p && isNum(p.soil)) {\n    if (isNum(lastSoil)) {\n        if (Math.abs(p.soil - lastSoil) > soilJumpThreshold) {\n            faults.soil = \"FLOATING\";\n        }\n    }\n    context.set(\"lastSoil\", p.soil);\n}\n\np.faults = faults;\np.fault_count = Object.keys(faults).length;\np.system_fault = p.fault_count > 0 ? 1 : 0;\np.missing_fields = missing.join(\",\");\n\nmsg.payload = p;\nreturn msg;",
+        "func": "let p = msg.payload || {};\n\nlet required = [\n    \"temp_f\", \"rh_pct\", \"lux\",\n    \"soil1_pct\", \"soil2_pct\", \"soil3_pct\", \"soil4_pct\",\n    \"louvre_pos_pct\", \"louvre_state\",\n    \"fan_pwm\", \"light_on\", \"pump_on\"\n];\n\nlet faults = {};\nlet missing = [];\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nrequired.forEach(name => {\n    if (!(name in p) || p[name] === null || p[name] === \"\") {\n        faults[name] = \"MISSING\";\n        missing.push(name);\n    }\n});\n\nif (\"lux\" in p && isNum(p.lux) && p.lux < 0) faults.lux = \"INVALID\";\n[\"soil1_pct\",\"soil2_pct\",\"soil3_pct\",\"soil4_pct\"].forEach(name => {\n    if (name in p && isNum(p[name]) && (p[name] < 0 || p[name] > 100)) {\n        faults[name] = \"INVALID\";\n    }\n});\nif (\"louvre_pos_pct\" in p && isNum(p.louvre_pos_pct) && (p.louvre_pos_pct < 0 || p.louvre_pos_pct > 100)) faults.louvre_pos_pct = \"INVALID\";\nif (\"fan_pwm\" in p && isNum(p.fan_pwm) && (p.fan_pwm < 0 || p.fan_pwm > 255)) faults.fan_pwm = \"INVALID\";\nif (\"rh_pct\" in p && isNum(p.rh_pct) && (p.rh_pct < 0 || p.rh_pct > 100)) faults.rh_pct = \"INVALID\";\nif (\"temp_f\" in p && isNum(p.temp_f) && (p.temp_f < -40 || p.temp_f > 150)) faults.temp_f = \"INVALID\";\n\nlet soilAvg = p.soil_avg_pct;\nlet lastSoil = context.get(\"lastSoil\");\nlet soilJumpThreshold = 40;\nif (isNum(soilAvg)) {\n    if (isNum(lastSoil) && Math.abs(soilAvg - lastSoil) > soilJumpThreshold) {\n        faults.soil_avg_pct = \"FLOATING\";\n    }\n    context.set(\"lastSoil\", soilAvg);\n}\n\nif (isNum(p.fault) && p.fault !== 0) {\n    faults.controller_fault = \"ARDUINO fault=\" + p.fault;\n}\n\np.faults = faults;\np.fault_count = Object.keys(faults).length;\np.system_fault = p.fault_count > 0 ? 1 : 0;\np.missing_fields = missing.join(\",\");\np.source = \"sensor\";\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 640,
+        "x": 660,
         "y": 180,
         "wires": [
             [
-                "57ce7260347bd8de",
                 "f98d2f1f0673b101",
                 "3999dea12c82b1a6",
                 "ee12a869e25d83bb",
-                "4b266addf47812be"
+                "4b266addf47812be",
+                "4f8efa3c8f7d33a4",
+                "57ce7260347bd8de"
             ]
         ]
     },
@@ -1820,18 +1640,19 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Status Text",
-        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet hasFault = p.system_fault === 1;\n\n// NEW: read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\n// Build list of faults\nlet faultList = [];\n\n// Add existing sensor faults (your original behavior)\nif (hasFault) {\n    let keys = Object.keys(faults);\n\n    if (keys.length) {\n        faultList = faultList.concat(\n            keys.map(k => k + \": \" + faults[k])\n        );\n    } else {\n        faultList.push(\"FAULT ACTIVE\");\n    }\n}\n\n// NEW: add comm fault\nif (commFault === 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final output (same style as yours)\nif (faultList.length > 0) {\n    msg.payload = \"🔴 FAULT — \" + faultList.join(\" | \");\n} else {\n    msg.payload = \"🟢 All Systems Normal\";\n}\n\nreturn msg;",
+        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\n\n// robust fault check\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\";\n\n// read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\n// Build list of faults\nlet faultList = [];\n\n// Add sensor / payload faults\nlet keys = Object.keys(faults);\nif (keys.length) {\n    faultList = faultList.concat(\n        keys.map(k => k + \": \" + faults[k])\n    );\n} else if (missingFields !== \"\") {\n    faultList.push(\"Missing fields: \" + missingFields);\n} else if (hasFault && commFault !== 1) {\n    faultList.push(\"FAULT ACTIVE\");\n}\n\n// Add comm fault\nif (commFault == 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final output\nif (faultList.length > 0) {\n    msg.payload = \"\ud83d\udd34 FAULT \u2014 \" + faultList.join(\" | \");\n} else {\n    msg.payload = \"\ud83d\udfe2 All Systems Normal\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 900,
+        "x": 1170,
+        "y": 360,
         "wires": [
             [
-                "68f3fed977ad9f73"
+                "68f3fed977ad9f73",
+                "1e53d5d61ad2dcde"
             ]
         ]
     },
@@ -1855,8 +1676,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 910,
-        "y": 900,
+        "x": 1370,
+        "y": 360,
         "wires": []
     },
     {
@@ -1912,8 +1733,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 770,
-        "y": 1000,
+        "x": 750,
+        "y": 820,
         "wires": [
             [
                 "82cb2ac5ce541d87"
@@ -1932,8 +1753,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1030,
-        "y": 1000,
+        "x": 970,
+        "y": 820,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1946,8 +1767,8 @@
         "z": "6cda5a5f32196c63",
         "name": "",
         "serial": "f21e5fa854a87f38",
-        "x": 1320,
-        "y": 1000,
+        "x": 1220,
+        "y": 820,
         "wires": []
     },
     {
@@ -1996,8 +1817,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 750,
-        "y": 1060,
+        "x": 730,
+        "y": 880,
         "wires": [
             [
                 "dc183ed1b109c77e"
@@ -2016,8 +1837,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1020,
-        "y": 1060,
+        "x": 960,
+        "y": 880,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -2063,8 +1884,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 750,
-        "y": 1120,
+        "x": 730,
+        "y": 940,
         "wires": [
             [
                 "3803f18308f137a5"
@@ -2083,8 +1904,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1020,
-        "y": 1120,
+        "x": 960,
+        "y": 940,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -2103,7 +1924,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 460,
+        "x": 480,
         "y": 180,
         "wires": [
             [
@@ -2128,8 +1949,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 240,
-        "y": 900,
+        "x": 540,
+        "y": 360,
         "wires": [
             [
                 "36a8046ed184ac87"
@@ -2141,19 +1962,75 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "comm watchdog",
-        "func": "let last = flow.get(\"arduino_last_rx\") || 0;\nlet now = Date.now();\nlet timeoutMs = 5000;\n\nlet faultActive = (now - last) > timeoutMs;\n\nflow.set(\"arduino_comm_fault\", faultActive ? 1 : 0);\n\n// trigger dashboard refresh\nmsg.payload = {};\nreturn msg;",
+        "func": "let now = Date.now();\nlet timeoutMs = 10000;\n\nlet lastRx = flow.get(\"arduino_last_rx\") || 0;\nlet commFault = (lastRx === 0 || (now - lastRx) > timeoutMs) ? 1 : 0;\n\nflow.set(\"arduino_comm_fault\", commFault);\n\nmsg.payload = {\n    source: \"comm_watchdog\",\n    arduino_last_rx: lastRx,\n    age_ms: lastRx ? (now - lastRx) : null,\n    arduino_comm_fault: commFault\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 440,
-        "y": 900,
+        "x": 740,
+        "y": 360,
+        "wires": [
+            [
+                "4f8efa3c8f7d33a4"
+            ]
+        ]
+    },
+    {
+        "id": "4f8efa3c8f7d33a4",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Fault Aggregation",
+        "func": "let p = msg.payload || {};\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nfunction clone(obj) {\n    return JSON.parse(JSON.stringify(obj || {}));\n}\n\n// Only sensor messages are allowed to refresh cached sensor state\nif (p.source === \"sensor\") {\n    flow.set(\"last_sensor_fault_payload\", clone(p));\n}\n\nlet sensor = flow.get(\"last_sensor_fault_payload\") || {};\nlet out = clone(sensor);\n\n// If this incoming message is from the sensor path, use it directly\nif (p.source === \"sensor\") {\n    out = clone(p);\n}\n\n// If comms are down, override everything\nif (commFault === 1) {\n    out.faults = {\n        comms: \"NO COMMS TO ARDUINO\"\n    };\n    out.fault_count = 1;\n    out.system_fault = 1;\n    out.fault_source = \"comms\";\n    msg.payload = out;\n    return msg;\n}\n\n// If comms are healthy, show cached/latest sensor faults\nout.faults = (out.faults && typeof out.faults === \"object\") ? out.faults : {};\nout.fault_count = Number(out.fault_count || Object.keys(out.faults).length || 0);\nout.system_fault = out.fault_count > 0 ? 1 : 0;\nout.fault_source = \"sensor\";\n\nmsg.payload = out;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 360,
         "wires": [
             [
                 "5af17cb50fcfd049"
             ]
         ]
+    },
+    {
+        "id": "6b81021f817b48c5",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1230,
+        "y": 120,
+        "wires": [
+            [
+                "887f4b565053691c"
+            ]
+        ]
+    },
+    {
+        "id": "3e36b48ccdcf3e10",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-sqlite": "1.1.1",
+            "node-red-node-serialport": "2.0.3",
+            "node-red-dashboard": "3.6.6",
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
     }
 ]
