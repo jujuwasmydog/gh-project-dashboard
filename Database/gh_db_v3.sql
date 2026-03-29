@@ -8,6 +8,6 @@ CREATE TABLE greenhouse_samples (
   havg REAL,
   soil REAL,
   lux  REAL
-, louvre_pct REAL, louvre_state TEXT, fan_pct REAL);
+, louvre_pct REAL, louvre_state TEXT, fan_pct REAL, lightOn INTEGER, fault_count INTEGER, system_fault INTEGER, mode TEXT, irrigation_mode TEXT, temp_f REAL, rh_pct REAL, tank_temp_f REAL, soil1_raw REAL, soil1_pct REAL, soil2_raw REAL, soil2_pct REAL, soil3_raw REAL, soil3_pct REAL, soil4_raw REAL, soil4_pct REAL, batt_v REAL, pv_v REAL, pv_present INTEGER, louvre_pos_pct REAL, row1 INTEGER, row2 INTEGER, row3 INTEGER, row4 INTEGER, row1_en INTEGER, row2_en INTEGER, row3_en INTEGER, row4_en INTEGER, row1_ms INTEGER, row2_ms INTEGER, row3_ms INTEGER, row4_ms INTEGER, row1_start_pct REAL, row2_start_pct REAL, row3_start_pct REAL, row4_start_pct REAL, row1_stop_pct REAL, row2_stop_pct REAL, row3_stop_pct REAL, row4_stop_pct REAL, pump_on INTEGER, heater_on INTEGER, light_on INTEGER, fan_pwm INTEGER, rows_run_active INTEGER, rows_run_auto INTEGER, active_row INTEGER, temp_open_f REAL, temp_close_f REAL, rh_open_pct REAL, tank_heat_on_f REAL, tank_heat_off_f REAL, schedule_interval_ms INTEGER, eco_mode INTEGER, controller_fault INTEGER);
 CREATE INDEX idx_greenhouse_samples_ts
 ON greenhouse_samples(ts);
