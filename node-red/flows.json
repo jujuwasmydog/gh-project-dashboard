@@ -202,8 +202,8 @@
         "type": "ui-page",
         "name": "Greenhouse Dashboard",
         "ui": "062287387a26aec8",
-        "path": "/page1",
-        "icon": "home",
+        "path": "/GHDashboard",
+        "icon": "view-dashboard",
         "layout": "grid",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
@@ -230,31 +230,17 @@
         ],
         "order": 1,
         "className": "",
-        "visible": true,
-        "disabled": false
-    },
-    {
-        "id": "85dcddf4de18c2df",
-        "type": "ui-group",
-        "name": "Gauges",
-        "page": "3f12950bc7b59498",
-        "width": 6,
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
         "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
+        "disabled": "false"
     },
     {
         "id": "2a41f864d2129443",
         "type": "ui-group",
         "name": "Fault Indication",
         "page": "3f12950bc7b59498",
-        "width": 6,
+        "width": "12",
         "height": 1,
-        "order": 2,
+        "order": 1,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -266,8 +252,8 @@
         "type": "ui-page",
         "name": "History",
         "ui": "062287387a26aec8",
-        "path": "/page2",
-        "icon": "home",
+        "path": "/History",
+        "icon": "chart-line",
         "layout": "grid",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
@@ -302,8 +288,8 @@
         "type": "ui-page",
         "name": "System Control",
         "ui": "062287387a26aec8",
-        "path": "/page3",
-        "icon": "home",
+        "path": "/SystemControl",
+        "icon": "tune",
         "layout": "grid",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
@@ -330,8 +316,8 @@
         ],
         "order": 3,
         "className": "",
-        "visible": true,
-        "disabled": false
+        "visible": "true",
+        "disabled": "false"
     },
     {
         "id": "1278781a5f417ce4",
@@ -362,12 +348,115 @@
         "groupType": "default"
     },
     {
+        "id": "3e36b48ccdcf3e10",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-sqlite": "1.1.1",
+            "node-red-node-serialport": "2.0.3",
+            "node-red-dashboard": "3.6.6",
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    },
+    {
+        "id": "9a0e4fc9f2dea302",
+        "type": "ui-page",
+        "name": "Fault Log",
+        "ui": "062287387a26aec8",
+        "path": "/FaultLog",
+        "icon": "alert-circle",
+        "layout": "grid",
+        "theme": "ad1666f09e21ea6d",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 4,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "09f50657176dd200",
+        "type": "ui-group",
+        "name": "Fault Log",
+        "page": "9a0e4fc9f2dea302",
+        "width": "12",
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b80ce3791c51c9eb",
+        "type": "ui-group",
+        "name": "Climate",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "5dd99b1cfb8cc23e",
+        "type": "ui-group",
+        "name": "Soil Moisture",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "0f97e3d7bb96c5e7",
+        "type": "ui-group",
+        "name": "Hardware Status",
+        "page": "3f12950bc7b59498",
+        "width": 6,
+        "height": 1,
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
         "id": "239514801c1bffa2",
         "type": "serial in",
         "z": "6cda5a5f32196c63",
-        "name": "UNO",
+        "name": "Controller",
         "serial": "f21e5fa854a87f38",
-        "x": 150,
+        "x": 120,
         "y": 180,
         "wires": [
             [
@@ -380,18 +469,19 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor",
-        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line || \"\").trim();\nif (!line) return null;\n\n// Ignore echoed command responses or blank noise\nif (!line.includes(\",\")) return null;\n\n// Capture and skip CSV header\nif (line.startsWith(\"ts_ms,\")) {\n    flow.set(\"gh_csv_header\", line);\n    return null;\n}\n\nconst cols = line.split(\",\");\nconst EXPECTED = 55;\nif (cols.length !== EXPECTED) {\n    node.warn(\"CSV field count mismatch: got \" + cols.length + \", expected \" + EXPECTED + \" :: \" + line);\n    return null;\n}\n\nfunction toNum(v) {\n    if (v === undefined || v === null || v === \"\") return null;\n    const n = Number(v);\n    return Number.isFinite(n) ? n : null;\n}\n\nfunction toInt(v) {\n    const n = toNum(v);\n    return n === null ? null : Math.trunc(n);\n}\n\nfunction toBool(v) {\n    if (v === true || v === false) return v;\n    if (v === 1 || v === \"1\") return true;\n    if (v === 0 || v === \"0\") return false;\n    return null;\n}\n\nfunction avgValid(arr) {\n    const vals = arr.filter(v => typeof v === \"number\" && isFinite(v));\n    if (!vals.length) return null;\n    return vals.reduce((a, b) => a + b, 0) / vals.length;\n}\n\nfunction louvreStateText(raw, pct) {\n    if (typeof raw === \"string\" && raw !== \"\") {\n        const s = raw.toLowerCase();\n        if ([\"opening\",\"closing\",\"stopped\",\"open\",\"closed\"].includes(s)) return s;\n        if (s === \"0\") raw = 0;\n        else if (s === \"1\") raw = 1;\n        else if (s === \"2\") raw = 2;\n    }\n\n    const n = Number(raw);\n    if (Number.isFinite(n)) {\n        if (n === 0) return \"opening\";\n        if (n === 1) return \"closing\";\n        if (n === 2) {\n            if (typeof pct === \"number\") {\n                if (pct <= 5) return \"closed\";\n                if (pct >= 95) return \"open\";\n            }\n            return \"stopped\";\n        }\n    }\n\n    if (typeof pct === \"number\") {\n        if (pct <= 5) return \"closed\";\n        if (pct >= 95) return \"open\";\n    }\n    return \"stopped\";\n}\n\nconst p = {\n    // native Arduino CSV fields\n    ts_ms: toInt(cols[0]),\n    mode: cols[1],\n    irrigation_mode: cols[2],\n    temp_f: toNum(cols[3]),\n    rh_pct: toNum(cols[4]),\n    tank_temp_f: toNum(cols[5]),\n    lux: toInt(cols[6]),\n    soil1_raw: toInt(cols[7]),\n    soil1_pct: toNum(cols[8]),\n    soil2_raw: toInt(cols[9]),\n    soil2_pct: toNum(cols[10]),\n    soil3_raw: toInt(cols[11]),\n    soil3_pct: toNum(cols[12]),\n    soil4_raw: toInt(cols[13]),\n    soil4_pct: toNum(cols[14]),\n    batt_v: toNum(cols[15]),\n    pv_v: toNum(cols[16]),\n    pv_present: toBool(cols[17]),\n    louvre_state_raw: cols[18],\n    louvre_pos_pct: toNum(cols[19]),\n    row1: toBool(cols[20]),\n    row2: toBool(cols[21]),\n    row3: toBool(cols[22]),\n    row4: toBool(cols[23]),\n    row1_en: toBool(cols[24]),\n    row2_en: toBool(cols[25]),\n    row3_en: toBool(cols[26]),\n    row4_en: toBool(cols[27]),\n    row1_ms: toInt(cols[28]),\n    row2_ms: toInt(cols[29]),\n    row3_ms: toInt(cols[30]),\n    row4_ms: toInt(cols[31]),\n    row1_start_pct: toNum(cols[32]),\n    row2_start_pct: toNum(cols[33]),\n    row3_start_pct: toNum(cols[34]),\n    row4_start_pct: toNum(cols[35]),\n    row1_stop_pct: toNum(cols[36]),\n    row2_stop_pct: toNum(cols[37]),\n    row3_stop_pct: toNum(cols[38]),\n    row4_stop_pct: toNum(cols[39]),\n    pump_on: toBool(cols[40]),\n    heater_on: toBool(cols[41]),\n    light_on: toBool(cols[42]),\n    fan_pwm: toInt(cols[43]),\n    rows_run_active: toBool(cols[44]),\n    rows_run_auto: toBool(cols[45]),\n    active_row: toInt(cols[46]),\n    temp_open_f: toNum(cols[47]),\n    temp_close_f: toNum(cols[48]),\n    rh_open_pct: toNum(cols[49]),\n    tank_heat_on_f: toNum(cols[50]),\n    tank_heat_off_f: toNum(cols[51]),\n    schedule_interval_ms: toInt(cols[52]),\n    eco_mode: toBool(cols[53]),\n    fault: toInt(cols[54])\n};\n\np.ts = Date.now();  // wall-clock timestamp for DB/charting on Pi\np.controller_uptime_ms = p.ts_ms;\n\np.louvre_state = louvreStateText(p.louvre_state_raw, p.louvre_pos_pct);\np.louvre_pct = p.louvre_pos_pct;\n\nconst soilVals = [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct];\np.soil_avg_pct = avgValid(soilVals);\np.soil = p.soil_avg_pct;\n\np.tavg = p.temp_f;\np.havg = p.rh_pct;\np.t1 = p.temp_f;\np.t2 = p.temp_f;\np.h1 = p.rh_pct;\np.h2 = p.rh_pct;\n\nconst fanPct = (typeof p.fan_pwm === \"number\") ? Math.round((p.fan_pwm / 255) * 100) : null;\np.fan_pct = fanPct;\np.lightOn = !!p.light_on;\n\nmsg.payload = p;\nreturn msg;",
+        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\nif (!line) return null;\n\n// Ignore header row\nif (line.startsWith(\"ts_ms,\")) {\n    return null;\n}\n\nlet fields = line.split(\",\");\n\nif (fields.length !== 55) {\n    node.warn(\"CSV field count mismatch: got \" + fields.length + \", expected 55 :: \" + line);\n    return null;\n}\n\nfunction toNum(v) {\n    let n = Number(v);\n    return Number.isNaN(n) ? null : n;\n}\n\nfunction toBool(v) {\n    return String(v) === \"1\";\n}\n\nfunction louvreStateText(v) {\n    if (String(v) === \"0\") return \"opening\";\n    if (String(v) === \"1\") return \"closing\";\n    if (String(v) === \"2\") return \"closed\";\n    if (String(v) === \"3\") return \"open\";\n    return \"stopped\";\n}\n\nlet p = {\n    ts_ms: toNum(fields[0]),\n    mode: fields[1],\n    irrigation_mode: fields[2],\n    temp_f: toNum(fields[3]),\n    rh_pct: toNum(fields[4]),\n    tank_temp_f: toNum(fields[5]),\n    lux: toNum(fields[6]),\n    soil1_raw: toNum(fields[7]),\n    soil1_pct: toNum(fields[8]),\n    soil2_raw: toNum(fields[9]),\n    soil2_pct: toNum(fields[10]),\n    soil3_raw: toNum(fields[11]),\n    soil3_pct: toNum(fields[12]),\n    soil4_raw: toNum(fields[13]),\n    soil4_pct: toNum(fields[14]),\n    batt_v: toNum(fields[15]),\n    pv_v: toNum(fields[16]),\n    pv_present: toBool(fields[17]),\n    louvre_state_raw: fields[18],\n    louvre_pos_pct: toNum(fields[19]),\n    row1: toBool(fields[20]),\n    row2: toBool(fields[21]),\n    row3: toBool(fields[22]),\n    row4: toBool(fields[23]),\n    row1_en: toBool(fields[24]),\n    row2_en: toBool(fields[25]),\n    row3_en: toBool(fields[26]),\n    row4_en: toBool(fields[27]),\n    row1_ms: toNum(fields[28]),\n    row2_ms: toNum(fields[29]),\n    row3_ms: toNum(fields[30]),\n    row4_ms: toNum(fields[31]),\n    row1_start_pct: toNum(fields[32]),\n    row2_start_pct: toNum(fields[33]),\n    row3_start_pct: toNum(fields[34]),\n    row4_start_pct: toNum(fields[35]),\n    row1_stop_pct: toNum(fields[36]),\n    row2_stop_pct: toNum(fields[37]),\n    row3_stop_pct: toNum(fields[38]),\n    row4_stop_pct: toNum(fields[39]),\n    pump_on: toBool(fields[40]),\n    heater_on: toBool(fields[41]),\n    light_on: toBool(fields[42]),\n    fan_pwm: toNum(fields[43]),\n    rows_run_active: toBool(fields[44]),\n    rows_run_auto: toBool(fields[45]),\n    active_row: toNum(fields[46]),\n    temp_open_f: toNum(fields[47]),\n    temp_close_f: toNum(fields[48]),\n    rh_open_pct: toNum(fields[49]),\n    tank_heat_on_f: toNum(fields[50]),\n    tank_heat_off_f: toNum(fields[51]),\n    schedule_interval_ms: toNum(fields[52]),\n    eco_mode: toBool(fields[53]),\n    fault: toNum(fields[54])\n};\n\n// compatibility aliases\np.ts = Date.now();\np.controller_uptime_ms = p.ts_ms;\np.louvre_state = louvreStateText(p.louvre_state_raw);\np.louvre_pct = p.louvre_pos_pct;\n\nlet soils = [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct].filter(v => typeof v === \"number\");\np.soil_avg_pct = soils.length ? soils.reduce((a, b) => a + b, 0) / soils.length : null;\np.soil = p.soil_avg_pct;\n\np.tavg = p.temp_f;\np.havg = p.rh_pct;\np.t1 = p.temp_f;\np.t2 = p.temp_f;\np.h1 = p.rh_pct;\np.h2 = p.rh_pct;\n\np.fan_pct = (typeof p.fan_pwm === \"number\") ? Math.round((p.fan_pwm / 255) * 100) : null;\np.lightOn = p.light_on;\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 310,
+        "x": 290,
         "y": 180,
         "wires": [
             [
-                "56a18a3fe5e40a59"
+                "56a18a3fe5e40a59",
+                "b9476ac9366bfa6a"
             ]
         ]
     },
@@ -496,7 +586,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "db_function",
-        "func": "let p = msg.payload || {};\n\nfunction sqlNum(v) {\n    return (v === undefined || v === null || v === \"\" || Number.isNaN(Number(v)))\n        ? \"NULL\"\n        : Number(v);\n}\n\nfunction sqlBool(v) {\n    if (v === true) return 1;\n    if (v === false) return 0;\n    return \"NULL\";\n}\n\nfunction sqlText(v) {\n    if (v === undefined || v === null || v === \"\") return \"NULL\";\n    return \"'\" + String(v).replace(/'/g, \"''\") + \"'\";\n}\n\nconst ts = Number.isFinite(Number(p.ts)) ? Number(p.ts) : Date.now();\n\nmsg.data = p;\n\nmsg.topic = `\nINSERT INTO greenhouse_samples (\n  ts, t1, t2, tavg, h1, h2, havg, soil, lux,\n  louvre_pct, louvre_state, fan_pct, lightOn,\n  fault_count, system_fault\n) VALUES (\n  ${sqlNum(ts)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.temp_f)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.rh_pct)},\n  ${sqlNum(p.soil_avg_pct)},\n  ${sqlNum(p.lux)},\n  ${sqlNum(p.louvre_pos_pct)},\n  ${sqlText(p.louvre_state)},\n  ${sqlNum(p.fan_pct)},\n  ${sqlBool(p.light_on)},\n  ${sqlNum(p.fault_count ?? ((p.fault ?? 0) !== 0 ? 1 : 0))},\n  ${sqlNum(p.system_fault ?? ((p.fault ?? 0) !== 0 ? 1 : 0))}\n);\n`;\n\nmsg.payload = [];\nreturn msg;",
+        "func": "let p = msg.payload || {};\n\n// use wall-clock time for DB primary key\nconst ts = Date.now();\n\nfunction sqlNum(v) {\n    return (v === undefined || v === null || v === \"\" || Number.isNaN(Number(v)))\n        ? \"NULL\"\n        : Number(v);\n}\n\nfunction sqlBool(v) {\n    if (v === true || v === 1 || v === \"1\") return 1;\n    if (v === false || v === 0 || v === \"0\") return 0;\n    return \"NULL\";\n}\n\nfunction sqlText(v) {\n    if (v === undefined || v === null || v === \"\") return \"NULL\";\n    return \"'\" + String(v).replace(/'/g, \"''\") + \"'\";\n}\n\n// compatibility values for older dashboard/queries\nlet compat_t = sqlNum(p.temp_f);\nlet compat_h = sqlNum(p.rh_pct);\n\nlet soils = [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct]\n    .filter(v => v !== undefined && v !== null && !Number.isNaN(Number(v)))\n    .map(Number);\n\nlet compat_soil = soils.length\n    ? soils.reduce((a, b) => a + b, 0) / soils.length\n    : null;\n\nlet controllerFault = (p.fault === undefined || p.fault === null || Number.isNaN(Number(p.fault)))\n    ? 0\n    : Number(p.fault);\n\nlet faultCount = controllerFault !== 0 ? 1 : 0;\nlet systemFault = controllerFault !== 0 ? 1 : 0;\n\nmsg.topic =\n  \"INSERT INTO greenhouse_samples (\" +\n  \"ts, t1, t2, tavg, h1, h2, havg, soil, lux, \" +\n  \"louvre_pct, louvre_state, fan_pct, lightOn, fault_count, system_fault, \" +\n  \"mode, irrigation_mode, temp_f, rh_pct, tank_temp_f, \" +\n  \"soil1_raw, soil1_pct, soil2_raw, soil2_pct, soil3_raw, soil3_pct, soil4_raw, soil4_pct, \" +\n  \"batt_v, pv_v, pv_present, louvre_pos_pct, \" +\n  \"row1, row2, row3, row4, row1_en, row2_en, row3_en, row4_en, \" +\n  \"row1_ms, row2_ms, row3_ms, row4_ms, \" +\n  \"row1_start_pct, row2_start_pct, row3_start_pct, row4_start_pct, \" +\n  \"row1_stop_pct, row2_stop_pct, row3_stop_pct, row4_stop_pct, \" +\n  \"pump_on, heater_on, light_on, fan_pwm, \" +\n  \"rows_run_active, rows_run_auto, active_row, \" +\n  \"temp_open_f, temp_close_f, rh_open_pct, \" +\n  \"tank_heat_on_f, tank_heat_off_f, schedule_interval_ms, eco_mode, controller_fault\" +\n  \") VALUES (\" +\n  sqlNum(ts) + \", \" +\n\n  compat_t + \", \" + compat_t + \", \" + compat_t + \", \" +\n  compat_h + \", \" + compat_h + \", \" + compat_h + \", \" +\n  sqlNum(compat_soil) + \", \" + sqlNum(p.lux) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n  sqlText(p.louvre_state) + \", \" +\n  sqlNum(p.fan_pct !== undefined ? p.fan_pct : p.fan_pwm) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n\n  sqlNum(faultCount) + \", \" +\n  sqlNum(systemFault) + \", \" +\n\n  sqlText(p.mode) + \", \" +\n  sqlText(p.irrigation_mode) + \", \" +\n  sqlNum(p.temp_f) + \", \" +\n  sqlNum(p.rh_pct) + \", \" +\n  sqlNum(p.tank_temp_f) + \", \" +\n\n  sqlNum(p.soil1_raw) + \", \" +\n  sqlNum(p.soil1_pct) + \", \" +\n  sqlNum(p.soil2_raw) + \", \" +\n  sqlNum(p.soil2_pct) + \", \" +\n  sqlNum(p.soil3_raw) + \", \" +\n  sqlNum(p.soil3_pct) + \", \" +\n  sqlNum(p.soil4_raw) + \", \" +\n  sqlNum(p.soil4_pct) + \", \" +\n\n  sqlNum(p.batt_v) + \", \" +\n  sqlNum(p.pv_v) + \", \" +\n  sqlBool(p.pv_present) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n\n  sqlBool(p.row1) + \", \" +\n  sqlBool(p.row2) + \", \" +\n  sqlBool(p.row3) + \", \" +\n  sqlBool(p.row4) + \", \" +\n\n  sqlBool(p.row1_en) + \", \" +\n  sqlBool(p.row2_en) + \", \" +\n  sqlBool(p.row3_en) + \", \" +\n  sqlBool(p.row4_en) + \", \" +\n\n  sqlNum(p.row1_ms) + \", \" +\n  sqlNum(p.row2_ms) + \", \" +\n  sqlNum(p.row3_ms) + \", \" +\n  sqlNum(p.row4_ms) + \", \" +\n\n  sqlNum(p.row1_start_pct) + \", \" +\n  sqlNum(p.row2_start_pct) + \", \" +\n  sqlNum(p.row3_start_pct) + \", \" +\n  sqlNum(p.row4_start_pct) + \", \" +\n\n  sqlNum(p.row1_stop_pct) + \", \" +\n  sqlNum(p.row2_stop_pct) + \", \" +\n  sqlNum(p.row3_stop_pct) + \", \" +\n  sqlNum(p.row4_stop_pct) + \", \" +\n\n  sqlBool(p.pump_on) + \", \" +\n  sqlBool(p.heater_on) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n  sqlNum(p.fan_pwm) + \", \" +\n\n  sqlBool(p.rows_run_active) + \", \" +\n  sqlBool(p.rows_run_auto) + \", \" +\n  sqlNum(p.active_row) + \", \" +\n\n  sqlNum(p.temp_open_f) + \", \" +\n  sqlNum(p.temp_close_f) + \", \" +\n  sqlNum(p.rh_open_pct) + \", \" +\n\n  sqlNum(p.tank_heat_on_f) + \", \" +\n  sqlNum(p.tank_heat_off_f) + \", \" +\n  sqlNum(p.schedule_interval_ms) + \", \" +\n  sqlBool(p.eco_mode) + \", \" +\n  sqlNum(controllerFault) +\n  \");\";\n\nmsg.payload = [];\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -507,7 +597,8 @@
         "y": 240,
         "wires": [
             [
-                "b91ca825f88143fb"
+                "b91ca825f88143fb",
+                "a00e9e4ee9f938a1"
             ]
         ]
     },
@@ -523,7 +614,6 @@
         "y": 240,
         "wires": [
             [
-                "a00e9e4ee9f938a1",
                 "10d54d59890a7417"
             ]
         ]
@@ -541,8 +631,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1320,
-        "y": 240,
+        "x": 1080,
+        "y": 300,
         "wires": []
     },
     {
@@ -595,7 +685,7 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 190,
+        "x": 150,
         "y": 540,
         "wires": [
             [
@@ -672,7 +762,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Temperature",
-        "func": "msg.payload = Math.round(msg.payload.temp_f);\nreturn msg;\n",
+        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar temp = Number(p.tavg);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 65) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 80) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🔴 Hot — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -692,7 +782,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Humidity",
-        "func": "msg.payload = Math.round(msg.payload.rh_pct);\nreturn msg;\n",
+        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar h = Number(p.rh_pct);\n\nif (isNaN(h)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (h < 5 || h > 80) {\n    msg.payload = \"🔴 \" + Math.round(h) + \"%\";\n} else {\n    msg.payload = \"🟢 \" + Math.round(h) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -711,15 +801,15 @@
         "id": "112b42a1704108f8",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "Lux",
-        "func": "msg.payload = Math.round(msg.payload.lux);\nreturn msg;\n",
+        "name": "GH Lighting",
+        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar lux = Number(p.lux);\nvar light = p.light_on;\n\nif (isNaN(lux)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (lux >= 5000) {\n    msg.payload = \"🟢 Bright | \" + (light ? \"🟢 Lights ON\" : \"⚫ Lights OFF\");\n} else if (lux >= 3000) {\n    msg.payload = \"🟡 Moderate | \" + (light ? \"🟢 Lights ON\" : \"⚫ Lights OFF\");\n} else if (lux >= 1000) {\n    msg.payload = \"🟠 Low Light | \" + (light ? \"🟢 Lights ON\" : \"⚫ Lights OFF\");\n} else if (lux >= 500) {\n    msg.payload = \"🟡 Dim | \" + (light ? \"🟢 Lights ON\" : \"⚫ Lights OFF\");\n} else {\n    msg.payload = \"⚫ Dark | \" + (light ? \"🟢 Lights ON\" : \"⚫ Lights OFF\");\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 630,
+        "x": 650,
         "y": 540,
         "wires": [
             [
@@ -731,15 +821,15 @@
         "id": "c5aa37be95cbd5f2",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "soil",
-        "func": "msg.payload = Math.round(msg.payload.soil_avg_pct);\nreturn msg;\n",
+        "name": "Soil Row 1",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar soil = Number(p.soil1_pct);\n\nif (isNaN(soil)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (soil < 0) soil = 0;\nif (soil > 100) soil = 100;\n\nif (soil < 35) {\n    msg.payload = \"🟠 Dry — \" + Math.round(soil) + \"%\";\n} else if (soil <= 65) {\n    msg.payload = \"🟢 Good — \" + Math.round(soil) + \"%\";\n} else {\n    msg.payload = \"🟡 Wet — \" + Math.round(soil) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 630,
+        "x": 650,
         "y": 580,
         "wires": [
             [
@@ -751,347 +841,21 @@
         "id": "f2588d218f7169c5",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "louvre_pct",
-        "func": "msg.payload = msg.payload.louvre_pos_pct;\nreturn msg;",
+        "name": "Louvre Status",
+        "func": "var p = msg.payload || {};\n\nvar pct = Number(p.louvre_pct);\nvar state = String(p.louvre_state || \"\").toLowerCase();\n\nif (isNaN(pct)) return null;\n\nif (state === \"opening\") {\n    msg.payload = \"🟢 Opening — \" + Math.round(pct) + \"%\";\n} else if (state === \"closing\") {\n    msg.payload = \"🟠 Closing — \" + Math.round(pct) + \"%\";\n} else if (pct >= 95) {\n    msg.payload = \"🔵 Open — \" + Math.round(pct) + \"%\";\n} else if (pct <= 5) {\n    msg.payload = \"⚪ Closed — \" + Math.round(pct) + \"%\";\n} else {\n    msg.payload = \"🟡 Stopped — \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 620,
+        "x": 660,
+        "y": 780,
         "wires": [
             [
                 "66d981e6d96be52c"
             ]
         ]
-    },
-    {
-        "id": "744e76bedde5edb1",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "louve_state",
-        "func": "let s = msg.payload.louvre_state;\nlet pct = msg.payload.louvre_pos_pct;\n\nif (s === \"opening\") {\n    msg.payload = \"\ud83d\udfe2 Opening\";\n} else if (s === \"closing\") {\n    msg.payload = \"\ud83d\udfe0 Closing\";\n} else if (pct <= 5) {\n    msg.payload = \"\u26ab Closed\";\n} else if (pct >= 95) {\n    msg.payload = \"\ud83d\udfe2 Open\";\n} else {\n    msg.payload = \"\ud83d\udfe1 Stopped @ \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 650,
-        "y": 660,
-        "wires": [
-            [
-                "072fb8dffe0e9dbc"
-            ]
-        ]
-    },
-    {
-        "id": "911ba08b535d0c83",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Temperature",
-        "group": "85dcddf4de18c2df",
-        "order": 3,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Temperature",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "\u00b0F",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "value"
-            },
-            {
-                "from": "33",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "value"
-            },
-            {
-                "from": "55",
-                "color": "#5cd65c",
-                "text": "",
-                "textType": "value"
-            },
-            {
-                "from": "86",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "value"
-            },
-            {
-                "from": "96",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "value"
-            }
-        ],
-        "min": 0,
-        "max": "120",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1190,
-        "y": 460,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "79974308ea82383b",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Humidity",
-        "group": "85dcddf4de18c2df",
-        "order": 5,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Humidity",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "%",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "25",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "35",
-                "color": "#5cd65c",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "80",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "90",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "label"
-            }
-        ],
-        "min": "0",
-        "max": "100",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1180,
-        "y": 500,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "05bba795903b4a55",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Lux",
-        "group": "85dcddf4de18c2df",
-        "order": 4,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Lighting",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "Lux",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#ff0000",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "4000",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "10000",
-                "color": "#00c800",
-                "text": "",
-                "textType": "label"
-            }
-        ],
-        "min": 0,
-        "max": "100000",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1170,
-        "y": 540,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "b1163310511ba436",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Soil Moisture",
-        "group": "85dcddf4de18c2df",
-        "order": 2,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Soil Moisture",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "%",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#ffc800",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "35",
-                "color": "#5cd65c",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "65",
-                "color": "#ea5353",
-                "text": "",
-                "textType": "label"
-            }
-        ],
-        "min": 0,
-        "max": "100",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1190,
-        "y": 580,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "022edd664dc4b3d5",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Louvre Open %",
-        "group": "85dcddf4de18c2df",
-        "order": 1,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Louve Setting",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "%",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#969696",
-                "text": "",
-                "textType": "label"
-            }
-        ],
-        "min": 0,
-        "max": "100",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1200,
-        "y": 620,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "6a9c73d878494885",
-        "type": "ui-text",
-        "z": "6cda5a5f32196c63",
-        "group": "2a41f864d2129443",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "Louvre State",
-        "label": "Louvre State",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#717171",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 1190,
-        "y": 660,
-        "wires": []
     },
     {
         "id": "4cb5f93570d7d0ca",
@@ -1201,7 +965,7 @@
         "y": 540,
         "wires": [
             [
-                "05bba795903b4a55"
+                "ad4169f006bccb85"
             ]
         ]
     },
@@ -1226,7 +990,7 @@
         "y": 460,
         "wires": [
             [
-                "911ba08b535d0c83"
+                "1ce6a5b6622a17ed"
             ]
         ]
     },
@@ -1251,7 +1015,7 @@
         "y": 500,
         "wires": [
             [
-                "79974308ea82383b"
+                "53e4b9cbb629afe5"
             ]
         ]
     },
@@ -1276,7 +1040,7 @@
         "y": 580,
         "wires": [
             [
-                "b1163310511ba436"
+                "84fe9ef876e0aad4"
             ]
         ]
     },
@@ -1298,35 +1062,10 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 620,
+        "y": 780,
         "wires": [
             [
-                "022edd664dc4b3d5"
-            ]
-        ]
-    },
-    {
-        "id": "072fb8dffe0e9dbc",
-        "type": "delay",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "15",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 1010,
-        "y": 660,
-        "wires": [
-            [
-                "6a9c73d878494885"
+                "19ac465249fbbe53"
             ]
         ]
     },
@@ -1379,16 +1118,16 @@
         "id": "fanpctfunc000001",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "fan_pct",
-        "func": "msg.payload = Math.round(msg.payload.fan_pct);\nreturn msg;",
+        "name": "Fan Speed",
+        "func": "var p = msg.payload || {};\n\nvar fan = Number(p.fan_pct);\n\nif (isNaN(fan)) return null;\n\nif (fan > 0) {\n    msg.payload = \"🟢 ON — \" + Math.round(fan) + \"%\";\n} else {\n    msg.payload = \"⚫ OFF — 0%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 640,
-        "y": 700,
+        "x": 650,
+        "y": 820,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1413,71 +1152,11 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 700,
+        "y": 820,
         "wires": [
             [
-                "fanpctgauge00001"
+                "7ec8464d62e237b2"
             ]
-        ]
-    },
-    {
-        "id": "fanpctgauge00001",
-        "type": "ui-gauge",
-        "z": "6cda5a5f32196c63",
-        "name": "Fan Speed",
-        "group": "85dcddf4de18c2df",
-        "order": 6,
-        "value": "payload",
-        "valueType": "msg",
-        "width": 3,
-        "height": 3,
-        "gtype": "gauge-half",
-        "gstyle": "needle",
-        "title": "Fan Speed",
-        "alwaysShowTitle": false,
-        "floatingTitlePosition": "top-left",
-        "units": "%",
-        "icon": "",
-        "prefix": "",
-        "suffix": "",
-        "segments": [
-            {
-                "from": "0",
-                "color": "#969696",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "25",
-                "color": "#8ff0a4",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "50",
-                "color": "#33d17a",
-                "text": "",
-                "textType": "label"
-            },
-            {
-                "from": "75",
-                "color": "#00c800",
-                "text": "",
-                "textType": "label"
-            }
-        ],
-        "min": 0,
-        "max": "100",
-        "sizeThickness": 16,
-        "sizeGap": 4,
-        "sizeKeyThickness": 8,
-        "styleRounded": true,
-        "styleGlow": false,
-        "className": "",
-        "x": 1190,
-        "y": 700,
-        "wires": [
-            []
         ]
     },
     {
@@ -1510,8 +1189,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1360,
-        "y": 400,
+        "x": 900,
+        "y": 1460,
         "wires": []
     },
     {
@@ -1535,78 +1214,8 @@
                 "112b42a1704108f8",
                 "c5aa37be95cbd5f2",
                 "f2588d218f7169c5",
-                "744e76bedde5edb1",
                 "fanpctfunc000001",
-                "610ae0cd1478dcb8"
-            ]
-        ]
-    },
-    {
-        "id": "acb1ac1ac94383a3",
-        "type": "ui-text",
-        "z": "6cda5a5f32196c63",
-        "group": "2a41f864d2129443",
-        "order": 3,
-        "width": 0,
-        "height": 0,
-        "name": "Grow Lights",
-        "label": "Grow Light Status",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#717171",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 1190,
-        "y": 740,
-        "wires": []
-    },
-    {
-        "id": "610ae0cd1478dcb8",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "Grow LIght Status",
-        "func": "let on = msg.payload.light_on;\n\nif (on === true) {\n    msg.payload = \"\ud83d\udfe2 Grow Lights On\";\n} else {\n    msg.payload = \"\u26ab Grow Lights Off\";\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 670,
-        "y": 740,
-        "wires": [
-            [
-                "ef8c56ca1aaaa404"
-            ]
-        ]
-    },
-    {
-        "id": "ef8c56ca1aaaa404",
-        "type": "delay",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "15",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 1010,
-        "y": 740,
-        "wires": [
-            [
-                "acb1ac1ac94383a3"
+                "f3809e8fd627b134"
             ]
         ]
     },
@@ -1615,7 +1224,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Detection",
-        "func": "let p = msg.payload || {};\n\nlet required = [\n    \"temp_f\", \"rh_pct\", \"lux\",\n    \"soil1_pct\", \"soil2_pct\", \"soil3_pct\", \"soil4_pct\",\n    \"louvre_pos_pct\", \"louvre_state\",\n    \"fan_pwm\", \"light_on\", \"pump_on\"\n];\n\nlet faults = {};\nlet missing = [];\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nrequired.forEach(name => {\n    if (!(name in p) || p[name] === null || p[name] === \"\") {\n        faults[name] = \"MISSING\";\n        missing.push(name);\n    }\n});\n\nif (\"lux\" in p && isNum(p.lux) && p.lux < 0) faults.lux = \"INVALID\";\n[\"soil1_pct\",\"soil2_pct\",\"soil3_pct\",\"soil4_pct\"].forEach(name => {\n    if (name in p && isNum(p[name]) && (p[name] < 0 || p[name] > 100)) {\n        faults[name] = \"INVALID\";\n    }\n});\nif (\"louvre_pos_pct\" in p && isNum(p.louvre_pos_pct) && (p.louvre_pos_pct < 0 || p.louvre_pos_pct > 100)) faults.louvre_pos_pct = \"INVALID\";\nif (\"fan_pwm\" in p && isNum(p.fan_pwm) && (p.fan_pwm < 0 || p.fan_pwm > 255)) faults.fan_pwm = \"INVALID\";\nif (\"rh_pct\" in p && isNum(p.rh_pct) && (p.rh_pct < 0 || p.rh_pct > 100)) faults.rh_pct = \"INVALID\";\nif (\"temp_f\" in p && isNum(p.temp_f) && (p.temp_f < -40 || p.temp_f > 150)) faults.temp_f = \"INVALID\";\n\nlet soilAvg = p.soil_avg_pct;\nlet lastSoil = context.get(\"lastSoil\");\nlet soilJumpThreshold = 40;\nif (isNum(soilAvg)) {\n    if (isNum(lastSoil) && Math.abs(soilAvg - lastSoil) > soilJumpThreshold) {\n        faults.soil_avg_pct = \"FLOATING\";\n    }\n    context.set(\"lastSoil\", soilAvg);\n}\n\nif (isNum(p.fault) && p.fault !== 0) {\n    faults.controller_fault = \"ARDUINO fault=\" + p.fault;\n}\n\np.faults = faults;\np.fault_count = Object.keys(faults).length;\np.system_fault = p.fault_count > 0 ? 1 : 0;\np.missing_fields = missing.join(\",\");\np.source = \"sensor\";\n\nmsg.payload = p;\nreturn msg;",
+        "func": "let p = msg.payload || {};\n\nlet required = [\n    \"temp_f\", \"rh_pct\", \"lux\",\n    \"soil1_pct\", \"soil2_pct\", \"soil3_pct\", \"soil4_pct\",\n    \"louvre_pos_pct\", \"louvre_state\",\n    \"fan_pwm\", \"light_on\", \"pump_on\"\n];\n\nlet faults = {};\nlet missing = [];\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nrequired.forEach(name => {\n    if (!(name in p) || p[name] === null || p[name] === \"\") {\n        faults[name] = \"MISSING\";\n        missing.push(name);\n    }\n});\n\nif (\"lux\" in p && isNum(p.lux) && p.lux < 0) faults.lux = \"INVALID\";\n\n[\"soil1_pct\",\"soil2_pct\",\"soil3_pct\",\"soil4_pct\"].forEach(name => {\n    if (name in p && isNum(p[name]) && (p[name] < 0 || p[name] > 100)) {\n        faults[name] = \"INVALID\";\n    }\n});\n\nif (\"louvre_pos_pct\" in p && isNum(p.louvre_pos_pct) && (p.louvre_pos_pct < 0 || p.louvre_pos_pct > 100)) faults.louvre_pos_pct = \"INVALID\";\nif (\"fan_pwm\" in p && isNum(p.fan_pwm) && (p.fan_pwm < 0 || p.fan_pwm > 255)) faults.fan_pwm = \"INVALID\";\nif (\"rh_pct\" in p && isNum(p.rh_pct) && (p.rh_pct < 0 || p.rh_pct > 100)) faults.rh_pct = \"INVALID\";\nif (\"temp_f\" in p && isNum(p.temp_f) && (p.temp_f < -40 || p.temp_f > 150)) faults.temp_f = \"INVALID\";\n\n// Soil sensor missing detection\n// Reason: disconnected analog inputs may still report numbers,\n// so we detect \"missing\" by a raw channel staying nearly unchanged\n// for many consecutive samples.\nfunction checkSoilSensor(idx) {\n    let rawName = \"soil\" + idx + \"_raw\";\n    let pctName = \"soil\" + idx + \"_pct\";\n\n    let raw = Number(p[rawName]);\n    let pct = Number(p[pctName]);\n\n    // If either field is absent/invalid, mark missing immediately\n    if (!isNum(raw) || !isNum(pct)) {\n        faults[pctName] = \"MISSING SENSOR\";\n        return;\n    }\n\n    let lastRawKey = \"soil\" + idx + \"_lastRaw\";\n    let stableKey = \"soil\" + idx + \"_stableCount\";\n\n    let lastRaw = context.get(lastRawKey);\n    let stableCount = context.get(stableKey) || 0;\n\n    // Count as unchanged if within 2 ADC counts\n    if (isNum(lastRaw) && Math.abs(raw - lastRaw) <= 2) {\n        stableCount += 1;\n    } else {\n        stableCount = 0;\n    }\n\n    context.set(lastRawKey, raw);\n    context.set(stableKey, stableCount);\n\n    // After ~20 consecutive unchanged samples, treat as missing\n    if (stableCount >= 20) {\n        faults[pctName] = \"MISSING SENSOR\";\n    }\n}\n\ncheckSoilSensor(1);\ncheckSoilSensor(2);\ncheckSoilSensor(3);\ncheckSoilSensor(4);\n\nlet soilAvg = p.soil_avg_pct;\nlet lastSoil = context.get(\"lastSoil\");\nlet soilJumpThreshold = 40;\n\nif (isNum(soilAvg)) {\n    if (isNum(lastSoil) && Math.abs(soilAvg - lastSoil) > soilJumpThreshold) {\n        faults.soil_avg_pct = \"FLOATING\";\n    }\n    context.set(\"lastSoil\", soilAvg);\n}\n\nif (isNum(p.fault) && p.fault !== 0) {\n    faults.controller_fault = \"ARDUINO fault=\" + p.fault;\n}\n\np.faults = faults;\np.fault_count = Object.keys(faults).length;\np.system_fault = p.fault_count > 0 ? 1 : 0;\np.missing_fields = missing.join(\",\");\np.source = \"sensor\";\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1640,7 +1249,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Status Text",
-        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\n\n// robust fault check\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\";\n\n// read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\n// Build list of faults\nlet faultList = [];\n\n// Add sensor / payload faults\nlet keys = Object.keys(faults);\nif (keys.length) {\n    faultList = faultList.concat(\n        keys.map(k => k + \": \" + faults[k])\n    );\n} else if (missingFields !== \"\") {\n    faultList.push(\"Missing fields: \" + missingFields);\n} else if (hasFault && commFault !== 1) {\n    faultList.push(\"FAULT ACTIVE\");\n}\n\n// Add comm fault\nif (commFault == 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final output\nif (faultList.length > 0) {\n    msg.payload = \"\ud83d\udd34 FAULT \u2014 \" + faultList.join(\" | \");\n} else {\n    msg.payload = \"\ud83d\udfe2 All Systems Normal\";\n}\n\nreturn msg;",
+        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\" ||\n    commFault == 1;\n\nif (hasFault) {\n    msg.payload = \"🔴 Fault Detected\";\n} else {\n    msg.payload = \"🟢 All Systems Normal\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1651,8 +1260,7 @@
         "y": 360,
         "wires": [
             [
-                "68f3fed977ad9f73",
-                "1e53d5d61ad2dcde"
+                "68f3fed977ad9f73"
             ]
         ]
     },
@@ -1661,7 +1269,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "2a41f864d2129443",
-        "order": 2,
+        "order": 1,
         "width": 0,
         "height": 0,
         "name": "System Fault",
@@ -1693,7 +1301,7 @@
         "className": "",
         "rounded": true,
         "useThemeColors": true,
-        "passthru": false,
+        "passthru": true,
         "options": [
             {
                 "label": "Open",
@@ -1733,8 +1341,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 750,
-        "y": 820,
+        "x": 150,
+        "y": 1340,
         "wires": [
             [
                 "82cb2ac5ce541d87"
@@ -1753,8 +1361,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 970,
-        "y": 820,
+        "x": 670,
+        "y": 1340,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1767,8 +1375,8 @@
         "z": "6cda5a5f32196c63",
         "name": "",
         "serial": "f21e5fa854a87f38",
-        "x": 1220,
-        "y": 820,
+        "x": 920,
+        "y": 1340,
         "wires": []
     },
     {
@@ -1784,7 +1392,7 @@
         "className": "",
         "rounded": true,
         "useThemeColors": true,
-        "passthru": false,
+        "passthru": true,
         "options": [
             {
                 "label": "On (50%)",
@@ -1817,8 +1425,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 730,
-        "y": 880,
+        "x": 130,
+        "y": 1380,
         "wires": [
             [
                 "dc183ed1b109c77e"
@@ -1837,8 +1445,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 960,
-        "y": 880,
+        "x": 660,
+        "y": 1380,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1858,7 +1466,7 @@
         "className": "",
         "rounded": true,
         "useThemeColors": true,
-        "passthru": false,
+        "passthru": true,
         "options": [
             {
                 "label": "On",
@@ -1884,8 +1492,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 730,
-        "y": 940,
+        "x": 130,
+        "y": 1420,
         "wires": [
             [
                 "3803f18308f137a5"
@@ -1904,8 +1512,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 960,
-        "y": 940,
+        "x": 660,
+        "y": 1420,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1993,7 +1601,8 @@
         "y": 360,
         "wires": [
             [
-                "5af17cb50fcfd049"
+                "5af17cb50fcfd049",
+                "2ce9937eb48a8c8b"
             ]
         ]
     },
@@ -2023,14 +1632,1083 @@
         ]
     },
     {
-        "id": "3e36b48ccdcf3e10",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-node-sqlite": "1.1.1",
-            "node-red-node-serialport": "2.0.3",
-            "node-red-dashboard": "3.6.6",
-            "@flowfuse/node-red-dashboard": "1.30.2"
-        }
+        "id": "27ada962f00d807c",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 1460,
+        "wires": [
+            [
+                "ebadb11eb93cb9ce"
+            ]
+        ]
+    },
+    {
+        "id": "ebadb11eb93cb9ce",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "TX Heartbeat",
+        "func": "msg.payload = \"HEARTBEAT\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 1460,
+        "wires": [
+            [
+                "12cca41621c67cb4",
+                "1e53d5d61ad2dcde"
+            ]
+        ]
+    },
+    {
+        "id": "b9476ac9366bfa6a",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 5",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "1ce6a5b6622a17ed",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "b80ce3791c51c9eb",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Temperature",
+        "label": "Temperature",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1210,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "53e4b9cbb629afe5",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "b80ce3791c51c9eb",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Humidity",
+        "label": "Humidity",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1200,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "ad4169f006bccb85",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "b80ce3791c51c9eb",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "Lighting",
+        "label": "Lighting",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1200,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "84fe9ef876e0aad4",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "5dd99b1cfb8cc23e",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Soil Moisture Row 1",
+        "label": "Row 1 Moisture",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1240,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "19ac465249fbbe53",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "b80ce3791c51c9eb",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "Louvre Status",
+        "label": "Louvre Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1220,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "7ec8464d62e237b2",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "b80ce3791c51c9eb",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Fan Status",
+        "label": "Fan Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1210,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "a24e7f3c812590eb",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Soil Row 2",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar soil = Number(p.soil2_pct);\n\nif (isNaN(soil)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (soil < 0) soil = 0;\nif (soil > 100) soil = 100;\n\nif (soil < 35) {\n    msg.payload = \"🟠 Dry — \" + Math.round(soil) + \"%\";\n} else if (soil <= 65) {\n    msg.payload = \"🟢 Good — \" + Math.round(soil) + \"%\";\n} else {\n    msg.payload = \"🟡 Wet — \" + Math.round(soil) + \"%\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 620,
+        "wires": [
+            [
+                "122bc30ae01f5aef",
+                "a2736bf8113ff968"
+            ]
+        ]
+    },
+    {
+        "id": "684c8ea3508c5763",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Soil Row 3",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar soil = Number(p.soil3_pct);\n\nif (isNaN(soil)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (soil < 0) soil = 0;\nif (soil > 100) soil = 100;\n\nif (soil < 35) {\n    msg.payload = \"🟠 Dry — \" + Math.round(soil) + \"%\";\n} else if (soil <= 65) {\n    msg.payload = \"🟢 Good — \" + Math.round(soil) + \"%\";\n} else {\n    msg.payload = \"🟡 Wet — \" + Math.round(soil) + \"%\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 660,
+        "wires": [
+            [
+                "c05d02c6c1a47b68"
+            ]
+        ]
+    },
+    {
+        "id": "a71fc4b492052cde",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Soil Row 4",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar soil = Number(p.soil4_pct);\n\nif (isNaN(soil)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (soil < 0) soil = 0;\nif (soil > 100) soil = 100;\n\nif (soil < 35) {\n    msg.payload = \"🟠 Dry — \" + Math.round(soil) + \"%\";\n} else if (soil <= 65) {\n    msg.payload = \"🟢 Good — \" + Math.round(soil) + \"%\";\n} else {\n    msg.payload = \"🟡 Wet — \" + Math.round(soil) + \"%\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 700,
+        "wires": [
+            [
+                "aa07c00b77367af0"
+            ]
+        ]
+    },
+    {
+        "id": "f3809e8fd627b134",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Soil Average",
+        "func": "var p = msg.payload;\n\n// handle injected \"Not Connected\"\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\n// ===============================\n// MANUAL SENSOR INCLUDE SWITCHES\n// Set true only for rows with a real connected sensor\n// ===============================\nvar useRow1 = true;\nvar useRow2 = false;\nvar useRow3 = false;\nvar useRow4 = false;\n\nvar soils = [];\n\nfunction addIfValid(enabled, value) {\n    var n = Number(value);\n    if (enabled && !isNaN(n) && isFinite(n)) {\n        soils.push(n);\n    }\n}\n\naddIfValid(useRow1, p.soil1_pct);\naddIfValid(useRow2, p.soil2_pct);\naddIfValid(useRow3, p.soil3_pct);\naddIfValid(useRow4, p.soil4_pct);\n\nif (soils.length === 0) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar sum = 0;\nfor (var i = 0; i < soils.length; i++) {\n    sum += soils[i];\n}\n\nvar soil = sum / soils.length;\n\nif (soil < 0) soil = 0;\nif (soil > 100) soil = 100;\n\nif (soil < 35) {\n    msg.payload = \"🟠 Dry — \" + Math.round(soil) + \"%\";\n} else if (soil <= 65) {\n    msg.payload = \"🟢 Good — \" + Math.round(soil) + \"%\";\n} else {\n    msg.payload = \"🟡 Wet — \" + Math.round(soil) + \"%\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 740,
+        "wires": [
+            [
+                "f6652c79933d5722"
+            ]
+        ]
+    },
+    {
+        "id": "122bc30ae01f5aef",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 620,
+        "wires": [
+            [
+                "be8a7c8e797a6693"
+            ]
+        ]
+    },
+    {
+        "id": "c05d02c6c1a47b68",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 660,
+        "wires": [
+            [
+                "a16cd82a260590bb"
+            ]
+        ]
+    },
+    {
+        "id": "aa07c00b77367af0",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 700,
+        "wires": [
+            [
+                "2577dedb22cac2d6"
+            ]
+        ]
+    },
+    {
+        "id": "f6652c79933d5722",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 740,
+        "wires": [
+            [
+                "c1111ec699e95296"
+            ]
+        ]
+    },
+    {
+        "id": "be8a7c8e797a6693",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "5dd99b1cfb8cc23e",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "Soil Moisture Row 2",
+        "label": "Row 2 Moisture",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1240,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "a16cd82a260590bb",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "5dd99b1cfb8cc23e",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "Soil Moisture Row 3",
+        "label": "Row 3 Moisture",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1240,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "2577dedb22cac2d6",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "5dd99b1cfb8cc23e",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Soil Moisture Row 4",
+        "label": "Row 4 Moisture",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1240,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "c1111ec699e95296",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "5dd99b1cfb8cc23e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Soil Moisture Average",
+        "label": "Average Soil Moisture",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1240,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "a2736bf8113ff968",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "a66c52d9e1e01cb2",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Tank Temp",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar temp = Number(p.tank_temp_f);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 40) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 55) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🟠 Warm — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 1020,
+        "wires": [
+            [
+                "02998a9b72e160a2"
+            ]
+        ]
+    },
+    {
+        "id": "edf5b972d6316cee",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "System Mode",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar mode = String(p.mode || \"\").toUpperCase();\n\nif (!mode) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (mode === \"AUTO\") {\n    msg.payload = \"🟢 AUTO\";\n} else if (mode === \"MANUAL\") {\n    msg.payload = \"🟠 MANUAL\";\n} else {\n    msg.payload = \"⚪ \" + mode;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 980,
+        "wires": [
+            [
+                "d0fd1a12a694de57"
+            ]
+        ]
+    },
+    {
+        "id": "a1f580c33ceba5a3",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Irrigation Mode",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar mode = String(p.irrigation_mode || \"\").toUpperCase();\n\nif (!mode) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (mode === \"AUTO\") {\n    msg.payload = \"🟢 AUTO\";\n} else if (mode === \"MANUAL\") {\n    msg.payload = \"🟠 MANUAL\";\n} else {\n    msg.payload = \"⚪ \" + mode;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1060,
+        "wires": [
+            [
+                "6a205b7544ef4ba4"
+            ]
+        ]
+    },
+    {
+        "id": "b36dab0781c0fd8a",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Pump Status",
+        "func": "var p = msg.payload;\n\n// --- HANDLE \"NOT CONNECTED\" STRING ---\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\n// --- NORMAL OBJECT PATH ---\np = p || {};\n\nif (p.pump_on === true) {\n    msg.payload = \"🟢 Pump ON\";\n} else if (p.pump_on === false) {\n    msg.payload = \"⚫ Pump OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 1100,
+        "wires": [
+            [
+                "c6c59999e2179d0c"
+            ]
+        ]
+    },
+    {
+        "id": "d42ca6357ab04682",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Heater Status",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\n\nif (p.heater_on === true) {\n    msg.payload = \"🟢 Heater ON\";\n} else if (p.heater_on === false) {\n    msg.payload = \"⚫ Heater OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1140,
+        "wires": [
+            [
+                "92ea6d85f1db08b2"
+            ]
+        ]
+    },
+    {
+        "id": "f11ff88198fa786b",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Active Row",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar row = Number(p.active_row);\n\nif (isNaN(row)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (row <= 0) {\n    msg.payload = \"⚫ No Active Row\";\n} else {\n    msg.payload = \"🟢 Active Row — \" + row;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 1180,
+        "wires": [
+            [
+                "a8c0f4d11ffcbc46"
+            ]
+        ]
+    },
+    {
+        "id": "88afa582f1768d06",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Row Run Status",
+        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar running = p.rows_run_active === true;\nvar autoMode = p.rows_run_auto === true;\n\nif (p.rows_run_active === undefined || p.rows_run_auto === undefined) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (running && autoMode) {\n    msg.payload = \"🟢 Rows Running — AUTO\";\n} else if (running && !autoMode) {\n    msg.payload = \"🟠 Rows Running — MANUAL\";\n} else {\n    msg.payload = \"⚫ Rows Idle\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1220,
+        "wires": [
+            [
+                "3c46abf0c9ce3913"
+            ]
+        ]
+    },
+    {
+        "id": "02998a9b72e160a2",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1020,
+        "wires": [
+            [
+                "8f96604c34681a3d"
+            ]
+        ]
+    },
+    {
+        "id": "a8c0f4d11ffcbc46",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1180,
+        "wires": [
+            [
+                "bfe1fbf00ca37186"
+            ]
+        ]
+    },
+    {
+        "id": "3c46abf0c9ce3913",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1220,
+        "wires": [
+            [
+                "0c9b2fa48a0ddcdb"
+            ]
+        ]
+    },
+    {
+        "id": "d0fd1a12a694de57",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 980,
+        "wires": [
+            [
+                "52570d4e53521e96"
+            ]
+        ]
+    },
+    {
+        "id": "6a205b7544ef4ba4",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1060,
+        "wires": [
+            [
+                "3870447647cbebee"
+            ]
+        ]
+    },
+    {
+        "id": "c6c59999e2179d0c",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1100,
+        "wires": [
+            [
+                "a40f21f9a26cebb7"
+            ]
+        ]
+    },
+    {
+        "id": "92ea6d85f1db08b2",
+        "type": "delay",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "15",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1010,
+        "y": 1140,
+        "wires": [
+            [
+                "cfc52da1c3247673"
+            ]
+        ]
+    },
+    {
+        "id": "8f96604c34681a3d",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Tank Temp",
+        "label": "Tank Temp",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1210,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "bfe1fbf00ca37186",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Acvive Row",
+        "label": "Active Row",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1210,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "0c9b2fa48a0ddcdb",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "Run Row Status",
+        "label": "Run Row Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1220,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "52570d4e53521e96",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "System Mode",
+        "label": "System Mode",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1220,
+        "y": 980,
+        "wires": []
+    },
+    {
+        "id": "3870447647cbebee",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "Irrigation Mode",
+        "label": "Irrigation Mode",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1220,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "a40f21f9a26cebb7",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "Pump Status",
+        "label": "Pump Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1210,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "cfc52da1c3247673",
+        "type": "ui-text",
+        "z": "6cda5a5f32196c63",
+        "group": "0f97e3d7bb96c5e7",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "name": "Heater Status",
+        "label": "Heater Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1220,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "57d0cc34117a5b81",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 1100,
+        "wires": [
+            [
+                "83c09f4b52f000bf"
+            ]
+        ]
+    },
+    {
+        "id": "83c09f4b52f000bf",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Not Connected",
+        "func": "msg.payload = \"Not Connected\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1100,
+        "wires": [
+            [
+                "a66c52d9e1e01cb2",
+                "edf5b972d6316cee",
+                "a1f580c33ceba5a3",
+                "b36dab0781c0fd8a",
+                "d42ca6357ab04682",
+                "f11ff88198fa786b",
+                "88afa582f1768d06",
+                "a24e7f3c812590eb",
+                "684c8ea3508c5763",
+                "a71fc4b492052cde"
+            ]
+        ]
+    },
+    {
+        "id": "2ce9937eb48a8c8b",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Fault Log",
+        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\n\n// robust fault check\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\";\n\n// read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet log = flow.get(\"fault_log\") || [];\nlet lastSig = flow.get(\"fault_log_last_sig\") || \"\";\nlet lastState = flow.get(\"fault_log_last_state\") || \"normal\";\n\n// timestamp\nlet ts = p.ts || p.ts_ms || Date.now();\nlet d = new Date(ts);\n\nfunction pad(n) {\n    return String(n).padStart(2, \"0\");\n}\n\nlet stamp =\n    (d.getMonth() + 1) + \"/\" +\n    d.getDate() + \"/\" +\n    d.getFullYear() + \" \" +\n    pad(d.getHours()) + \":\" +\n    pad(d.getMinutes()) + \":\" +\n    pad(d.getSeconds());\n\n// Build list of faults exactly like fault text logic\nlet faultList = [];\n\n// Add sensor / payload faults\nlet keys = Object.keys(faults).sort();\nif (keys.length) {\n    faultList = faultList.concat(\n        keys.map(function (k) {\n            return k + \": \" + faults[k];\n        })\n    );\n} else if (missingFields !== \"\") {\n    faultList.push(\"Missing fields: \" + missingFields);\n} else if (hasFault && commFault !== 1) {\n    faultList.push(\"FAULT ACTIVE\");\n}\n\n// Add comm fault\nif (commFault == 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final fault text\nlet faultText = faultList.join(\" | \");\n\n// Signature prevents duplicate spam\nlet sig = faultList.length > 0 ? faultText : \"NORMAL\";\n\n// Only log when the fault state/content changes\nif (sig !== lastSig) {\n    if (faultList.length > 0) {\n        log.unshift(\"🔴 [\" + stamp + \"] \" + faultText);\n        lastState = \"fault\";\n    } else {\n        if (lastState === \"fault\") {\n            log.unshift(\"🟢 [\" + stamp + \"] All Systems Normal\");\n        }\n        lastState = \"normal\";\n    }\n\n    // Keep newest 100 entries\n    if (log.length > 100) {\n        log = log.slice(0, 100);\n    }\n\n    flow.set(\"fault_log\", log);\n    flow.set(\"fault_log_last_sig\", sig);\n    flow.set(\"fault_log_last_state\", lastState);\n}\n\n// Output for dashboard\nmsg.payload = {\n    entries: log\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 400,
+        "wires": [
+            [
+                "fb25e247ea692f58"
+            ]
+        ]
+    },
+    {
+        "id": "fb25e247ea692f58",
+        "type": "ui-template",
+        "z": "6cda5a5f32196c63",
+        "group": "09f50657176dd200",
+        "page": "",
+        "ui": "",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div style=\"white-space: pre-line; font-family: Arial, sans-serif;\">\n    {{ displayText }}\n  </div>\n</template>\n\n<script>\n  export default {\n  computed: {\n    displayText() {\n      if (\n        this.msg &&\n        this.msg.payload &&\n        Array.isArray(this.msg.payload.entries) &&\n        this.msg.payload.entries.length\n      ) {\n        return this.msg.payload.entries.join('\\n\\n');\n      }\n      return 'No faults logged yet.';\n    }\n  }\n}\n</script>",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1360,
+        "y": 400,
+        "wires": [
+            []
+        ]
     }
 ]
