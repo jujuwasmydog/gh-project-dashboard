@@ -204,7 +204,7 @@
         "ui": "062287387a26aec8",
         "path": "/GHDashboard",
         "icon": "view-dashboard",
-        "layout": "grid",
+        "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
             {
@@ -236,7 +236,7 @@
     {
         "id": "2a41f864d2129443",
         "type": "ui-group",
-        "name": "Fault Indication",
+        "name": "Fault & Mode",
         "page": "3f12950bc7b59498",
         "width": "12",
         "height": 1,
@@ -254,7 +254,7 @@
         "ui": "062287387a26aec8",
         "path": "/History",
         "icon": "chart-line",
-        "layout": "grid",
+        "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
             {
@@ -290,7 +290,7 @@
         "ui": "062287387a26aec8",
         "path": "/SystemControl",
         "icon": "tune",
-        "layout": "grid",
+        "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
             {
@@ -338,7 +338,7 @@
         "type": "ui-group",
         "name": "HIstory",
         "page": "ab05efb03ef6ba92",
-        "width": 6,
+        "width": "12",
         "height": 1,
         "order": 1,
         "showTitle": true,
@@ -365,7 +365,7 @@
         "ui": "062287387a26aec8",
         "path": "/FaultLog",
         "icon": "alert-circle",
-        "layout": "grid",
+        "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
             {
@@ -669,7 +669,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 380,
-        "y": 500,
+        "y": 620,
         "wires": []
     },
     {
@@ -686,7 +686,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 150,
-        "y": 540,
+        "y": 660,
         "wires": [
             [
                 "9c954700ec15527d",
@@ -770,7 +770,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 460,
+        "y": 580,
         "wires": [
             [
                 "bb6a10ac977d0717"
@@ -790,7 +790,7 @@
         "finalize": "",
         "libs": [],
         "x": 640,
-        "y": 500,
+        "y": 620,
         "wires": [
             [
                 "a6d64198e6eaae62"
@@ -810,7 +810,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 540,
+        "y": 660,
         "wires": [
             [
                 "3a5ee99f6baf7088"
@@ -830,7 +830,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 580,
+        "y": 700,
         "wires": [
             [
                 "66c91ea4b80fc08f"
@@ -842,7 +842,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Louvre Status",
-        "func": "var p = msg.payload || {};\n\nvar pct = Number(p.louvre_pct);\nvar state = String(p.louvre_state || \"\").toLowerCase();\n\nif (isNaN(pct)) return null;\n\nif (state === \"opening\") {\n    msg.payload = \"🟢 Opening — \" + Math.round(pct) + \"%\";\n} else if (state === \"closing\") {\n    msg.payload = \"🟠 Closing — \" + Math.round(pct) + \"%\";\n} else if (pct >= 95) {\n    msg.payload = \"🔵 Open — \" + Math.round(pct) + \"%\";\n} else if (pct <= 5) {\n    msg.payload = \"⚪ Closed — \" + Math.round(pct) + \"%\";\n} else {\n    msg.payload = \"🟡 Stopped — \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar pct = Number(p.louvre_pos_pct);\n\nif (isNaN(pct)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar lastPct = context.get(\"last_louvre_pct\");\nvar delta = 0;\n\nif (typeof lastPct === \"number\" && isFinite(lastPct)) {\n    delta = pct - lastPct;\n}\n\ncontext.set(\"last_louvre_pct\", pct);\n\n// End states first\nif (pct >= 95) {\n    msg.payload = \"🔵 Open — 100%\";\n    return msg;\n}\n\nif (pct <= 5) {\n    msg.payload = \"⚪ Closed — 0%\";\n    return msg;\n}\n\n// Movement inferred from position change\nif (delta >= 1) {\n    msg.payload = \"🟢 Opening — \" + Math.round(pct) + \"%\";\n} else if (delta <= -1) {\n    msg.payload = \"🟠 Closing — \" + Math.round(pct) + \"%\";\n} else {\n    msg.payload = \"🟡 In Transit — \" + Math.round(pct) + \"%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -850,7 +850,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 780,
+        "y": 900,
         "wires": [
             [
                 "66d981e6d96be52c"
@@ -909,7 +909,7 @@
             "#e5e5e5"
         ],
         "gridColorDefault": true,
-        "width": "6",
+        "width": "12",
         "height": "6",
         "className": "",
         "interpolation": "smooth",
@@ -962,7 +962,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 540,
+        "y": 660,
         "wires": [
             [
                 "ad4169f006bccb85"
@@ -987,7 +987,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 460,
+        "y": 580,
         "wires": [
             [
                 "1ce6a5b6622a17ed"
@@ -1012,7 +1012,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 500,
+        "y": 620,
         "wires": [
             [
                 "53e4b9cbb629afe5"
@@ -1037,7 +1037,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 580,
+        "y": 700,
         "wires": [
             [
                 "84fe9ef876e0aad4"
@@ -1062,7 +1062,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 780,
+        "y": 900,
         "wires": [
             [
                 "19ac465249fbbe53"
@@ -1119,7 +1119,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fan Speed",
-        "func": "var p = msg.payload || {};\n\nvar fan = Number(p.fan_pct);\n\nif (isNaN(fan)) return null;\n\nif (fan > 0) {\n    msg.payload = \"🟢 ON — \" + Math.round(fan) + \"%\";\n} else {\n    msg.payload = \"⚫ OFF — 0%\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload || {};\n\nvar fan = Number(p.fan_pct);\n\nif (isNaN(fan)) return null;\n\nif (fan > 0) {\n    msg.payload = \"🟢 ON — \" + Math.round(fan) + \"%\";\n} else {\n    msg.payload = \"⚪ OFF — 0%\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1127,7 +1127,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 820,
+        "y": 940,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1152,7 +1152,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 820,
+        "y": 940,
         "wires": [
             [
                 "7ec8464d62e237b2"
@@ -1181,7 +1181,7 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 4",
-        "active": false,
+        "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -1190,7 +1190,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 900,
-        "y": 1460,
+        "y": 1420,
         "wires": []
     },
     {
@@ -1206,7 +1206,7 @@
         "finalize": "",
         "libs": [],
         "x": 390,
-        "y": 540,
+        "y": 660,
         "wires": [
             [
                 "0d1202f9041fb697",
@@ -1215,7 +1215,8 @@
                 "c5aa37be95cbd5f2",
                 "f2588d218f7169c5",
                 "fanpctfunc000001",
-                "f3809e8fd627b134"
+                "f3809e8fd627b134",
+                "edf5b972d6316cee"
             ]
         ]
     },
@@ -1294,12 +1295,12 @@
         "z": "6cda5a5f32196c63",
         "name": "Louvre Button GP",
         "group": "1278781a5f417ce4",
-        "order": 3,
+        "order": 4,
         "width": "6",
-        "height": "3",
+        "height": "2",
         "label": "Louvre Control",
         "className": "",
-        "rounded": true,
+        "rounded": false,
         "useThemeColors": true,
         "passthru": true,
         "options": [
@@ -1309,13 +1310,6 @@
                 "value": "OPEN",
                 "valueType": "str",
                 "color": "#009933"
-            },
-            {
-                "label": "Half",
-                "icon": "",
-                "value": "HALF",
-                "valueType": "str",
-                "color": "#999999"
             },
             {
                 "label": "Close",
@@ -1330,19 +1324,12 @@
                 "value": "STOP",
                 "valueType": "str",
                 "color": "#009999"
-            },
-            {
-                "label": "Auto",
-                "icon": "",
-                "value": "AUTO",
-                "valueType": "str",
-                "color": "#cccc00"
             }
         ],
         "topic": "topic",
         "topicType": "msg",
         "x": 150,
-        "y": 1340,
+        "y": 1460,
         "wires": [
             [
                 "82cb2ac5ce541d87"
@@ -1354,7 +1341,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Louvre Command ",
-        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"OPEN\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE OPEN\\n\";\n} else if (cmd === \"CLOSE\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE CLOSE\\n\";\n} else if (cmd === \"STOP\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE STOP\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1362,10 +1349,11 @@
         "finalize": "",
         "libs": [],
         "x": 670,
-        "y": 1340,
+        "y": 1460,
         "wires": [
             [
-                "12cca41621c67cb4"
+                "12cca41621c67cb4",
+                "1e53d5d61ad2dcde"
             ]
         ]
     },
@@ -1376,7 +1364,7 @@
         "name": "",
         "serial": "f21e5fa854a87f38",
         "x": 920,
-        "y": 1340,
+        "y": 1460,
         "wires": []
     },
     {
@@ -1385,9 +1373,9 @@
         "z": "6cda5a5f32196c63",
         "name": "Fan Control",
         "group": "1278781a5f417ce4",
-        "order": 2,
+        "order": 3,
         "width": 6,
-        "height": "3",
+        "height": "2",
         "label": "Fan Control",
         "className": "",
         "rounded": true,
@@ -1414,19 +1402,12 @@
                 "value": "FAN_OFF",
                 "valueType": "str",
                 "color": "#ff6666"
-            },
-            {
-                "label": "Auto",
-                "icon": "",
-                "value": "FAN_AUTO",
-                "valueType": "str",
-                "color": "#009999"
             }
         ],
         "topic": "topic",
         "topicType": "msg",
         "x": 130,
-        "y": 1380,
+        "y": 1520,
         "wires": [
             [
                 "dc183ed1b109c77e"
@@ -1438,7 +1419,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fan Command",
-        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"FAN_50\") {\n    msg.payload = \"MODE MANUAL\\nFAN 128\\n\";\n} else if (cmd === \"FAN_100\") {\n    msg.payload = \"MODE MANUAL\\nFAN 255\\n\";\n} else if (cmd === \"FAN_OFF\") {\n    msg.payload = \"MODE MANUAL\\nFAN 0\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1446,7 +1427,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 1380,
+        "y": 1520,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1459,7 +1440,7 @@
         "z": "6cda5a5f32196c63",
         "name": "Light Control",
         "group": "1278781a5f417ce4",
-        "order": 1,
+        "order": 2,
         "width": 6,
         "height": "2",
         "label": "Light Control",
@@ -1481,19 +1462,12 @@
                 "value": "LIGHT_OFF",
                 "valueType": "str",
                 "color": "#999999"
-            },
-            {
-                "label": "Auto",
-                "icon": "",
-                "value": "LIGHT_AUTO",
-                "valueType": "str",
-                "color": "#ff6666"
             }
         ],
         "topic": "topic",
         "topicType": "msg",
         "x": 130,
-        "y": 1420,
+        "y": 1580,
         "wires": [
             [
                 "3803f18308f137a5"
@@ -1505,7 +1479,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Light Command",
-        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"LIGHT_ON\") {\n    msg.payload = \"MODE MANUAL\\nLIGHT ON\\n\";\n} else if (cmd === \"LIGHT_OFF\") {\n    msg.payload = \"MODE MANUAL\\nLIGHT OFF\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1513,7 +1487,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 1420,
+        "y": 1580,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1649,7 +1623,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 150,
-        "y": 1460,
+        "y": 1420,
         "wires": [
             [
                 "ebadb11eb93cb9ce"
@@ -1669,11 +1643,10 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 1460,
+        "y": 1420,
         "wires": [
             [
-                "12cca41621c67cb4",
-                "1e53d5d61ad2dcde"
+                "12cca41621c67cb4"
             ]
         ]
     },
@@ -1714,7 +1687,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1210,
-        "y": 460,
+        "y": 580,
         "wires": []
     },
     {
@@ -1738,7 +1711,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1200,
-        "y": 500,
+        "y": 620,
         "wires": []
     },
     {
@@ -1762,7 +1735,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1200,
-        "y": 540,
+        "y": 660,
         "wires": []
     },
     {
@@ -1786,7 +1759,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1240,
-        "y": 580,
+        "y": 700,
         "wires": []
     },
     {
@@ -1810,7 +1783,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1220,
-        "y": 780,
+        "y": 900,
         "wires": []
     },
     {
@@ -1834,7 +1807,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1210,
-        "y": 820,
+        "y": 940,
         "wires": []
     },
     {
@@ -1850,7 +1823,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 620,
+        "y": 740,
         "wires": [
             [
                 "122bc30ae01f5aef",
@@ -1871,7 +1844,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 660,
+        "y": 780,
         "wires": [
             [
                 "c05d02c6c1a47b68"
@@ -1891,7 +1864,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 700,
+        "y": 820,
         "wires": [
             [
                 "aa07c00b77367af0"
@@ -1911,7 +1884,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 740,
+        "y": 860,
         "wires": [
             [
                 "f6652c79933d5722"
@@ -1936,7 +1909,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 620,
+        "y": 740,
         "wires": [
             [
                 "be8a7c8e797a6693"
@@ -1961,7 +1934,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 660,
+        "y": 780,
         "wires": [
             [
                 "a16cd82a260590bb"
@@ -1986,7 +1959,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 700,
+        "y": 820,
         "wires": [
             [
                 "2577dedb22cac2d6"
@@ -2011,7 +1984,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 740,
+        "y": 860,
         "wires": [
             [
                 "c1111ec699e95296"
@@ -2039,7 +2012,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1240,
-        "y": 620,
+        "y": 740,
         "wires": []
     },
     {
@@ -2063,7 +2036,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1240,
-        "y": 660,
+        "y": 780,
         "wires": []
     },
     {
@@ -2087,7 +2060,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1240,
-        "y": 700,
+        "y": 820,
         "wires": []
     },
     {
@@ -2111,7 +2084,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1240,
-        "y": 740,
+        "y": 860,
         "wires": []
     },
     {
@@ -2119,15 +2092,15 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 6",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 920,
-        "y": 900,
+        "x": 1000,
+        "y": 520,
         "wires": []
     },
     {
@@ -2143,7 +2116,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 1020,
+        "y": 1140,
         "wires": [
             [
                 "02998a9b72e160a2"
@@ -2183,7 +2156,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 1060,
+        "y": 1180,
         "wires": [
             [
                 "6a205b7544ef4ba4"
@@ -2203,7 +2176,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 1100,
+        "y": 1220,
         "wires": [
             [
                 "c6c59999e2179d0c"
@@ -2223,7 +2196,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 1140,
+        "y": 1260,
         "wires": [
             [
                 "92ea6d85f1db08b2"
@@ -2243,7 +2216,7 @@
         "finalize": "",
         "libs": [],
         "x": 650,
-        "y": 1180,
+        "y": 1300,
         "wires": [
             [
                 "a8c0f4d11ffcbc46"
@@ -2263,7 +2236,7 @@
         "finalize": "",
         "libs": [],
         "x": 660,
-        "y": 1220,
+        "y": 1340,
         "wires": [
             [
                 "3c46abf0c9ce3913"
@@ -2288,7 +2261,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1020,
+        "y": 1140,
         "wires": [
             [
                 "8f96604c34681a3d"
@@ -2313,7 +2286,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1180,
+        "y": 1300,
         "wires": [
             [
                 "bfe1fbf00ca37186"
@@ -2338,7 +2311,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1220,
+        "y": 1340,
         "wires": [
             [
                 "0c9b2fa48a0ddcdb"
@@ -2388,7 +2361,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1060,
+        "y": 1180,
         "wires": [
             [
                 "3870447647cbebee"
@@ -2413,7 +2386,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1100,
+        "y": 1220,
         "wires": [
             [
                 "a40f21f9a26cebb7"
@@ -2438,7 +2411,7 @@
         "allowrate": false,
         "outputs": 1,
         "x": 1010,
-        "y": 1140,
+        "y": 1260,
         "wires": [
             [
                 "cfc52da1c3247673"
@@ -2466,7 +2439,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1210,
-        "y": 1020,
+        "y": 1140,
         "wires": []
     },
     {
@@ -2474,7 +2447,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "0f97e3d7bb96c5e7",
-        "order": 5,
+        "order": 4,
         "width": 0,
         "height": 0,
         "name": "Acvive Row",
@@ -2490,7 +2463,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1210,
-        "y": 1180,
+        "y": 1300,
         "wires": []
     },
     {
@@ -2498,7 +2471,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "0f97e3d7bb96c5e7",
-        "order": 6,
+        "order": 5,
         "width": 0,
         "height": 0,
         "name": "Run Row Status",
@@ -2514,14 +2487,14 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1220,
-        "y": 1220,
+        "y": 1340,
         "wires": []
     },
     {
         "id": "52570d4e53521e96",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
+        "group": "2a41f864d2129443",
         "order": 2,
         "width": 0,
         "height": 0,
@@ -2546,7 +2519,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "0f97e3d7bb96c5e7",
-        "order": 3,
+        "order": 2,
         "width": 0,
         "height": 0,
         "name": "Irrigation Mode",
@@ -2562,7 +2535,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1220,
-        "y": 1060,
+        "y": 1180,
         "wires": []
     },
     {
@@ -2570,7 +2543,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "0f97e3d7bb96c5e7",
-        "order": 4,
+        "order": 3,
         "width": 0,
         "height": 0,
         "name": "Pump Status",
@@ -2586,7 +2559,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1210,
-        "y": 1100,
+        "y": 1220,
         "wires": []
     },
     {
@@ -2594,7 +2567,7 @@
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
         "group": "0f97e3d7bb96c5e7",
-        "order": 7,
+        "order": 6,
         "width": 0,
         "height": 0,
         "name": "Heater Status",
@@ -2610,7 +2583,7 @@
         "value": "payload",
         "valueType": "msg",
         "x": 1220,
-        "y": 1140,
+        "y": 1260,
         "wires": []
     },
     {
@@ -2631,7 +2604,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 150,
-        "y": 1100,
+        "y": 1220,
         "wires": [
             [
                 "83c09f4b52f000bf"
@@ -2651,11 +2624,10 @@
         "finalize": "",
         "libs": [],
         "x": 360,
-        "y": 1100,
+        "y": 1220,
         "wires": [
             [
                 "a66c52d9e1e01cb2",
-                "edf5b972d6316cee",
                 "a1f580c33ceba5a3",
                 "b36dab0781c0fd8a",
                 "d42ca6357ab04682",
@@ -2672,7 +2644,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Log",
-        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\n\n// robust fault check\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\";\n\n// read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet log = flow.get(\"fault_log\") || [];\nlet lastSig = flow.get(\"fault_log_last_sig\") || \"\";\nlet lastState = flow.get(\"fault_log_last_state\") || \"normal\";\n\n// timestamp\nlet ts = p.ts || p.ts_ms || Date.now();\nlet d = new Date(ts);\n\nfunction pad(n) {\n    return String(n).padStart(2, \"0\");\n}\n\nlet stamp =\n    (d.getMonth() + 1) + \"/\" +\n    d.getDate() + \"/\" +\n    d.getFullYear() + \" \" +\n    pad(d.getHours()) + \":\" +\n    pad(d.getMinutes()) + \":\" +\n    pad(d.getSeconds());\n\n// Build list of faults exactly like fault text logic\nlet faultList = [];\n\n// Add sensor / payload faults\nlet keys = Object.keys(faults).sort();\nif (keys.length) {\n    faultList = faultList.concat(\n        keys.map(function (k) {\n            return k + \": \" + faults[k];\n        })\n    );\n} else if (missingFields !== \"\") {\n    faultList.push(\"Missing fields: \" + missingFields);\n} else if (hasFault && commFault !== 1) {\n    faultList.push(\"FAULT ACTIVE\");\n}\n\n// Add comm fault\nif (commFault == 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\n// Final fault text\nlet faultText = faultList.join(\" | \");\n\n// Signature prevents duplicate spam\nlet sig = faultList.length > 0 ? faultText : \"NORMAL\";\n\n// Only log when the fault state/content changes\nif (sig !== lastSig) {\n    if (faultList.length > 0) {\n        log.unshift(\"🔴 [\" + stamp + \"] \" + faultText);\n        lastState = \"fault\";\n    } else {\n        if (lastState === \"fault\") {\n            log.unshift(\"🟢 [\" + stamp + \"] All Systems Normal\");\n        }\n        lastState = \"normal\";\n    }\n\n    // Keep newest 100 entries\n    if (log.length > 100) {\n        log = log.slice(0, 100);\n    }\n\n    flow.set(\"fault_log\", log);\n    flow.set(\"fault_log_last_sig\", sig);\n    flow.set(\"fault_log_last_state\", lastState);\n}\n\n// Output for dashboard\nmsg.payload = {\n    entries: log\n};\n\nreturn msg;",
+        "func": "let p = msg.payload || {};\n\n// manual clear from button\nif (p.reset_fault_log === true || msg.reset_fault_log === true) {\n    flow.set(\"fault_log\", []);\n    flow.set(\"fault_log_last_sig\", \"\");\n    flow.set(\"fault_log_last_state\", \"normal\");\n\n    msg.payload = {\n        entries: []\n    };\n    return msg;\n}\n\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\n\n// robust fault check\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\";\n\n// read comm watchdog state\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet log = flow.get(\"fault_log\") || [];\nlet lastSig = flow.get(\"fault_log_last_sig\") || \"\";\nlet lastState = flow.get(\"fault_log_last_state\") || \"normal\";\n\n// timestamp\nlet ts = p.ts || p.ts_ms || Date.now();\nlet d = new Date(ts);\n\nfunction pad(n) {\n    return String(n).padStart(2, \"0\");\n}\n\nlet stamp =\n    (d.getMonth() + 1) + \"/\" +\n    d.getDate() + \"/\" +\n    d.getFullYear() + \" \" +\n    pad(d.getHours()) + \":\" +\n    pad(d.getMinutes()) + \":\" +\n    pad(d.getSeconds());\n\n// Build list of faults exactly like fault text logic\nlet faultList = [];\n\nlet keys = Object.keys(faults).sort();\nif (keys.length) {\n    faultList = faultList.concat(\n        keys.map(function (k) {\n            return k + \": \" + faults[k];\n        })\n    );\n} else if (missingFields !== \"\") {\n    faultList.push(\"Missing fields: \" + missingFields);\n} else if (hasFault && commFault !== 1) {\n    faultList.push(\"FAULT ACTIVE\");\n}\n\n// Add comm fault\nif (commFault == 1) {\n    faultList.unshift(\"NO COMMS TO ARDUINO\");\n}\n\nlet faultText = faultList.join(\" | \");\nlet sig = faultList.length > 0 ? faultText : \"NORMAL\";\n\n// Only log when state/content changes\nif (sig !== lastSig) {\n    if (faultList.length > 0) {\n        log.unshift(\"🔴 [\" + stamp + \"] \" + faultText);\n        lastState = \"fault\";\n    } else {\n        if (lastState === \"fault\") {\n            log.unshift(\"🟢 [\" + stamp + \"] All Systems Normal\");\n        }\n        lastState = \"normal\";\n    }\n\n    // Keep newest 100 entries\n    if (log.length > 100) {\n        log = log.slice(0, 100);\n    }\n\n    flow.set(\"fault_log\", log);\n    flow.set(\"fault_log_last_sig\", sig);\n    flow.set(\"fault_log_last_state\", lastState);\n}\n\nmsg.payload = {\n    entries: log\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2695,7 +2667,7 @@
         "page": "",
         "ui": "",
         "name": "",
-        "order": 1,
+        "order": 2,
         "width": 0,
         "height": 0,
         "head": "",
@@ -2709,6 +2681,104 @@
         "y": 400,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "52f07cd6dbb9d3a3",
+        "type": "ui-button",
+        "z": "6cda5a5f32196c63",
+        "group": "09f50657176dd200",
+        "name": "Clear Fault Log",
+        "label": "Clear Fault Log",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "{\"reset_fault_log\":true}",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "buttonColor": "",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 140,
+        "y": 400,
+        "wires": [
+            [
+                "2ce9937eb48a8c8b"
+            ]
+        ]
+    },
+    {
+        "id": "50612a9ae22190d5",
+        "type": "ui-button",
+        "z": "6cda5a5f32196c63",
+        "group": "1278781a5f417ce4",
+        "name": "Set System: Auto",
+        "label": "Set System: Auto",
+        "order": 1,
+        "width": "6",
+        "height": "1",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "AUTO",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "buttonColor": "",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 150,
+        "y": 1640,
+        "wires": [
+            [
+                "a997ea0e7028d94d"
+            ]
+        ]
+    },
+    {
+        "id": "a997ea0e7028d94d",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Set Mode Auto",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"AUTO\") {\n    msg.payload = \"MODE AUTO\\n\";\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1640,
+        "wires": [
+            [
+                "12cca41621c67cb4"
+            ]
         ]
     }
 ]
