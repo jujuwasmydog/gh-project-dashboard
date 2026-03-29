@@ -181,20 +181,20 @@
     {
         "id": "ad1666f09e21ea6d",
         "type": "ui-theme",
-        "name": "Default Theme",
+        "name": "Slate Pro",
         "colors": {
-            "surface": "#111827",
-            "primary": "#22c55e",
-            "bgPage": "#0b1220",
-            "groupBg": "#111827",
-            "groupOutline": "#1f2937"
+            "surface": "#16162a",
+            "primary": "#7c3aed",
+            "bgPage": "#0f0f1a",
+            "groupBg": "#16162a",
+            "groupOutline": "#252548"
         },
         "sizes": {
             "density": "default",
-            "pagePadding": "12px",
-            "groupGap": "12px",
-            "groupBorderRadius": "6px",
-            "widgetGap": "12px"
+            "pagePadding": "16px",
+            "groupGap": "14px",
+            "groupBorderRadius": "10px",
+            "widgetGap": "14px"
         }
     },
     {
@@ -336,7 +336,7 @@
     {
         "id": "db507c4f3e90976b",
         "type": "ui-group",
-        "name": "HIstory",
+        "name": "History",
         "page": "ab05efb03ef6ba92",
         "width": "12",
         "height": 1,
@@ -902,13 +902,13 @@
             "#c5b0d5"
         ],
         "textColor": [
-            "#666666"
+            "#94a3b8"
         ],
-        "textColorDefault": true,
+        "textColorDefault": false,
         "gridColor": [
-            "#e5e5e5"
+            "#1e293b"
         ],
-        "gridColorDefault": true,
+        "gridColorDefault": false,
         "width": "12",
         "height": "6",
         "className": "",
@@ -1216,7 +1216,13 @@
                 "f2588d218f7169c5",
                 "fanpctfunc000001",
                 "f3809e8fd627b134",
-                "edf5b972d6316cee"
+                "edf5b972d6316cee",
+                "a66c52d9e1e01cb2",
+                "a1f580c33ceba5a3",
+                "b36dab0781c0fd8a",
+                "d42ca6357ab04682",
+                "f11ff88198fa786b",
+                "88afa582f1768d06"
             ]
         ]
     },
@@ -2108,7 +2114,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Tank Temp",
-        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar temp = Number(p.tank_temp_f);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 40) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 55) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🟠 Warm — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar temp = Number(p.tank_temp_f);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 40) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 55) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🟠 Warm — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2148,7 +2154,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Irrigation Mode",
-        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar mode = String(p.irrigation_mode || \"\").toUpperCase();\n\nif (!mode) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (mode === \"AUTO\") {\n    msg.payload = \"🟢 AUTO\";\n} else if (mode === \"MANUAL\") {\n    msg.payload = \"🟠 MANUAL\";\n} else {\n    msg.payload = \"⚪ \" + mode;\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar mode = String(p.irrigation_mode || \"\").toUpperCase();\n\nif (!mode) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (mode === \"AUTO\") {\n    msg.payload = \"🟢 AUTO\";\n} else if (mode === \"MANUAL\") {\n    msg.payload = \"🟠 MANUAL\";\n} else {\n    msg.payload = \"⚪ \" + mode;\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2168,7 +2174,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Pump Status",
-        "func": "var p = msg.payload;\n\n// --- HANDLE \"NOT CONNECTED\" STRING ---\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\n// --- NORMAL OBJECT PATH ---\np = p || {};\n\nif (p.pump_on === true) {\n    msg.payload = \"🟢 Pump ON\";\n} else if (p.pump_on === false) {\n    msg.payload = \"⚫ Pump OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\n// --- HANDLE \"NOT CONNECTED\" STRING ---\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\n// --- NORMAL OBJECT PATH ---\np = p || {};\n\nif (p.pump_on === true) {\n    msg.payload = \"🟢 Pump ON\";\n} else if (p.pump_on === false) {\n    msg.payload = \"⚫ Pump OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2188,7 +2194,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Heater Status",
-        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\n\nif (p.heater_on === true) {\n    msg.payload = \"🟢 Heater ON\";\n} else if (p.heater_on === false) {\n    msg.payload = \"⚫ Heater OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\n\nif (p.heater_on === true) {\n    msg.payload = \"🟢 Heater ON\";\n} else if (p.heater_on === false) {\n    msg.payload = \"⚫ Heater OFF\";\n} else {\n    msg.payload = \"⚫ Not Connected\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2208,7 +2214,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Active Row",
-        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar row = Number(p.active_row);\n\nif (isNaN(row)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (row <= 0) {\n    msg.payload = \"⚫ No Active Row\";\n} else {\n    msg.payload = \"🟢 Active Row — \" + row;\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar row = Number(p.active_row);\n\nif (isNaN(row)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (row <= 0) {\n    msg.payload = \"⚫ No Active Row\";\n} else {\n    msg.payload = \"🟢 Active Row — \" + row;\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2228,7 +2234,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Row Run Status",
-        "func": "var p = msg.payload;\n\nif (typeof p === \"string\") {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar running = p.rows_run_active === true;\nvar autoMode = p.rows_run_auto === true;\n\nif (p.rows_run_active === undefined || p.rows_run_auto === undefined) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (running && autoMode) {\n    msg.payload = \"🟢 Rows Running — AUTO\";\n} else if (running && !autoMode) {\n    msg.payload = \"🟠 Rows Running — MANUAL\";\n} else {\n    msg.payload = \"⚫ Rows Idle\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload;\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (typeof p === \"string\" || commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\np = p || {};\nvar running = p.rows_run_active === true;\nvar autoMode = p.rows_run_auto === true;\n\nif (p.rows_run_active === undefined || p.rows_run_auto === undefined) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (running && autoMode) {\n    msg.payload = \"🟢 Rows Running — AUTO\";\n} else if (running && !autoMode) {\n    msg.payload = \"🟠 Rows Running — MANUAL\";\n} else {\n    msg.payload = \"⚫ Rows Idle\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2627,12 +2633,6 @@
         "y": 1220,
         "wires": [
             [
-                "a66c52d9e1e01cb2",
-                "a1f580c33ceba5a3",
-                "b36dab0781c0fd8a",
-                "d42ca6357ab04682",
-                "f11ff88198fa786b",
-                "88afa582f1768d06",
                 "a24e7f3c812590eb",
                 "684c8ea3508c5763",
                 "a71fc4b492052cde"
