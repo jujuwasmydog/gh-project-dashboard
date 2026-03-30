@@ -193,17 +193,17 @@
             "density": "default",
             "pagePadding": "16px",
             "groupGap": "14px",
-            "groupBorderRadius": "10px",
+            "groupBorderRadius": "14px",
             "widgetGap": "14px"
         }
     },
     {
-        "id": "3f12950bc7b59498",
+        "id": "pg_dashboard_01",
         "type": "ui-page",
-        "name": "Greenhouse Dashboard",
+        "name": "Dashboard",
         "ui": "062287387a26aec8",
-        "path": "/GHDashboard",
-        "icon": "view-dashboard",
+        "path": "/dashboard",
+        "icon": "leaf",
         "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
@@ -234,61 +234,11 @@
         "disabled": "false"
     },
     {
-        "id": "2a41f864d2129443",
-        "type": "ui-group",
-        "name": "Fault & Mode",
-        "page": "3f12950bc7b59498",
-        "width": "12",
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
-    },
-    {
-        "id": "ab05efb03ef6ba92",
+        "id": "pg_control_01",
         "type": "ui-page",
-        "name": "History",
+        "name": "Control",
         "ui": "062287387a26aec8",
-        "path": "/History",
-        "icon": "chart-line",
-        "layout": "notebook",
-        "theme": "ad1666f09e21ea6d",
-        "breakpoints": [
-            {
-                "name": "Default",
-                "px": "0",
-                "cols": "3"
-            },
-            {
-                "name": "Tablet",
-                "px": "576",
-                "cols": "6"
-            },
-            {
-                "name": "Small Desktop",
-                "px": "768",
-                "cols": "9"
-            },
-            {
-                "name": "Desktop",
-                "px": "1024",
-                "cols": "12"
-            }
-        ],
-        "order": 2,
-        "className": "",
-        "visible": "true",
-        "disabled": "false"
-    },
-    {
-        "id": "f48d03ed9e40aac6",
-        "type": "ui-page",
-        "name": "System Control",
-        "ui": "062287387a26aec8",
-        "path": "/SystemControl",
+        "path": "/control",
         "icon": "tune",
         "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
@@ -314,57 +264,54 @@
                 "cols": "12"
             }
         ],
+        "order": 2,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "pg_alerts_01",
+        "type": "ui-page",
+        "name": "Alerts",
+        "ui": "062287387a26aec8",
+        "path": "/alerts",
+        "icon": "alert-circle",
+        "layout": "notebook",
+        "theme": "ad1666f09e21ea6d",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
         "order": 3,
         "className": "",
         "visible": "true",
         "disabled": "false"
     },
     {
-        "id": "1278781a5f417ce4",
-        "type": "ui-group",
-        "name": "Sys Control",
-        "page": "f48d03ed9e40aac6",
-        "width": 6,
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
-    },
-    {
-        "id": "db507c4f3e90976b",
-        "type": "ui-group",
-        "name": "History",
-        "page": "ab05efb03ef6ba92",
-        "width": "12",
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
-    },
-    {
-        "id": "3e36b48ccdcf3e10",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-node-sqlite": "1.1.1",
-            "node-red-node-serialport": "2.0.3",
-            "node-red-dashboard": "3.6.6",
-            "@flowfuse/node-red-dashboard": "1.30.2"
-        }
-    },
-    {
-        "id": "9a0e4fc9f2dea302",
+        "id": "pg_history_01",
         "type": "ui-page",
-        "name": "Fault Log",
+        "name": "History",
         "ui": "062287387a26aec8",
-        "path": "/FaultLog",
-        "icon": "alert-circle",
+        "path": "/history",
+        "icon": "chart-line",
         "layout": "notebook",
         "theme": "ad1666f09e21ea6d",
         "breakpoints": [
@@ -395,10 +342,108 @@
         "disabled": "false"
     },
     {
-        "id": "09f50657176dd200",
+        "id": "gr_conn_status",
         "type": "ui-group",
-        "name": "Fault Log",
-        "page": "9a0e4fc9f2dea302",
+        "name": "Connection",
+        "page": "pg_dashboard_01",
+        "width": "12",
+        "height": 1,
+        "order": 1,
+        "showTitle": false,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_environment",
+        "type": "ui-group",
+        "name": "Environment",
+        "page": "pg_dashboard_01",
+        "width": "12",
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_actuators",
+        "type": "ui-group",
+        "name": "Actuators",
+        "page": "pg_dashboard_01",
+        "width": "12",
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_system",
+        "type": "ui-group",
+        "name": "System Status",
+        "page": "pg_dashboard_01",
+        "width": "12",
+        "height": 1,
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_louvre_ctrl",
+        "type": "ui-group",
+        "name": "Louvre / Vents",
+        "page": "pg_control_01",
+        "width": "12",
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_fan_ctrl",
+        "type": "ui-group",
+        "name": "Fan",
+        "page": "pg_control_01",
+        "width": "12",
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_light_ctrl",
+        "type": "ui-group",
+        "name": "Grow Light",
+        "page": "pg_control_01",
+        "width": "12",
+        "height": 1,
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_mode_ctrl",
+        "type": "ui-group",
+        "name": "System Mode",
+        "page": "pg_control_01",
         "width": "12",
         "height": 1,
         "order": 1,
@@ -409,11 +454,25 @@
         "groupType": "default"
     },
     {
-        "id": "b80ce3791c51c9eb",
+        "id": "gr_alert_history",
         "type": "ui-group",
-        "name": "Climate",
-        "page": "3f12950bc7b59498",
-        "width": 6,
+        "name": "Alert History",
+        "page": "pg_alerts_01",
+        "width": "12",
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "gr_thresholds",
+        "type": "ui-group",
+        "name": "Thresholds",
+        "page": "pg_alerts_01",
+        "width": "12",
         "height": 1,
         "order": 2,
         "showTitle": true,
@@ -423,13 +482,13 @@
         "groupType": "default"
     },
     {
-        "id": "5dd99b1cfb8cc23e",
+        "id": "gr_history_chart",
         "type": "ui-group",
-        "name": "Soil Moisture",
-        "page": "3f12950bc7b59498",
-        "width": 6,
+        "name": "History",
+        "page": "pg_history_01",
+        "width": "12",
         "height": 1,
-        "order": 3,
+        "order": 1,
         "showTitle": true,
         "className": "",
         "visible": "true",
@@ -437,18 +496,21 @@
         "groupType": "default"
     },
     {
-        "id": "0f97e3d7bb96c5e7",
-        "type": "ui-group",
-        "name": "Hardware Status",
-        "page": "3f12950bc7b59498",
-        "width": 6,
-        "height": 1,
-        "order": 4,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
+        "id": "3e36b48ccdcf3e10",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-sqlite": "1.1.1",
+            "node-red-node-serialport": "2.0.3",
+            "node-red-dashboard": "3.6.6",
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    },
+    {
+        "id": "ws_in_node_001",
+        "type": "websocket-listener",
+        "path": "/ws/greenhouse",
+        "wholemsg": "false"
     },
     {
         "id": "239514801c1bffa2",
@@ -456,8 +518,8 @@
         "z": "6cda5a5f32196c63",
         "name": "Controller",
         "serial": "f21e5fa854a87f38",
-        "x": 120,
-        "y": 180,
+        "x": 1280,
+        "y": 600,
         "wires": [
             [
                 "0331b7e8018058e8"
@@ -476,8 +538,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 290,
-        "y": 180,
+        "x": 1450,
+        "y": 600,
         "wires": [
             [
                 "56a18a3fe5e40a59",
@@ -497,8 +559,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1040,
-        "y": 120,
+        "x": 2200,
+        "y": 540,
         "wires": [
             [
                 "6b81021f817b48c5"
@@ -516,8 +578,8 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1430,
-        "y": 80,
+        "x": 2590,
+        "y": 500,
         "wires": [
             []
         ]
@@ -534,8 +596,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 910,
-        "y": 200,
+        "x": 2070,
+        "y": 620,
         "wires": [
             [
                 "4af3079dbb6762fa"
@@ -556,8 +618,8 @@
         "correl": "",
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
-        "x": 1450,
-        "y": 160,
+        "x": 2610,
+        "y": 580,
         "wires": [],
         "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
     },
@@ -573,8 +635,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1080,
-        "y": 160,
+        "x": 2240,
+        "y": 580,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -593,8 +655,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 890,
-        "y": 240,
+        "x": 2050,
+        "y": 660,
         "wires": [
             [
                 "b91ca825f88143fb",
@@ -610,8 +672,8 @@
         "sqlquery": "msg.topic",
         "sql": "",
         "name": "greenhouse_db",
-        "x": 1100,
-        "y": 240,
+        "x": 2260,
+        "y": 660,
         "wires": [
             [
                 "10d54d59890a7417"
@@ -631,8 +693,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1080,
-        "y": 300,
+        "x": 2240,
+        "y": 720,
         "wires": []
     },
     {
@@ -647,8 +709,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1360,
-        "y": 280,
+        "x": 2520,
+        "y": 700,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -668,8 +730,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 380,
-        "y": 620,
+        "x": 1540,
+        "y": 940,
         "wires": []
     },
     {
@@ -685,8 +747,8 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 150,
-        "y": 660,
+        "x": 1310,
+        "y": 980,
         "wires": [
             [
                 "9c954700ec15527d",
@@ -715,8 +777,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 420,
-        "y": 300,
+        "x": 1580,
+        "y": 720,
         "wires": [
             [
                 "8def210fb4efeb3c"
@@ -749,8 +811,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 690,
-        "y": 300,
+        "x": 1850,
+        "y": 720,
         "wires": [
             [
                 "b91ca825f88143fb"
@@ -769,8 +831,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 580,
+        "x": 1810,
+        "y": 900,
         "wires": [
             [
                 "bb6a10ac977d0717"
@@ -789,8 +851,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 640,
-        "y": 620,
+        "x": 1800,
+        "y": 940,
         "wires": [
             [
                 "a6d64198e6eaae62"
@@ -809,8 +871,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 660,
+        "x": 1810,
+        "y": 980,
         "wires": [
             [
                 "3a5ee99f6baf7088"
@@ -829,8 +891,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 700,
+        "x": 1810,
+        "y": 1020,
         "wires": [
             [
                 "66c91ea4b80fc08f"
@@ -849,8 +911,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 900,
+        "x": 1820,
+        "y": 1220,
         "wires": [
             [
                 "66d981e6d96be52c"
@@ -861,7 +923,7 @@
         "id": "4cb5f93570d7d0ca",
         "type": "ui-chart",
         "z": "6cda5a5f32196c63",
-        "group": "db507c4f3e90976b",
+        "group": "gr_history_chart",
         "name": "History",
         "label": "Last 12 Hours",
         "order": 1,
@@ -913,8 +975,8 @@
         "height": "6",
         "className": "",
         "interpolation": "smooth",
-        "x": 1480,
-        "y": 200,
+        "x": 2640,
+        "y": 620,
         "wires": [
             []
         ]
@@ -936,8 +998,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1250,
-        "y": 200,
+        "x": 2410,
+        "y": 620,
         "wires": [
             [
                 "4cb5f93570d7d0ca"
@@ -961,8 +1023,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 660,
+        "x": 2050,
+        "y": 980,
         "wires": [
             [
                 "ad4169f006bccb85"
@@ -986,8 +1048,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 580,
+        "x": 2050,
+        "y": 900,
         "wires": [
             [
                 "1ce6a5b6622a17ed"
@@ -1011,8 +1073,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 620,
+        "x": 2050,
+        "y": 940,
         "wires": [
             [
                 "53e4b9cbb629afe5"
@@ -1036,8 +1098,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 700,
+        "x": 2050,
+        "y": 1020,
         "wires": [
             [
                 "84fe9ef876e0aad4"
@@ -1061,8 +1123,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 900,
+        "x": 2050,
+        "y": 1220,
         "wires": [
             [
                 "19ac465249fbbe53"
@@ -1086,8 +1148,8 @@
         "topic": "",
         "payload": "timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault",
         "payloadType": "str",
-        "x": 880,
-        "y": 80,
+        "x": 2040,
+        "y": 500,
         "wires": [
             [
                 "4abddf2657d029ce"
@@ -1106,8 +1168,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1060,
-        "y": 80,
+        "x": 2220,
+        "y": 500,
         "wires": [
             [
                 "887f4b565053691c"
@@ -1126,8 +1188,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 940,
+        "x": 1810,
+        "y": 1260,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1151,8 +1213,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 940,
+        "x": 2050,
+        "y": 1260,
         "wires": [
             [
                 "7ec8464d62e237b2"
@@ -1164,23 +1226,6 @@
         "type": "debug",
         "z": "6cda5a5f32196c63",
         "name": "debug 3",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 640,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "1e53d5d61ad2dcde",
-        "type": "debug",
-        "z": "6cda5a5f32196c63",
-        "name": "debug 4",
         "active": true,
         "tosidebar": true,
         "console": false,
@@ -1189,8 +1234,25 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 900,
-        "y": 1420,
+        "x": 2540,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "1e53d5d61ad2dcde",
+        "type": "debug",
+        "z": "6cda5a5f32196c63",
+        "name": "debug 4",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2080,
+        "y": 220,
         "wires": []
     },
     {
@@ -1205,8 +1267,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 390,
-        "y": 660,
+        "x": 1550,
+        "y": 980,
         "wires": [
             [
                 "0d1202f9041fb697",
@@ -1238,16 +1300,15 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 180,
+        "x": 1820,
+        "y": 600,
         "wires": [
             [
                 "f98d2f1f0673b101",
                 "3999dea12c82b1a6",
                 "ee12a869e25d83bb",
                 "4b266addf47812be",
-                "4f8efa3c8f7d33a4",
-                "57ce7260347bd8de"
+                "4f8efa3c8f7d33a4"
             ]
         ]
     },
@@ -1256,15 +1317,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fault Status Text",
-        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\" ||\n    commFault == 1;\n\nif (hasFault) {\n    msg.payload = \"🔴 Fault Detected\";\n} else {\n    msg.payload = \"🟢 All Systems Normal\";\n}\n\nreturn msg;",
+        "func": "let p = msg.payload || {};\nlet faults = p.faults || {};\nlet faultCount = Number(p.fault_count || 0);\nlet missingFields = (p.missing_fields || \"\").trim();\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nlet hasFault =\n    p.system_fault == 1 ||\n    faultCount > 0 ||\n    Object.keys(faults).length > 0 ||\n    missingFields !== \"\" ||\n    commFault == 1;\n\nif (hasFault) {\n    msg.payload = \"⚠ Fault Detected\";\n} else {\n    msg.payload = \"🟢 All Systems Normal\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 360,
+        "x": 2330,
+        "y": 780,
         "wires": [
             [
                 "68f3fed977ad9f73"
@@ -1275,9 +1336,9 @@
         "id": "68f3fed977ad9f73",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "2a41f864d2129443",
+        "group": "gr_conn_status",
         "order": 1,
-        "width": 0,
+        "width": 6,
         "height": 0,
         "name": "System Fault",
         "label": "Fault",
@@ -1291,8 +1352,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1370,
-        "y": 360,
+        "x": 2530,
+        "y": 780,
         "wires": []
     },
     {
@@ -1300,13 +1361,13 @@
         "type": "ui-button-group",
         "z": "6cda5a5f32196c63",
         "name": "Louvre Button GP",
-        "group": "1278781a5f417ce4",
-        "order": 4,
-        "width": "6",
+        "group": "gr_louvre_ctrl",
+        "order": 1,
+        "width": "12",
         "height": "2",
         "label": "Louvre Control",
         "className": "",
-        "rounded": false,
+        "rounded": true,
         "useThemeColors": true,
         "passthru": true,
         "options": [
@@ -1315,27 +1376,27 @@
                 "icon": "",
                 "value": "OPEN",
                 "valueType": "str",
-                "color": "#009933"
+                "color": "#22c55e"
             },
             {
                 "label": "Close",
                 "icon": "",
                 "value": "CLOSE",
                 "valueType": "str",
-                "color": "#ff6666"
+                "color": "#ef4444"
             },
             {
                 "label": "Stop",
                 "icon": "",
                 "value": "STOP",
                 "valueType": "str",
-                "color": "#009999"
+                "color": "#eab308"
             }
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 150,
-        "y": 1460,
+        "x": 1330,
+        "y": 260,
         "wires": [
             [
                 "82cb2ac5ce541d87"
@@ -1347,15 +1408,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Louvre Command ",
-        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"OPEN\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE OPEN\\n\";\n} else if (cmd === \"CLOSE\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE CLOSE\\n\";\n} else if (cmd === \"STOP\") {\n    msg.payload = \"MODE MANUAL\\nLOUVRE STOP\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\nif (cmd === \"OPEN\") { msg.payload = \"MODE MANUAL\\nLOUVRE OPEN\\n\"; }\nelse if (cmd === \"CLOSE\") { msg.payload = \"MODE MANUAL\\nLOUVRE CLOSE\\n\"; }\nelse if (cmd === \"STOP\") { msg.payload = \"MODE MANUAL\\nLOUVRE STOP\\n\"; }\nelse { return null; }\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 1460,
+        "x": 1850,
+        "y": 260,
         "wires": [
             [
                 "12cca41621c67cb4",
@@ -1369,8 +1430,8 @@
         "z": "6cda5a5f32196c63",
         "name": "",
         "serial": "f21e5fa854a87f38",
-        "x": 920,
-        "y": 1460,
+        "x": 2260,
+        "y": 320,
         "wires": []
     },
     {
@@ -1378,9 +1439,9 @@
         "type": "ui-button-group",
         "z": "6cda5a5f32196c63",
         "name": "Fan Control",
-        "group": "1278781a5f417ce4",
-        "order": 3,
-        "width": 6,
+        "group": "gr_fan_ctrl",
+        "order": 1,
+        "width": "12",
         "height": "2",
         "label": "Fan Control",
         "className": "",
@@ -1389,31 +1450,31 @@
         "passthru": true,
         "options": [
             {
-                "label": "On (50%)",
+                "label": "On 50%",
                 "icon": "",
                 "value": "FAN_50",
                 "valueType": "str",
-                "color": "#009933"
+                "color": "#22c55e"
             },
             {
-                "label": "On (100%)",
+                "label": "On 100%",
                 "icon": "",
                 "value": "FAN_100",
                 "valueType": "str",
-                "color": "#999999"
+                "color": "#22c55e"
             },
             {
                 "label": "Off",
                 "icon": "",
                 "value": "FAN_OFF",
                 "valueType": "str",
-                "color": "#ff6666"
+                "color": "#ef4444"
             }
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 130,
-        "y": 1520,
+        "x": 1310,
+        "y": 320,
         "wires": [
             [
                 "dc183ed1b109c77e"
@@ -1425,15 +1486,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Fan Command",
-        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"FAN_50\") {\n    msg.payload = \"MODE MANUAL\\nFAN 128\\n\";\n} else if (cmd === \"FAN_100\") {\n    msg.payload = \"MODE MANUAL\\nFAN 255\\n\";\n} else if (cmd === \"FAN_OFF\") {\n    msg.payload = \"MODE MANUAL\\nFAN 0\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\nif (cmd === \"FAN_50\") { msg.payload = \"MODE MANUAL\\nFAN 128\\n\"; }\nelse if (cmd === \"FAN_100\") { msg.payload = \"MODE MANUAL\\nFAN 255\\n\"; }\nelse if (cmd === \"FAN_OFF\") { msg.payload = \"MODE MANUAL\\nFAN 0\\n\"; }\nelse { return null; }\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1520,
+        "x": 1840,
+        "y": 320,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1445,9 +1506,9 @@
         "type": "ui-button-group",
         "z": "6cda5a5f32196c63",
         "name": "Light Control",
-        "group": "1278781a5f417ce4",
-        "order": 2,
-        "width": 6,
+        "group": "gr_light_ctrl",
+        "order": 1,
+        "width": "12",
         "height": "2",
         "label": "Light Control",
         "className": "",
@@ -1460,7 +1521,7 @@
                 "icon": "",
                 "value": "LIGHT_ON",
                 "valueType": "str",
-                "color": "#009933"
+                "color": "#eab308"
             },
             {
                 "label": "Off",
@@ -1472,8 +1533,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 130,
-        "y": 1580,
+        "x": 1310,
+        "y": 380,
         "wires": [
             [
                 "3803f18308f137a5"
@@ -1485,15 +1546,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Light Command",
-        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"LIGHT_ON\") {\n    msg.payload = \"MODE MANUAL\\nLIGHT ON\\n\";\n} else if (cmd === \"LIGHT_OFF\") {\n    msg.payload = \"MODE MANUAL\\nLIGHT OFF\\n\";\n} else {\n    return null;\n}\n\nreturn msg;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\nif (cmd === \"LIGHT_ON\") { msg.payload = \"MODE MANUAL\\nLIGHT ON\\n\"; }\nelse if (cmd === \"LIGHT_OFF\") { msg.payload = \"MODE MANUAL\\nLIGHT OFF\\n\"; }\nelse { return null; }\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1580,
+        "x": 1840,
+        "y": 380,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1512,8 +1573,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 480,
-        "y": 180,
+        "x": 1640,
+        "y": 600,
         "wires": [
             [
                 "455c2db561300a8c"
@@ -1537,8 +1598,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 540,
-        "y": 360,
+        "x": 1700,
+        "y": 780,
         "wires": [
             [
                 "36a8046ed184ac87"
@@ -1557,8 +1618,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 740,
-        "y": 360,
+        "x": 1900,
+        "y": 780,
         "wires": [
             [
                 "4f8efa3c8f7d33a4"
@@ -1577,12 +1638,14 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 950,
-        "y": 360,
+        "x": 2110,
+        "y": 780,
         "wires": [
             [
                 "5af17cb50fcfd049",
-                "2ce9937eb48a8c8b"
+                "2ce9937eb48a8c8b",
+                "57ce7260347bd8de",
+                "ws_format_func_001"
             ]
         ]
     },
@@ -1603,8 +1666,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1230,
-        "y": 120,
+        "x": 2390,
+        "y": 540,
         "wires": [
             [
                 "887f4b565053691c"
@@ -1628,8 +1691,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 150,
-        "y": 1420,
+        "x": 1330,
+        "y": 220,
         "wires": [
             [
                 "ebadb11eb93cb9ce"
@@ -1648,8 +1711,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 1420,
+        "x": 1830,
+        "y": 220,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1668,20 +1731,20 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 460,
-        "y": 60,
+        "x": 1620,
+        "y": 480,
         "wires": []
     },
     {
         "id": "1ce6a5b6622a17ed",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "b80ce3791c51c9eb",
+        "group": "gr_environment",
         "order": 1,
-        "width": 0,
-        "height": 0,
+        "width": 6,
+        "height": 1,
         "name": "Temperature",
-        "label": "Temperature",
+        "label": "🌡️ Temperature",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1692,20 +1755,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1210,
-        "y": 580,
+        "x": 2250,
+        "y": 900,
         "wires": []
     },
     {
         "id": "53e4b9cbb629afe5",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "b80ce3791c51c9eb",
+        "group": "gr_environment",
         "order": 2,
-        "width": 0,
-        "height": 0,
+        "width": 6,
+        "height": 1,
         "name": "Humidity",
-        "label": "Humidity",
+        "label": "💧 Humidity",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1716,20 +1779,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1200,
-        "y": 620,
+        "x": 2240,
+        "y": 940,
         "wires": []
     },
     {
         "id": "ad4169f006bccb85",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "b80ce3791c51c9eb",
+        "group": "gr_environment",
         "order": 3,
-        "width": 0,
-        "height": 0,
+        "width": 6,
+        "height": 1,
         "name": "Lighting",
-        "label": "Lighting",
+        "label": "☀️ Light",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1740,20 +1803,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1200,
-        "y": 660,
+        "x": 2240,
+        "y": 980,
         "wires": []
     },
     {
         "id": "84fe9ef876e0aad4",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "5dd99b1cfb8cc23e",
-        "order": 2,
-        "width": 0,
+        "group": "gr_environment",
+        "order": 5,
+        "width": 6,
         "height": 0,
         "name": "Soil Moisture Row 1",
-        "label": "Row 1 Moisture",
+        "label": "Soil Row 1",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1764,20 +1827,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1240,
-        "y": 700,
+        "x": 2280,
+        "y": 1020,
         "wires": []
     },
     {
         "id": "19ac465249fbbe53",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "b80ce3791c51c9eb",
-        "order": 4,
-        "width": 0,
-        "height": 0,
+        "group": "gr_actuators",
+        "order": 1,
+        "width": 6,
+        "height": 1,
         "name": "Louvre Status",
-        "label": "Louvre Status",
+        "label": "🪟 Louvre",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1788,20 +1851,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1220,
-        "y": 900,
+        "x": 2260,
+        "y": 1220,
         "wires": []
     },
     {
         "id": "7ec8464d62e237b2",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "b80ce3791c51c9eb",
-        "order": 5,
-        "width": 0,
-        "height": 0,
+        "group": "gr_actuators",
+        "order": 2,
+        "width": 6,
+        "height": 1,
         "name": "Fan Status",
-        "label": "Fan Status",
+        "label": "🌀 Fan",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -1812,8 +1875,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1210,
-        "y": 940,
+        "x": 2250,
+        "y": 1260,
         "wires": []
     },
     {
@@ -1828,12 +1891,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 740,
+        "x": 1810,
+        "y": 1060,
         "wires": [
             [
-                "122bc30ae01f5aef",
-                "a2736bf8113ff968"
+                "122bc30ae01f5aef"
             ]
         ]
     },
@@ -1849,8 +1911,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 780,
+        "x": 1810,
+        "y": 1100,
         "wires": [
             [
                 "c05d02c6c1a47b68"
@@ -1869,8 +1931,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 820,
+        "x": 1810,
+        "y": 1140,
         "wires": [
             [
                 "aa07c00b77367af0"
@@ -1889,8 +1951,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 860,
+        "x": 1810,
+        "y": 1180,
         "wires": [
             [
                 "f6652c79933d5722"
@@ -1914,8 +1976,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 740,
+        "x": 2050,
+        "y": 1060,
         "wires": [
             [
                 "be8a7c8e797a6693"
@@ -1939,8 +2001,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 780,
+        "x": 2050,
+        "y": 1100,
         "wires": [
             [
                 "a16cd82a260590bb"
@@ -1964,8 +2026,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 820,
+        "x": 2050,
+        "y": 1140,
         "wires": [
             [
                 "2577dedb22cac2d6"
@@ -1989,8 +2051,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 860,
+        "x": 2050,
+        "y": 1180,
         "wires": [
             [
                 "c1111ec699e95296"
@@ -2001,12 +2063,12 @@
         "id": "be8a7c8e797a6693",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "5dd99b1cfb8cc23e",
-        "order": 3,
-        "width": 0,
+        "group": "gr_environment",
+        "order": 6,
+        "width": 6,
         "height": 0,
         "name": "Soil Moisture Row 2",
-        "label": "Row 2 Moisture",
+        "label": "Soil Row 2",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2017,20 +2079,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1240,
-        "y": 740,
+        "x": 2280,
+        "y": 1060,
         "wires": []
     },
     {
         "id": "a16cd82a260590bb",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "5dd99b1cfb8cc23e",
-        "order": 4,
-        "width": 0,
+        "group": "gr_environment",
+        "order": 7,
+        "width": 6,
         "height": 0,
         "name": "Soil Moisture Row 3",
-        "label": "Row 3 Moisture",
+        "label": "Soil Row 3",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2041,20 +2103,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1240,
-        "y": 780,
+        "x": 2280,
+        "y": 1100,
         "wires": []
     },
     {
         "id": "2577dedb22cac2d6",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "5dd99b1cfb8cc23e",
-        "order": 5,
-        "width": 0,
+        "group": "gr_environment",
+        "order": 8,
+        "width": 6,
         "height": 0,
         "name": "Soil Moisture Row 4",
-        "label": "Row 4 Moisture",
+        "label": "Soil Row 4",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2065,20 +2127,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1240,
-        "y": 820,
+        "x": 2280,
+        "y": 1140,
         "wires": []
     },
     {
         "id": "c1111ec699e95296",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "5dd99b1cfb8cc23e",
-        "order": 1,
-        "width": 0,
-        "height": 0,
+        "group": "gr_environment",
+        "order": 4,
+        "width": 6,
+        "height": 1,
         "name": "Soil Moisture Average",
-        "label": "Average Soil Moisture",
+        "label": "🌱 Soil",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2089,24 +2151,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1240,
-        "y": 860,
-        "wires": []
-    },
-    {
-        "id": "a2736bf8113ff968",
-        "type": "debug",
-        "z": "6cda5a5f32196c63",
-        "name": "debug 6",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1000,
-        "y": 520,
+        "x": 2280,
+        "y": 1180,
         "wires": []
     },
     {
@@ -2121,8 +2167,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 1140,
+        "x": 1810,
+        "y": 1340,
         "wires": [
             [
                 "02998a9b72e160a2"
@@ -2141,8 +2187,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 980,
+        "x": 1820,
+        "y": 1300,
         "wires": [
             [
                 "d0fd1a12a694de57"
@@ -2161,8 +2207,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1180,
+        "x": 1820,
+        "y": 1380,
         "wires": [
             [
                 "6a205b7544ef4ba4"
@@ -2181,8 +2227,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 1220,
+        "x": 1810,
+        "y": 1420,
         "wires": [
             [
                 "c6c59999e2179d0c"
@@ -2201,8 +2247,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1260,
+        "x": 1820,
+        "y": 1460,
         "wires": [
             [
                 "92ea6d85f1db08b2"
@@ -2221,8 +2267,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 1300,
+        "x": 1810,
+        "y": 1500,
         "wires": [
             [
                 "a8c0f4d11ffcbc46"
@@ -2241,8 +2287,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1340,
+        "x": 1820,
+        "y": 1540,
         "wires": [
             [
                 "3c46abf0c9ce3913"
@@ -2266,8 +2312,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1140,
+        "x": 2050,
+        "y": 1340,
         "wires": [
             [
                 "8f96604c34681a3d"
@@ -2291,8 +2337,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1300,
+        "x": 2050,
+        "y": 1500,
         "wires": [
             [
                 "bfe1fbf00ca37186"
@@ -2316,8 +2362,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1340,
+        "x": 2050,
+        "y": 1540,
         "wires": [
             [
                 "0c9b2fa48a0ddcdb"
@@ -2341,8 +2387,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 980,
+        "x": 2050,
+        "y": 1300,
         "wires": [
             [
                 "52570d4e53521e96"
@@ -2366,8 +2412,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1180,
+        "x": 2050,
+        "y": 1380,
         "wires": [
             [
                 "3870447647cbebee"
@@ -2391,8 +2437,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1220,
+        "x": 2050,
+        "y": 1420,
         "wires": [
             [
                 "a40f21f9a26cebb7"
@@ -2416,8 +2462,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 1260,
+        "x": 2050,
+        "y": 1460,
         "wires": [
             [
                 "cfc52da1c3247673"
@@ -2428,12 +2474,12 @@
         "id": "8f96604c34681a3d",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
+        "group": "gr_system",
         "order": 1,
-        "width": 0,
+        "width": 6,
         "height": 0,
         "name": "Tank Temp",
-        "label": "Tank Temp",
+        "label": "Tank",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2444,17 +2490,17 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1210,
-        "y": 1140,
+        "x": 2250,
+        "y": 1340,
         "wires": []
     },
     {
         "id": "bfe1fbf00ca37186",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
-        "order": 4,
-        "width": 0,
+        "group": "gr_system",
+        "order": 5,
+        "width": 6,
         "height": 0,
         "name": "Acvive Row",
         "label": "Active Row",
@@ -2468,20 +2514,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1210,
-        "y": 1300,
+        "x": 2250,
+        "y": 1500,
         "wires": []
     },
     {
         "id": "0c9b2fa48a0ddcdb",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
-        "order": 5,
-        "width": 0,
+        "group": "gr_system",
+        "order": 6,
+        "width": 6,
         "height": 0,
         "name": "Run Row Status",
-        "label": "Run Row Status",
+        "label": "Row Status",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2492,20 +2538,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1220,
-        "y": 1340,
+        "x": 2260,
+        "y": 1540,
         "wires": []
     },
     {
         "id": "52570d4e53521e96",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "2a41f864d2129443",
+        "group": "gr_conn_status",
         "order": 2,
-        "width": 0,
+        "width": 6,
         "height": 0,
         "name": "System Mode",
-        "label": "System Mode",
+        "label": "Mode",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2516,20 +2562,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1220,
-        "y": 980,
+        "x": 2260,
+        "y": 1300,
         "wires": []
     },
     {
         "id": "3870447647cbebee",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
+        "group": "gr_system",
         "order": 2,
-        "width": 0,
+        "width": 6,
         "height": 0,
         "name": "Irrigation Mode",
-        "label": "Irrigation Mode",
+        "label": "Irrigation",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2540,20 +2586,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1220,
-        "y": 1180,
+        "x": 2260,
+        "y": 1380,
         "wires": []
     },
     {
         "id": "a40f21f9a26cebb7",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
+        "group": "gr_system",
         "order": 3,
-        "width": 0,
+        "width": 6,
         "height": 0,
         "name": "Pump Status",
-        "label": "Pump Status",
+        "label": "Pump",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2564,20 +2610,20 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1210,
-        "y": 1220,
+        "x": 2250,
+        "y": 1420,
         "wires": []
     },
     {
         "id": "cfc52da1c3247673",
         "type": "ui-text",
         "z": "6cda5a5f32196c63",
-        "group": "0f97e3d7bb96c5e7",
-        "order": 6,
-        "width": 0,
+        "group": "gr_system",
+        "order": 4,
+        "width": 6,
         "height": 0,
         "name": "Heater Status",
-        "label": "Heater Status",
+        "label": "Heater",
         "format": "{{msg.payload}}",
         "layout": "row-spread",
         "style": false,
@@ -2588,8 +2634,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1220,
-        "y": 1260,
+        "x": 2260,
+        "y": 1460,
         "wires": []
     },
     {
@@ -2609,8 +2655,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 150,
-        "y": 1220,
+        "x": 1310,
+        "y": 1420,
         "wires": [
             [
                 "83c09f4b52f000bf"
@@ -2629,8 +2675,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 360,
-        "y": 1220,
+        "x": 1520,
+        "y": 1420,
         "wires": [
             [
                 "a24e7f3c812590eb",
@@ -2651,8 +2697,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1140,
-        "y": 400,
+        "x": 2300,
+        "y": 820,
         "wires": [
             [
                 "fb25e247ea692f58"
@@ -2663,7 +2709,7 @@
         "id": "fb25e247ea692f58",
         "type": "ui-template",
         "z": "6cda5a5f32196c63",
-        "group": "09f50657176dd200",
+        "group": "gr_alert_history",
         "page": "",
         "ui": "",
         "name": "",
@@ -2677,8 +2723,8 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1360,
-        "y": 400,
+        "x": 2520,
+        "y": 820,
         "wires": [
             []
         ]
@@ -2687,7 +2733,7 @@
         "id": "52f07cd6dbb9d3a3",
         "type": "ui-button",
         "z": "6cda5a5f32196c63",
-        "group": "09f50657176dd200",
+        "group": "gr_alert_history",
         "name": "Clear Fault Log",
         "label": "Clear Fault Log",
         "order": 1,
@@ -2714,8 +2760,8 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 140,
-        "y": 400,
+        "x": 1300,
+        "y": 820,
         "wires": [
             [
                 "2ce9937eb48a8c8b"
@@ -2724,37 +2770,38 @@
     },
     {
         "id": "50612a9ae22190d5",
-        "type": "ui-button",
+        "type": "ui-button-group",
         "z": "6cda5a5f32196c63",
-        "group": "1278781a5f417ce4",
-        "name": "Set System: Auto",
-        "label": "Set System: Auto",
+        "name": "System Mode",
+        "group": "gr_mode_ctrl",
         "order": 1,
-        "width": "6",
-        "height": "1",
-        "emulateClick": false,
-        "tooltip": "",
-        "color": "",
-        "bgcolor": "",
+        "width": "12",
+        "height": "2",
+        "label": "System Mode",
         "className": "",
-        "icon": "",
-        "iconPosition": "left",
-        "payload": "AUTO",
-        "payloadType": "str",
+        "rounded": true,
+        "useThemeColors": false,
+        "passthru": true,
+        "options": [
+            {
+                "label": "Auto",
+                "icon": "",
+                "value": "AUTO",
+                "valueType": "str",
+                "color": "#14b8a6"
+            },
+            {
+                "label": "Manual",
+                "icon": "",
+                "value": "MANUAL",
+                "valueType": "str",
+                "color": "#eab308"
+            }
+        ],
         "topic": "topic",
         "topicType": "msg",
-        "buttonColor": "",
-        "textColor": "",
-        "iconColor": "",
-        "enableClick": true,
-        "enablePointerdown": false,
-        "pointerdownPayload": "",
-        "pointerdownPayloadType": "str",
-        "enablePointerup": false,
-        "pointerupPayload": "",
-        "pointerupPayloadType": "str",
-        "x": 150,
-        "y": 1640,
+        "x": 1320,
+        "y": 440,
         "wires": [
             [
                 "a997ea0e7028d94d"
@@ -2766,15 +2813,104 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Set Mode Auto",
-        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\n\nif (cmd === \"AUTO\") {\n    msg.payload = \"MODE AUTO\\n\";\n    return msg;\n}\n\nreturn null;",
+        "func": "let cmd = String(msg.payload || \"\").toUpperCase();\nif (cmd === \"AUTO\") { msg.payload = \"MODE AUTO\\n\"; }\nelse if (cmd === \"MANUAL\") { msg.payload = \"MODE MANUAL\\n\"; }\nelse { return null; }\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 660,
-        "y": 1640,
+        "x": 1840,
+        "y": 440,
+        "wires": [
+            [
+                "12cca41621c67cb4"
+            ]
+        ]
+    },
+    {
+        "id": "thresholds_tpl_01",
+        "type": "ui-template",
+        "z": "6cda5a5f32196c63",
+        "group": "gr_thresholds",
+        "page": "",
+        "ui": "",
+        "name": "Thresholds Display",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div style=\"padding: 4px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;\">\n    <p style=\"color: #888; font-size: 13px; margin: 0 0 16px 0;\">Notifications fire when a sensor goes outside these ranges. A 5-minute cooldown prevents repeated alerts.</p>\n\n    <div v-for=\"item in thresholds\" :key=\"item.label\" style=\"background: #1e1e36; border: 1px solid #2a2a48; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;\">\n      <div style=\"color: #e2e8f0; font-weight: 600; font-size: 14px; margin-bottom: 10px;\">{{ item.label }}</div>\n      <div style=\"display: flex; align-items: center; gap: 10px;\">\n        <span style=\"color: #888; font-size: 12px; min-width: 28px;\">Min</span>\n        <span style=\"background: #121220; border: 1px solid #333; border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 16px; min-width: 60px; text-align: center;\">{{ item.min }}</span>\n        <span style=\"color: #666; font-size: 12px;\">{{ item.unit }}</span>\n        <span style=\"color: #888; font-size: 12px; min-width: 28px; margin-left: auto;\">Max</span>\n        <span style=\"background: #121220; border: 1px solid #333; border-radius: 8px; padding: 8px 14px; color: #fff; font-size: 16px; min-width: 60px; text-align: center;\">{{ item.max }}</span>\n        <span style=\"color: #666; font-size: 12px;\">{{ item.unit }}</span>\n      </div>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      thresholds: [\n        { label: 'Temperature', min: 50, max: 95, unit: '°F' },\n        { label: 'Humidity', min: 20, max: 90, unit: '%' },\n        { label: 'Soil Moisture', min: 15, max: 100, unit: '%' },\n        { label: 'Light', min: 0, max: 80000, unit: 'lux' },\n        { label: 'Fan Speed', min: 0, max: 100, unit: '%' }\n      ]\n    };\n  }\n}\n</script>",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1310,
+        "y": 880,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ws_format_func_001",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Format for WS Dashboard",
+        "func": "let p = msg.payload;\nif (!p || typeof p !== 'object') return null;\n\n// Map the fully-enriched payload (post Fault Detection) to the\n// exact JSON shape the greenhouse_dashboard.html expects.\nlet out = {\n    temp:          p.temp_f,\n    rh:            p.rh_pct,\n    // Sketch merges both DHT sensors into one temp_f/rh_pct value.\n    // Expose as exhaust=t1 intake=t2 (aliases set in Parse sensor).\n    tempExhaust:   p.t1,\n    tempIntake:    p.t2,\n    rhExhaust:     p.h1,\n    rhIntake:      p.h2,\n    lux:           p.lux,\n    tankTemp:      p.tank_temp_f,\n    soilPct:       [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct],\n    valveOn:       [p.row1===true, p.row2===true, p.row3===true, p.row4===true],\n    rowEnabled:    [p.row1_en!==false, p.row2_en!==false, p.row3_en!==false, p.row4_en!==false],\n    pumpOn:        p.pump_on === true,\n    lightOn:       p.light_on === true,\n    fanPwm:        p.fan_pwm,\n    tankHeaterOn:  p.heater_on === true,\n    louvreState:   Number(p.louvre_state_raw),   // 0-5 numeric from sketch\n    louvrePos:     p.louvre_pos_pct,\n    mode:          p.mode,\n    irrigationMode: p.irrigation_mode,\n    rowsRunActive: p.rows_run_active === true,\n    activeRowIndex: p.active_row,\n    tempOpenF:     p.temp_open_f,\n    tempCloseF:    p.temp_close_f,\n    ecoMode:       p.eco_mode === true,\n    pvPresent:     p.pv_present === true,\n    battV:         p.batt_v,\n    pvV:           p.pv_v,\n    faultBits: (p.fault || 0) | (p.fault_count > 0 ? 512 : 0),\n    nrFaults: p.faults || {},\n    tankHeatOnF:   p.tank_heat_on_f,\n    tankHeatOffF:  p.tank_heat_off_f,\n    soilStartPct:  p.row1_start_pct,   // use row1 as representative\n    soilStopPct:   p.row1_stop_pct,\n    scheduleIntervalMs: p.schedule_interval_ms\n};\n\n//node.warn(\"fault_count=\" + p.fault_count + \" faults=\" + JSON.stringify(p.faults));\n\n\nmsg.payload = JSON.stringify(out);\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2310,
+        "y": 860,
+        "wires": [
+            [
+                "ws_out_node_001"
+            ]
+        ]
+    },
+    {
+        "id": "ws_out_node_001",
+        "type": "websocket out",
+        "z": "6cda5a5f32196c63",
+        "name": "WS → Dashboard",
+        "server": "ws_in_node_001",
+        "client": "",
+        "x": 2550,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "ws_cmd_in_node_001",
+        "type": "websocket in",
+        "z": "6cda5a5f32196c63",
+        "name": "WS Commands ← Dashboard",
+        "server": "ws_in_node_001",
+        "client": "",
+        "x": 1360,
+        "y": 480,
+        "wires": [
+            [
+                "ws_cmd_func_001"
+            ]
+        ]
+    },
+    {
+        "id": "ws_cmd_func_001",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "WS Command → Serial",
+        "func": "// Receives JSON commands from the dashboard HTML page\n// and converts them to the serial strings the Arduino expects.\nlet d;\ntry { d = JSON.parse(msg.payload); } catch(e) { return null; }\n\nlet cmd = d.command;\nlet val = d.value;\nlet serial = null;\n\nif (cmd === 'MODE') {\n    // AUTO or MANUAL\n    serial = 'MODE ' + val;\n} else if (cmd === 'LOUVRE') {\n    // OPEN, CLOSE, STOP\n    serial = 'LOUVRE ' + val;\n} else if (cmd === 'FAN') {\n    // val is '0','50','100' → map to PWM 0,128,255\n    let pct = parseInt(val, 10);\n    let pwm = pct === 0 ? 0 : pct === 50 ? 128 : 255;\n    serial = 'FAN ' + pwm;\n} else if (cmd === 'LIGHT') {\n    // ON or OFF\n    serial = 'LIGHT ' + val;\n} else if (cmd === 'IRRIGATION') {\n    serial = 'IRRIGATION ' + val;\n} else if (cmd === 'ROW_ENABLE') {\n    // val expected as '1:ON' or '2:OFF'\n    let parts = String(val).split(':');\n    if (parts.length === 2) serial = 'ROW_ENABLE ' + parts[0] + ' ' + parts[1];\n} else if (cmd === 'RUN_ROWS') {\n    serial = 'RUN_ROWS';\n} else if (cmd === 'STOP_ROWS') {\n    serial = 'STOP_ROWS';\n}\n\nif (!serial) return null;\n\n// Append newline — the Arduino parser requires it\nmsg.payload = serial + '\\n';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1640,
+        "y": 480,
         "wires": [
             [
                 "12cca41621c67cb4"

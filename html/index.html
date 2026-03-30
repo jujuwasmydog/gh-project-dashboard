@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greenhouse Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── THEME: Blue (default) ── */
+  :root, [data-theme="blue"] {
+    --bg:        #000000; /* background */
+    --surface:   #0d1224; /* card background */
+    --surface2:  #111830; /* nested card inner background */
+    --border:    #1a2444; /* card border */
+    --border2:   #243260; /* hover border */
+    --accent:    #00d4ff; /* primary accent */
+    --accent-dim:#0066cc; /* darker accent */
+    --accent-glow:rgba(0,212,255,0.12); /* glow behind elements */
+    --teal:      #00d4ff; /* active tab, gauge fill, section labels */
+    --teal-dim:  #0066cc; /* active tab background, button fill */
+    --teal-glow: rgba(0,212,255,0.12); /* pill badge glow */
+    --green:     #00ff88; /* ON state, ok faults, connected dot */
+    --amber:     #ffaa00; /* MANUAL mode, warning, grow light on */
+    --red:       #ff3355; /* fault, close button, off/error states */
+    --blue:      #4d9fff; /* fan bar, pump dot, intake sensor */
+    --muted:     #2a3a6a; /* unused placeholder muted elements */
+    --text:      #c8d8f8; /* primary text */
+    --text-dim:  #6a8ab8; /* secondary label text */
+    --text-faint:#2a3a5a; /* very dim disabled text */
+    --font-head: 'Syne', sans-serif; /* headings, buttons, values */
+    --font-mono: 'DM Mono', monospace; /* body, data, labels */
+    --r:         12px; /* standard border radius */
+    --r-lg:      18px;/* large card border radius */
+  }
+  
+  /* THEME: Green */
+  [data-theme="green"] {
+    --bg:          #0b0f0e;  
+    --surface:     #111815;  
+    --surface2:    #161e1b;  
+    --border:      #1e2e29;  
+    --border2:     #2a3f38;  
+    --accent:      #0eb8a0;  
+    --accent-dim:  #097459;  
+    --accent-glow: rgba(14,184,160,0.12);  
+    --teal:        #0eb8a0;  
+    --teal-dim:    #097459;  
+    --teal-glow:   rgba(14,184,160,0.12);  
+    --green:       #22c55e;  
+    --amber:       #f59e0b; 
+    --red:         #ef4444;  
+    --blue:        #38bdf8;  
+    --muted:       #4a6b62; 
+    --text:        #d4ede8;  
+    --text-dim:    #7a9e96;  
+    --text-faint:  #3d5e57;  
+    --font-head:   'Syne', sans-serif;   
+    --font-mono:   'DM Mono', monospace; 
+    --r:           12px;  
+    --r-lg:        18px;  
+  }
+
+  /* ── THEME: dark mode ── */
+  [data-theme="dark"] {
+    --bg:        #0f0f0f;
+    --surface:   #1a1a1a;
+    --surface2:  #222222;
+    --border:    #2a2a2a;
+    --border2:   #3a3a3a;
+    --accent:    #a855f7;
+    --accent-dim:#7c3aed;
+    --accent-glow:rgba(168,85,247,0.12);
+    --teal:      #a855f7;
+    --teal-dim:  #7c3aed;
+    --teal-glow: rgba(168,85,247,0.12);
+    --green:     #22c55e;
+    --amber:     #f59e0b;
+    --red:       #ef4444;
+    --blue:      #60a5fa;
+    --muted:     #4a4a4a;
+    --text:      #e5e5e5;
+    --text-dim:  #888888;
+    --text-faint:#444444;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --r:         12px;
+    --r-lg:      18px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--teal-dim);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .site-title {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .site-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* Connection pill */
+  .conn-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    transition: all 0.3s;
+  }
+  .conn-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+    transition: all 0.3s;
+  }
+  .conn-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+  /* Fault indicator badge */
+  .fault-badge {
+    display: none;
+    align-items: center; gap: 6px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--red);
+    animation: pulse-fault 2s infinite;
+    cursor: pointer;
+  }
+  .fault-badge.visible { display: flex; }
+  @keyframes pulse-fault {
+    0%,100% { opacity: 1; } 50% { opacity: 0.6; }
+  }
+
+  /* Mode badge */
+  .mode-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(14,184,160,0.08);
+    border: 1px solid var(--teal-dim);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--teal);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 4px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex: 1;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: var(--teal-dim);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(14,184,160,0.25);
+  }
+  .tab-btn .tab-icon { font-size: 14px; }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border2); }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1100px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .topbar { flex-direction: column; align-items: flex-start; }
+    .topbar > div:last-child { width: 100%; justify-content: space-between; }
+    #app { padding: 0 10px 80px; }
+    .ctrl-btn { padding: 10px 14px; font-size: 11px; }
+    .sys-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── RADIAL GAUGE ── */
+  .gauge-card {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px;
+    padding: 12px 8px 10px;
+    position: relative;
+    cursor: pointer;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .gauge-card.expandable:hover { border-color: var(--teal-dim); }
+  .gauge-wrap { position: relative; width: min(90px, 100%); height: min(90px, 100%); aspect-ratio: 1; }
+  .gauge-svg { width: 100%; height: 100%; transform: rotate(-135deg); }
+  .gauge-track { fill: none; stroke: var(--border2); stroke-width: 8; stroke-linecap: round; }
+  .gauge-fill {
+    fill: none; stroke-width: 8; stroke-linecap: round;
+    stroke-dasharray: 226;
+    stroke-dashoffset: 226;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1), stroke 0.5s;
+  }
+  .gauge-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .gauge-val {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+  }
+  .gauge-unit { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .gauge-label {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .gauge-icon { font-size: 14px; margin-bottom: -4px; }
+
+  /* expand hint */
+  .expand-hint {
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .expand-hint svg { width: 10px; height: 10px; }
+
+  /* ── LINEAR GAUGE ── */
+  .linear-card { padding: 18px 20px; }
+  .linear-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .linear-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .linear-val {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .linear-unit { font-size: 11px; color: var(--text-dim); }
+  .linear-track {
+    height: 8px;
+    background: var(--border2);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .linear-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.34,1.56,0.64,1);
+    background: linear-gradient(90deg, var(--teal-dim), var(--teal));
+  }
+  .linear-range {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--text-faint); letter-spacing: 0.06em;
+  }
+
+  /* ── STATUS TILES (actuators / system) ── */
+  .status-tile {
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .status-tile-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .status-tile-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .status-pill {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid;
+  }
+  .pill-on  { color: var(--green);  border-color: var(--green);  background: rgba(34,197,94,0.1); }
+  .pill-off { color: var(--text-faint); border-color: var(--text-faint); background: transparent; }
+  .pill-auto { color: var(--teal);  border-color: var(--teal);  background: var(--teal-glow); }
+  .pill-warn { color: var(--amber); border-color: var(--amber); background: rgba(245,158,11,0.1); }
+  .pill-err  { color: var(--red);   border-color: var(--red);   background: rgba(239,68,68,0.1); }
+
+  .status-tile-val {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .status-tile-sub { font-size: 10px; color: var(--text-faint); }
+
+  /* Louvre position bar */
+  .louvre-bar-wrap { margin-top: 4px; }
+  .louvre-bar-track {
+    height: 6px; background: var(--border2); border-radius: 99px; overflow: visible;
+    position: relative;
+  }
+  .louvre-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--teal-dim), var(--teal));
+    transition: width 1s ease;
+    position: relative;
+  }
+  .louvre-bar-fill::after {
+    content: '';
+    position: absolute; right: -3px; top: 50%;
+    transform: translateY(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 8px var(--teal);
+  }
+
+  /* Fan speed arc mini */
+  .fan-speed-display { display: flex; align-items: center; gap: 12px; }
+  .fan-icon {
+    font-size: 28px;
+    transition: transform 0.3s;
+    display: inline-block;
+  }
+  .fan-icon.spinning { animation: spin 1.5s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Irrigation rows */
+  .irr-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .irr-row:last-child { border-bottom: none; }
+  .irr-row-label {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    width: 44px; flex-shrink: 0;
+  }
+  .irr-row-bar { flex: 1; height: 6px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+  .irr-row-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #166534, var(--green)); transition: width 1s ease; }
+  .irr-row-val { font-size: 11px; color: var(--text-dim); width: 32px; text-align: right; flex-shrink: 0; }
+  .irr-row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Expand/collapse */
+  .expandable-section {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+  .expandable-section.open { max-height: 600px; opacity: 1; }
+
+  .expand-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: color 0.2s;
+    margin-top: 12px;
+  }
+  .expand-toggle:hover { color: var(--teal); }
+  .expand-arrow { transition: transform 0.3s; }
+  .expand-arrow.open { transform: rotate(180deg); }
+
+  /* Individual sensor detail */
+  .dual-sensor {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 0 4px;
+  }
+  .dual-sensor-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .dual-sensor-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .dual-sensor-val { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+
+  /* ── CONTROL TAB ── */
+  .ctrl-section { margin-bottom: 20px; }
+  .ctrl-card { padding: 20px; }
+  .ctrl-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ctrl-icon { font-size: 20px; }
+  .ctrl-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* Button groups */
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ctrl-btn {
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 99px;
+    border: 1.5px solid;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ctrl-btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .ctrl-btn:hover::after { opacity: 0.08; }
+  .ctrl-btn:active::after { opacity: 0.16; }
+
+  .ctrl-btn.active::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: currentColor;
+    opacity: 0.12;
+  }
+  .ctrl-btn.active { font-weight: 800; }
+
+  .btn-green  { color: var(--green); border-color: var(--green); }
+  .btn-green.active  { box-shadow: 0 0 14px rgba(34,197,94,0.35); }
+  .btn-red    { color: var(--red);   border-color: var(--red); }
+  .btn-red.active    { box-shadow: 0 0 14px rgba(239,68,68,0.35); }
+  .btn-amber  { color: var(--amber); border-color: var(--amber); }
+  .btn-amber.active  { box-shadow: 0 0 14px rgba(245,158,11,0.35); }
+  .btn-teal   { color: var(--teal);  border-color: var(--teal); }
+  .btn-teal.active   { box-shadow: 0 0 14px rgba(14,184,160,0.35); }
+  .btn-muted  { color: var(--text-dim); border-color: var(--border2); }
+
+  /* inactive: unselected option in group, still clickable */
+  .ctrl-btn.inactive {
+    opacity: 0.3;
+  }
+  .ctrl-btn.inactive:hover { opacity: 0.65; }
+
+  /* disabled: AUTO mode locks all actuator buttons */
+  .ctrl-btn.disabled {
+    opacity: 0.15;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+    filter: grayscale(0.6);
+  }
+  .auto-lock-notice {
+    display: none;
+    align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-dim);
+    background: rgba(14,184,160,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 12px;
+  }
+  .auto-lock-notice.visible { display: flex; }
+
+  /* Warn banner (disconnected) */
+  .warn-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--amber);
+  }
+
+  /* ── ALERTS TAB ── */
+  .alert-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .alert-tab-btn {
+    background: none; border: none;
+    font-family: var(--font-head);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .alert-tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+  .alert-panel { display: none; }
+  .alert-panel.active { display: block; }
+
+  /* Fault row */
+  .fault-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid;
+    font-size: 12px;
+  }
+  .fault-row.ok   { border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.04); }
+  .fault-row.err  { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.07); }
+  .fault-row.warn { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.07); }
+  .fault-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fault-name { flex: 1; color: var(--text); font-weight: 500; }
+  .fault-status { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+  .fault-row.ok   .fault-status { color: var(--green); }
+  .fault-row.err  .fault-status { color: var(--red); }
+  .fault-row.warn .fault-status { color: var(--amber); }
+
+  /* Threshold items */
+  .thresh-item {
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+  .thresh-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .thresh-label { font-family: var(--font-head); font-size: 13px; font-weight: 700; }
+  .thresh-range { font-size: 11px; color: var(--teal); }
+  .thresh-bar-wrap { position: relative; height: 6px; background: var(--border2); border-radius: 99px; }
+  .thresh-zone {
+    position: absolute; height: 100%;
+    background: linear-gradient(90deg, var(--teal-dim), var(--teal));
+    border-radius: 99px;
+    opacity: 0.5;
+  }
+  .thresh-current {
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--teal); top: 50%; transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px var(--teal);
+    transition: left 1s ease;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 48px 20px;
+    color: var(--text-faint);
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-label { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text-dim); }
+  .empty-sub { font-size: 11px; margin-top: 4px; }
+
+  /* Timestamp */
+  .last-update {
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.06em;
+    text-align: right; margin-bottom: 4px;
+  }
+
+  /* ── IRRIGATION DETAIL CARD ── */
+  .irr-overview {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 12px;
+  }
+  .irr-pump-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .pump-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-faint); transition: all 0.3s;
+  }
+  .pump-dot.on { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+  /* System status indicators */
+  .sys-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 20px;
+  }
+  @media (max-width: 560px) { .sys-grid { grid-template-columns: 1fr 1fr; } }
+  .sys-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sys-tile-label { font-size: 9px; color: var(--text-faint); letter-spacing: 0.12em; text-transform: uppercase; }
+  .sys-tile-val { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--text); }
+
+  /* Uptime ticker */
+  #uptime-val { font-variant-numeric: tabular-nums; }
+
+
+  /* ── THEME SWITCHER ── */
+  .theme-switcher {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 3px;
+  }
+  .theme-btn {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .theme-btn:hover { transform: scale(1.15); }
+  .theme-btn.active { border-color: var(--text); }
+  .theme-btn[data-t="blue"] { background: radial-gradient(circle at 40% 40%, #00d4ff, #0a0e1a); } /* */
+  .theme-btn[data-t="green"]  { background: radial-gradient(circle at 40% 40%, #0eb8a0, #0b0f0e); }
+  .theme-btn[data-t="dark"]  { background: radial-gradient(circle at 40% 40%, #a855f7, #0f0f0f); }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark">🌿</div>
+      <div>
+        <div class="site-title">Greenhouse</div>
+        <div class="site-sub">Control System · v7</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="mode-badge" id="mode-badge">
+        <span style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+        <span id="mode-label">AUTO</span>
+      </div>
+      <div class="fault-badge" id="fault-badge" onclick="switchTab('alerts')">
+        ⚠ <span id="fault-count">0</span> Fault<span id="fault-s">s</span>
+      </div>
+      <div class="conn-pill" id="conn-pill">
+        <div class="conn-dot" id="conn-dot"></div>
+        <span id="conn-label">Connecting…</span>
+      </div>
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-t="green" onclick="setTheme('green')" title="Green"></button>
+        <button class="theme-btn" data-t="blue"  onclick="setTheme('blue')"  title="Blue (Kali)"></button>
+        <button class="theme-btn" data-t="dark"  onclick="setTheme('dark')"  title="Dark"></button>
+      </div>
+      <div class="last-update" id="last-update" style="margin:0;">—</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')" id="tab-dashboard">
+      <span class="tab-icon">🌱</span> Dashboard
+    </button>
+    <button class="tab-btn" onclick="switchTab('control')" id="tab-control">
+      <span class="tab-icon">⚙️</span> Control
+    </button>
+    <button class="tab-btn" onclick="switchTab('alerts')" id="tab-alerts">
+      <span class="tab-icon">🔔</span> Alerts
+    </button>
+  </div>
+
+  <!-- ═══════════════════ DASHBOARD TAB ═══════════════════ -->
+  <div class="tab-panel active" id="panel-dashboard">
+
+    <div class="section-label">Environment</div>
+    <div class="grid-4" style="margin-bottom:20px;">
+
+      <!-- Temperature -->
+      <div class="card gauge-card expandable" onclick="toggleSection('temp-detail')">
+        <div class="gauge-icon">🌡️</div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 100 100">
+            <circle class="gauge-track" cx="50" cy="50" r="36" stroke-dasharray="226" stroke-dashoffset="56.5"/>
+            <circle class="gauge-fill" id="g-temp" cx="50" cy="50" r="36" stroke="#f59e0b"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-val" id="v-temp">--</div>
+            <div class="gauge-unit">°F</div>
+          </div>
+        </div>
+        <div class="gauge-label">Temperature</div>
+        <div class="expand-hint">
+          <svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 7L1 3h8z"/></svg>
+          expand
+        </div>
+        <div class="expandable-section" id="temp-detail">
+          <div class="dual-sensor">
+            <div class="dual-sensor-item">
+              <div class="dual-sensor-label">Exhaust</div>
+              <div class="dual-sensor-val" id="v-temp-exhaust" style="color:var(--amber)">--°F</div>
+            </div>
+            <div class="dual-sensor-item">
+              <div class="dual-sensor-label">Intake</div>
+              <div class="dual-sensor-val" id="v-temp-intake" style="color:var(--blue)">--°F</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Humidity -->
+      <div class="card gauge-card expandable" onclick="toggleSection('rh-detail')">
+        <div class="gauge-icon">💧</div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 100 100">
+            <circle class="gauge-track" cx="50" cy="50" r="36" stroke-dasharray="226" stroke-dashoffset="56.5"/>
+            <circle class="gauge-fill" id="g-rh" cx="50" cy="50" r="36" stroke="#38bdf8"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-val" id="v-rh">--</div>
+            <div class="gauge-unit">%</div>
+          </div>
+        </div>
+        <div class="gauge-label">Humidity</div>
+        <div class="expand-hint">
+          <svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 7L1 3h8z"/></svg>
+          expand
+        </div>
+        <div class="expandable-section" id="rh-detail">
+          <div class="dual-sensor">
+            <div class="dual-sensor-item">
+              <div class="dual-sensor-label">Exhaust</div>
+              <div class="dual-sensor-val" id="v-rh-exhaust" style="color:var(--amber)">--%</div>
+            </div>
+            <div class="dual-sensor-item">
+              <div class="dual-sensor-label">Intake</div>
+              <div class="dual-sensor-val" id="v-rh-intake" style="color:var(--blue)">--%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Light -->
+      <div class="card gauge-card expandable" onclick="toggleSection('lux-detail')">
+        <div class="gauge-icon">☀️</div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 100 100">
+            <circle class="gauge-track" cx="50" cy="50" r="36" stroke-dasharray="226" stroke-dashoffset="56.5"/>
+            <circle class="gauge-fill" id="g-lux" cx="50" cy="50" r="36" stroke="#f59e0b"/>
+          </svg>
+          <div class="gauge-center">
+            <div id="lux-indicator" style="width:22px;height:22px;border-radius:50%;background:var(--muted);transition:background 0.5s,box-shadow 0.5s;"></div>
+          </div>
+        </div>
+        <div class="gauge-label">Light</div>
+        <div class="expand-hint">
+          <svg viewBox="0 0 10 10" fill="currentColor"><path d="M5 7L1 3h8z"/></svg>
+          expand
+        </div>
+        <div class="expandable-section" id="lux-detail">
+          <div class="dual-sensor" style="grid-template-columns:1fr;">
+            <div class="dual-sensor-item" style="text-align:center;">
+              <div class="dual-sensor-label">Lux Reading</div>
+              <div class="dual-sensor-val" id="v-lux" style="color:var(--amber)">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tank Temp -->
+      <div class="card gauge-card">
+        <div class="gauge-icon">🪣</div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 100 100">
+            <circle class="gauge-track" cx="50" cy="50" r="36" stroke-dasharray="226" stroke-dashoffset="56.5"/>
+            <circle class="gauge-fill" id="g-tank" cx="50" cy="50" r="36" stroke="#38bdf8"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-val" id="v-tank">--</div>
+            <div class="gauge-unit">°F</div>
+          </div>
+        </div>
+        <div class="gauge-label">Tank Temp</div>
+      </div>
+
+    </div><!-- /grid-4 env -->
+
+    <div class="section-label">Actuators</div>
+    <div class="grid-3" style="margin-bottom:20px;">
+
+      <!-- Louvre -->
+      <div class="card status-tile">
+        <div class="status-tile-header">
+          <div class="status-tile-title">🪟 Louvre</div>
+          <div class="status-pill pill-off" id="louvre-pill">—</div>
+        </div>
+        <div class="status-tile-val" id="v-louvre-pos" style="color:var(--teal)">--%</div>
+        <div class="status-tile-sub">Position Open</div>
+        <div class="louvre-bar-wrap" style="margin-top:8px;">
+          <div class="louvre-bar-track">
+            <div class="louvre-bar-fill" id="louvre-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text-faint);">
+          <span>CLOSED</span><span>OPEN</span>
+        </div>
+      </div>
+
+      <!-- Fan -->
+      <div class="card status-tile">
+        <div class="status-tile-header">
+          <div class="status-tile-title">🌀 Fan</div>
+          <div class="status-pill pill-off" id="fan-pill">OFF</div>
+        </div>
+        <div class="fan-speed-display">
+          <div class="fan-icon" id="fan-icon">💨</div>
+          <div>
+            <div class="status-tile-val" id="v-fan">0%</div>
+            <div class="status-tile-sub">Speed</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="linear-track">
+            <div class="linear-fill" id="fan-bar" style="width:0%;background:linear-gradient(90deg,var(--teal-dim),var(--blue))"></div>
+          </div>
+          <div class="linear-range"><span>0%</span><span>100%</span></div>
+        </div>
+      </div>
+
+      <!-- Grow Light -->
+      <div class="card status-tile">
+        <div class="status-tile-header">
+          <div class="status-tile-title">💡 Grow Light</div>
+          <div class="status-pill pill-off" id="light-pill">OFF</div>
+        </div>
+        <div class="status-tile-val" id="v-light" style="color:var(--text-faint)">OFF</div>
+        <div class="status-tile-sub">Grow Light State</div>
+        <div style="margin-top:10px;height:4px;border-radius:99px;background:var(--border2);overflow:hidden;">
+          <div id="light-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#78350f,var(--amber));transition:width 0.8s ease;"></div>
+        </div>
+      </div>
+
+    </div><!-- /grid-3 actuators -->
+
+    <div class="section-label">Irrigation</div>
+    <div class="card" style="padding:18px;margin-bottom:20px;">
+      <div class="irr-overview">
+        <div class="irr-pump-badge">
+          <div class="pump-dot" id="pump-dot"></div>
+          Pump: <strong id="v-pump" style="color:var(--text);margin-left:4px;">OFF</strong>
+        </div>
+        <div class="irr-pump-badge" style="margin-left:auto;">
+          Mode: <strong id="v-irr-mode" style="color:var(--teal);margin-left:4px;">—</strong>
+        </div>
+        <div class="irr-pump-badge">
+          Active Row: <strong id="v-active-row" style="color:var(--text);margin-left:4px;">—</strong>
+        </div>
+      </div>
+
+      <!-- Average soil moisture gauge (linear) -->
+      <div style="margin-bottom:4px;">
+        <div class="linear-header" style="margin-bottom:8px;">
+          <div class="linear-title">🌱 Avg Soil Moisture</div>
+          <div><span class="linear-val" id="v-soil-avg">--</span><span class="linear-unit">%</span></div>
+        </div>
+        <div class="linear-track">
+          <div class="linear-fill" id="soil-avg-bar" style="width:0%;background:linear-gradient(90deg,#166534,var(--green))"></div>
+        </div>
+        <div class="linear-range"><span>0% DRY</span><span>100% WET</span></div>
+      </div>
+
+      <button class="expand-toggle" onclick="toggleSection('irr-rows')">
+        <span>Row Detail</span>
+        <span class="expand-arrow" id="irr-arrow">▼</span>
+      </button>
+
+      <div class="expandable-section" id="irr-rows">
+        <div style="padding-top:10px;">
+          <div class="irr-row" id="irr-r1">
+            <div class="irr-row-label">Row 1</div>
+            <div class="irr-row-bar"><div class="irr-row-fill" id="soil-bar-1" style="width:0%"></div></div>
+            <div class="irr-row-val" id="soil-val-1">--%</div>
+            <div class="irr-row-dot" id="valve-dot-1" style="background:var(--text-faint);" title="Valve"></div>
+          </div>
+          <div class="irr-row" id="irr-r2">
+            <div class="irr-row-label">Row 2</div>
+            <div class="irr-row-bar"><div class="irr-row-fill" id="soil-bar-2" style="width:0%"></div></div>
+            <div class="irr-row-val" id="soil-val-2">--%</div>
+            <div class="irr-row-dot" id="valve-dot-2" style="background:var(--text-faint);" title="Valve"></div>
+          </div>
+          <div class="irr-row" id="irr-r3">
+            <div class="irr-row-label">Row 3</div>
+            <div class="irr-row-bar"><div class="irr-row-fill" id="soil-bar-3" style="width:0%"></div></div>
+            <div class="irr-row-val" id="soil-val-3">--%</div>
+            <div class="irr-row-dot" id="valve-dot-3" style="background:var(--text-faint);" title="Valve"></div>
+          </div>
+          <div class="irr-row" id="irr-r4">
+            <div class="irr-row-label">Row 4</div>
+            <div class="irr-row-bar"><div class="irr-row-fill" id="soil-bar-4" style="width:0%"></div></div>
+            <div class="irr-row-val" id="soil-val-4">--%</div>
+            <div class="irr-row-dot" id="valve-dot-4" style="background:var(--text-faint);" title="Valve"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /irr card -->
+
+    <div class="section-label">System Status</div>
+    <div class="sys-grid">
+      <div class="sys-tile">
+        <div class="sys-tile-label">Tank Heater</div>
+        <div class="sys-tile-val" id="v-tank-heat">—</div>
+      </div>
+      <div class="sys-tile">
+        <div class="sys-tile-label">Eco Mode</div>
+        <div class="sys-tile-val" id="v-eco">—</div>
+      </div>
+      <div class="sys-tile">
+        <div class="sys-tile-label">Irr Running</div>
+        <div class="sys-tile-val" id="v-irr-run">—</div>
+      </div>
+      <div class="sys-tile">
+        <div class="sys-tile-label">Open Trigger</div>
+        <div class="sys-tile-val" id="v-temp-open" style="font-size:12px;">—</div>
+      </div>
+      <div class="sys-tile">
+        <div class="sys-tile-label">Close Trigger</div>
+        <div class="sys-tile-val" id="v-temp-close" style="font-size:12px;">—</div>
+      </div>
+      <div class="sys-tile">
+        <div class="sys-tile-label">PV Present</div>
+        <div class="sys-tile-val" id="v-pv">—</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-dashboard -->
+
+  <!-- ═══════════════════ CONTROL TAB ═══════════════════ -->
+  <div class="tab-panel" id="panel-control">
+
+    <div class="warn-banner" id="ctrl-warn" style="display:none;">
+      ⚠ Not connected — commands may not reach the greenhouse
+    </div>
+
+    <!-- System Mode -->
+    <div class="ctrl-section">
+      <div class="section-label">System Mode</div>
+      <div class="card ctrl-card">
+        <div class="ctrl-header">
+          <span class="ctrl-icon">🔁</span>
+          <span class="ctrl-title">Operating Mode</span>
+          <div class="status-pill pill-auto" id="ctrl-mode-pill" style="margin-left:auto;">AUTO</div>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn btn-teal active" id="btn-mode-auto" onclick="sendCmd('MODE','AUTO')">Auto</button>
+          <button class="ctrl-btn btn-amber" id="btn-mode-manual" onclick="sendCmd('MODE','MANUAL')">Manual</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Louvre -->
+    <div class="ctrl-section">
+      <div class="section-label">Louvre / Vents</div>
+      <div class="card ctrl-card">
+        <div class="ctrl-header">
+          <span class="ctrl-icon">🪟</span>
+          <span class="ctrl-title">Louvre Control</span>
+          <div class="status-pill pill-off" id="ctrl-louvre-pill" style="margin-left:auto;">—</div>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn btn-green" id="btn-louvre-open"  onclick="sendCmd('LOUVRE','OPEN')">Open</button>
+          <button class="ctrl-btn btn-red"   id="btn-louvre-close" onclick="sendCmd('LOUVRE','CLOSE')">Close</button>
+          <button class="ctrl-btn btn-amber" id="btn-louvre-stop"  onclick="sendCmd('LOUVRE','STOP')">Stop</button>
+        </div>
+        <div class="auto-lock-notice" id="lock-louvre">🔒 Switch to Manual to control louvre</div>
+      </div>
+    </div>
+
+    <!-- Fan -->
+    <div class="ctrl-section">
+      <div class="section-label">Fan</div>
+      <div class="card ctrl-card">
+        <div class="ctrl-header">
+          <span class="ctrl-icon">🌀</span>
+          <span class="ctrl-title">Fan Control</span>
+          <div class="status-pill pill-off" id="ctrl-fan-pill" style="margin-left:auto;">—</div>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn btn-amber" id="btn-fan-50"  onclick="sendCmd('FAN','50')">On 50%</button>
+          <button class="ctrl-btn btn-green" id="btn-fan-100" onclick="sendCmd('FAN','100')">On 100%</button>
+          <button class="ctrl-btn btn-red"   id="btn-fan-off" onclick="sendCmd('FAN','0')">Off</button>
+        </div>
+        <div class="auto-lock-notice" id="lock-fan">🔒 Switch to Manual to control fan</div>
+      </div>
+    </div>
+
+    <!-- Grow Light -->
+    <div class="ctrl-section">
+      <div class="section-label">Grow Light</div>
+      <div class="card ctrl-card">
+        <div class="ctrl-header">
+          <span class="ctrl-icon">💡</span>
+          <span class="ctrl-title">Grow Light</span>
+          <div class="status-pill pill-off" id="ctrl-light-pill" style="margin-left:auto;">—</div>
+        </div>
+        <div class="btn-group">
+          <button class="ctrl-btn btn-green" id="btn-light-on"  onclick="sendCmd('LIGHT','ON')">On</button>
+          <button class="ctrl-btn btn-red" id="btn-light-off" onclick="sendCmd('LIGHT','OFF')">Off</button>
+        </div>
+        <div class="auto-lock-notice" id="lock-light">🔒 Switch to Manual to control grow light</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-control -->
+
+  <!-- ═══════════════════ ALERTS TAB ═══════════════════ -->
+  <div class="tab-panel" id="panel-alerts">
+
+    <div class="alert-tabs">
+      <button class="alert-tab-btn active" onclick="switchAlertTab('faults')" id="atab-faults">Faults</button>
+      <button class="alert-tab-btn" onclick="switchAlertTab('thresholds')" id="atab-thresholds">Thresholds</button>
+    </div>
+
+    <!-- Faults panel -->
+    <div class="alert-panel active" id="apanel-faults">
+      <div id="fault-list"></div>
+    </div>
+
+    <!-- Thresholds panel — shows live auto-trigger values from telemetry -->
+    <div class="alert-panel" id="apanel-thresholds">
+      <div class="card" style="padding:14px;font-size:12px;color:var(--text-dim);margin-bottom:14px;">
+        These are the auto-mode trigger values currently set on the controller. They update live from telemetry.
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">🌡️ Louvre Opens Above</span>
+          <span class="thresh-range" id="thresh-open-val">-- °F</span>
+        </div>
+        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Louvre closes below <span id="thresh-close-val">--</span> °F &nbsp;·&nbsp; Hysteresis built in</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">💧 Soil Irrigation (per row)</span>
+          <span class="thresh-range" id="thresh-soil-start-val">-- %</span>
+        </div>
+        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Irrigates when soil drops below trigger · Stops at <span id="thresh-soil-stop-val">--</span>%</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">🪣 Tank Heater On</span>
+          <span class="thresh-range" id="thresh-heat-on-val">-- °F</span>
+        </div>
+        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Heater turns off at <span id="thresh-heat-off-val">--</span> °F</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">⏱️ Irrigation Schedule</span>
+          <span class="thresh-range" id="thresh-sched-val">--</span>
+        </div>
+        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Interval between scheduled irrigation runs</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-alerts -->
+
+</div><!-- /#app -->
+
+<script>
+// ── STATE ──
+const state = {
+  connected: false,
+  mode: 'AUTO',
+  irrigationMode: 'MANUAL',
+  temp: null, rh: null,
+  tempExhaust: null, tempIntake: null,
+  rhExhaust: null, rhIntake: null,
+  lux: null,
+  tankTemp: null,
+  soilPct: [null,null,null,null],
+  valveOn: [false,false,false,false],
+  rowEnabled: [true,true,true,true],
+  pumpOn: false,
+  lightOn: false,
+  fanPwm: 0,
+  tankHeaterOn: false,
+  louvreState: 0,
+  louvrePos: 0,
+  rowsRunActive: false,
+  activeRowIndex: 0,
+  tempOpenF: 85, tempCloseF: 65,
+  tankHeatOnF: 40, tankHeatOffF: 45,
+  soilStartPct: 35, soilStopPct: 55,
+  scheduleIntervalMs: null,
+  pvPresent: false, battV: 0, pvV: 0,
+  ecoMode: false,
+  faultBits: 0,
+  nrFaults: {},
+  lastSeen: null
+};
+
+// Fault bit definitions from sketch
+const FAULTS = [
+  { bit: 1<<0, name: 'Sensor Failure',       key: 'F_SENSOR_FAIL' },
+  { bit: 1<<1, name: 'Soil Out of Range',     key: 'F_SOIL_OOR' },
+  { bit: 1<<2, name: 'Louvre Timeout',        key: 'F_LOUVRE_TIMEOUT' },
+  { bit: 1<<3, name: 'Limit Switch Conflict', key: 'F_LIMIT_CONFLICT' },
+  { bit: 1<<4, name: 'Low Battery',           key: 'F_LOW_BATT' },
+  { bit: 1<<5, name: 'Frozen Sensor',         key: 'F_FROZEN_SENSOR' },
+  { bit: 1<<6, name: 'Comm Loss',             key: 'F_COMM_LOSS' },
+  { bit: 1<<7, name: 'PV Missing',            key: 'F_PV_MISSING' },
+  { bit: 1<<8, name: 'Tank Sensor Fault',     key: 'F_TANK_SENSOR' },
+];
+
+const LOUVRE_STATES = ['Unknown','Open','Closed','Opening','Closing','Fault'];
+
+// ── THEME ──
+function setTheme(name) {
+  document.documentElement.setAttribute('data-theme', name);
+  localStorage.setItem('gh-theme', name);
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-t') === name);
+  });
+}
+
+// Apply saved theme on load
+(function() {
+  const saved = localStorage.getItem('gh-theme') || 'blue';
+  setTheme(saved);
+})();
+
+// ── WEBSOCKET ──
+let ws = null;
+// Auto-detect: use the host that served this page, fall back to 127.0.0.1
+// Override by adding ?host=192.168.1.100 to the URL
+function getWsUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const host = params.get('host') || window.location.hostname || '127.0.0.1';
+  const port = params.get('port') || '1880';
+  return 'ws://' + host + ':' + port + '/ws/greenhouse';
+}
+let wsUrl = getWsUrl();
+
+function connectWS() {
+  try {
+    ws = new WebSocket(wsUrl);
+    ws.onopen  = () => { state.connected = true; updateConnStatus(); };
+    ws.onclose = () => { state.connected = false; updateConnStatus(); setTimeout(connectWS, 3000); };
+    ws.onerror = () => { state.connected = false; updateConnStatus(); };
+    ws.onmessage = (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        applyPayload(d);
+      } catch(_) {}
+    };
+  } catch(_) { setTimeout(connectWS, 3000); }
+}
+
+function sendCmd(type, val) {
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ command: type, value: val }));
+  }
+  // Update UI optimistically
+  if (type === 'MODE') {
+    state.mode = val;
+    updateModeUI();
+  }
+}
+
+function applyPayload(d) {
+  if (d.temp       !== undefined) state.temp       = d.temp;
+  if (d.rh         !== undefined) state.rh         = d.rh;
+  if (d.tempExhaust!== undefined) state.tempExhaust= d.tempExhaust;
+  if (d.tempIntake !== undefined) state.tempIntake = d.tempIntake;
+  if (d.rhExhaust  !== undefined) state.rhExhaust  = d.rhExhaust;
+  if (d.rhIntake   !== undefined) state.rhIntake   = d.rhIntake;
+  if (d.lux        !== undefined) state.lux        = d.lux;
+  if (d.tankTemp   !== undefined) state.tankTemp   = d.tankTemp;
+  if (d.soilPct    !== undefined) state.soilPct    = d.soilPct;
+  if (d.valveOn    !== undefined) state.valveOn    = d.valveOn;
+  if (d.rowEnabled !== undefined) state.rowEnabled = d.rowEnabled;
+  if (d.pumpOn     !== undefined) state.pumpOn     = d.pumpOn;
+  if (d.lightOn    !== undefined) state.lightOn    = d.lightOn;
+  if (d.fanPwm     !== undefined) state.fanPwm     = d.fanPwm;
+  if (d.tankHeaterOn !== undefined) state.tankHeaterOn = d.tankHeaterOn;
+  if (d.louvreState !== undefined) state.louvreState = d.louvreState;
+  if (d.louvrePos  !== undefined) state.louvrePos  = d.louvrePos;
+  if (d.mode       !== undefined) state.mode       = d.mode;
+  if (d.irrigationMode !== undefined) state.irrigationMode = d.irrigationMode;
+  if (d.rowsRunActive !== undefined) state.rowsRunActive = d.rowsRunActive;
+  if (d.activeRowIndex !== undefined) state.activeRowIndex = d.activeRowIndex;
+  if (d.tempOpenF  !== undefined) state.tempOpenF  = d.tempOpenF;
+  if (d.tempCloseF !== undefined) state.tempCloseF = d.tempCloseF;
+  if (d.ecoMode    !== undefined) state.ecoMode    = d.ecoMode;
+  if (d.pvPresent  !== undefined) state.pvPresent  = d.pvPresent;
+  if (d.faultBits  !== undefined) state.faultBits  = d.faultBits;
+  if (d.tankHeatOnF  !== undefined) state.tankHeatOnF  = d.tankHeatOnF;
+  if (d.tankHeatOffF !== undefined) state.tankHeatOffF = d.tankHeatOffF;
+  if (d.soilStartPct !== undefined) state.soilStartPct = d.soilStartPct;
+  if (d.soilStopPct  !== undefined) state.soilStopPct  = d.soilStopPct;
+  if (d.scheduleIntervalMs !== undefined) state.scheduleIntervalMs = d.scheduleIntervalMs;
+  if (d.nrFaults !== undefined) state.nrFaults = d.nrFaults;
+  state.lastSeen = new Date();
+  updateAll();
+}
+
+// ── DEMO DATA (simulates live feed when not connected) ──
+function injectDemo() {
+  const t = Date.now() / 1000;
+  applyPayload({
+    temp:        78 + 4 * Math.sin(t / 20),
+    rh:          62 + 8 * Math.sin(t / 15 + 1),
+    tempExhaust: 80 + 3 * Math.sin(t / 18),
+    tempIntake:  75 + 5 * Math.sin(t / 22),
+    rhExhaust:   65 + 7 * Math.sin(t / 14),
+    rhIntake:    59 + 9 * Math.sin(t / 17),
+    lux:         Math.round(32000 + 15000 * Math.sin(t / 30)),
+    tankTemp:    52 + 2 * Math.sin(t / 40),
+    soilPct:     [38 + 5*Math.sin(t/25), 42 + 3*Math.sin(t/20), 35 + 7*Math.sin(t/18), 44 + 4*Math.sin(t/22)].map(v=>Math.round(v)),
+    valveOn:     [false,false,false,false],
+    rowEnabled:  [true,true,true,true],
+    pumpOn:      false,
+    lightOn:     true,
+    fanPwm:      128,
+    tankHeaterOn:false,
+    louvreState: 2,
+    louvrePos:   35 + 20 * Math.sin(t / 35),
+    mode:        'AUTO',
+    irrigationMode:'SOIL',
+    rowsRunActive: false,
+    activeRowIndex: 0,
+    tempOpenF:   85, tempCloseF: 65,
+    ecoMode:     false,
+    pvPresent:   true,
+    faultBits:   0
+  });
+}
+
+// ── BUTTON GROUP STATE HELPER ──
+// Sets one button active (lit), all others inactive (dimmed)
+function setGroupState(btns) {
+  btns.forEach(b => {
+    const el = document.getElementById(b.id);
+    if (!el) return;
+    el.classList.toggle('active', b.active);
+    el.classList.toggle('inactive', !b.active);
+  });
+}
+
+// ── UPDATE FUNCTIONS ──
+function setGauge(id, pct) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const circ = 226, dead = 56.5;
+  const fill = Math.max(0, Math.min(1, pct)) * (circ - dead);
+  el.style.strokeDashoffset = circ - fill;
+}
+
+function colorForPct(pct, reverse) {
+  if (reverse) pct = 1 - pct;
+  if (pct < 0.33) return '#22c55e';
+  if (pct < 0.66) return '#f59e0b';
+  return '#ef4444';
+}
+
+function fmt(v, dec=1) { return (v===null||v===undefined||isNaN(v)) ? '--' : Number(v).toFixed(dec); }
+
+function updateConnStatus() {
+  const dot = document.getElementById('conn-dot');
+  const lbl = document.getElementById('conn-label');
+  const warn= document.getElementById('ctrl-warn');
+  if (state.connected) {
+    dot.className = 'conn-dot ok';
+    lbl.textContent = 'Connected';
+    if (warn) warn.style.display = 'none';
+  } else {
+    dot.className = 'conn-dot';
+    lbl.textContent = 'Disconnected';
+    if (warn) warn.style.display = 'flex';
+  }
+}
+
+function updateModeUI() {
+  const isAuto = state.mode === 'AUTO';
+  document.getElementById('mode-label').textContent = isAuto ? 'AUTO' : 'MANUAL';
+  const modePill = document.getElementById('mode-badge');
+  modePill.style.borderColor = isAuto ? 'var(--teal-dim)' : 'var(--amber)';
+  modePill.style.color = isAuto ? 'var(--teal)' : 'var(--amber)';
+  modePill.style.background = isAuto ? 'rgba(14,184,160,0.08)' : 'rgba(245,158,11,0.08)';
+  setActiveBtn('btn-mode-auto', 'btn-mode-manual', isAuto);
+  const ctrlPill = document.getElementById('ctrl-mode-pill');
+  ctrlPill.textContent = isAuto ? 'AUTO' : 'MANUAL';
+  ctrlPill.className = 'status-pill ' + (isAuto ? 'pill-auto' : 'pill-warn');
+
+  // Lock/unlock actuator buttons — only usable in MANUAL mode
+  const actuatorBtns = [
+    'btn-louvre-open','btn-louvre-close','btn-louvre-stop',
+    'btn-fan-50','btn-fan-100','btn-fan-off',
+    'btn-light-on','btn-light-off'
+  ];
+  actuatorBtns.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('disabled', isAuto);
+      // In manual, inactive is handled per-group by updateAll
+      if (isAuto) el.classList.remove('inactive');
+    }
+  });
+  // Show/hide lock notices
+  ['lock-louvre','lock-fan','lock-light'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible', isAuto);
+  });
+}
+
+function setActiveBtn(aId, bId, aIsActive) {
+  const a = document.getElementById(aId);
+  const b = document.getElementById(bId);
+  if (a) a.classList.toggle('active', aIsActive);
+  if (b) b.classList.toggle('active', !aIsActive);
+}
+
+function updateAll() {
+  const s = state;
+
+  // Last update
+  if (s.lastSeen) {
+    document.getElementById('last-update').textContent =
+      'Updated ' + s.lastSeen.toLocaleTimeString();
+  }
+
+  // Temperature gauge (50–120°F range)
+  const tempPct = (s.temp - 50) / 70;
+  setGauge('g-temp', tempPct);
+  const tempEl = document.getElementById('g-temp');
+  if (tempEl) tempEl.style.stroke = colorForPct(tempPct, false);
+  document.getElementById('v-temp').textContent = fmt(s.temp, 0);
+  document.getElementById('v-temp-exhaust').textContent = fmt(s.tempExhaust,0) + '°F';
+  document.getElementById('v-temp-intake').textContent  = fmt(s.tempIntake,0) + '°F';
+
+  // Humidity gauge (0–100%)
+  const rhPct = (s.rh || 0) / 100;
+  setGauge('g-rh', rhPct);
+  document.getElementById('v-rh').textContent = fmt(s.rh, 0);
+  document.getElementById('v-rh-exhaust').textContent = fmt(s.rhExhaust,0) + '%';
+  document.getElementById('v-rh-intake').textContent  = fmt(s.rhIntake,0) + '%';
+
+  // Light gauge (0-80000 lux)
+  const luxPct = Math.min(1, (s.lux||0) / 80000);
+  setGauge('g-lux', luxPct);
+  const luxEl = document.getElementById('g-lux');
+  if (luxEl) luxEl.style.stroke = '#f59e0b';
+  // Expanded text value
+  const luxV = s.lux === null ? '--' : s.lux >= 1000 ? (s.lux/1000).toFixed(1)+'k lux' : (s.lux + ' lux');
+  document.getElementById('v-lux').textContent = luxV;
+  // Status indicator dot: muted=dark(<75), amber=low light(<3000), green=bright(>=3000)
+  const luxInd = document.getElementById('lux-indicator');
+  if (luxInd) {
+    const lv = s.lux || 0;
+    if (lv < 75) {
+      luxInd.style.background = 'var(--muted)';
+      luxInd.style.boxShadow = 'none';
+    } else if (lv < 3000) {
+      luxInd.style.background = 'var(--amber)';
+      luxInd.style.boxShadow = '0 0 8px var(--amber)';
+    } else {
+      luxInd.style.background = 'var(--green)';
+      luxInd.style.boxShadow = '0 0 8px var(--green)';
+    }
+  }
+
+  // Tank temp gauge (32–100°F)
+  const tankPct = ((s.tankTemp||50) - 32) / 68;
+  setGauge('g-tank', tankPct);
+  const tankGEl = document.getElementById('g-tank');
+  if (tankGEl) tankGEl.style.stroke = tankPct < 0.3 ? '#38bdf8' : tankPct < 0.7 ? '#0eb8a0' : '#ef4444';
+  document.getElementById('v-tank').textContent = fmt(s.tankTemp,1);
+
+  // Louvre
+  const louvreStateStr = LOUVRE_STATES[s.louvreState] || 'Unknown';
+  const louvrePos = Math.max(0, Math.min(100, s.louvrePos || 0));
+  document.getElementById('v-louvre-pos').textContent = louvrePos.toFixed(0) + '%';
+  document.getElementById('louvre-bar').style.width = louvrePos + '%';
+  const louvPill = document.getElementById('louvre-pill');
+  louvPill.textContent = louvreStateStr;
+  louvPill.className = 'status-pill ' + (
+    s.louvreState === 1 ? 'pill-on' :
+    s.louvreState === 2 ? 'pill-off' :
+    s.louvreState === 5 ? 'pill-err' : 'pill-warn'
+  );
+  document.getElementById('ctrl-louvre-pill').textContent = louvreStateStr;
+  document.getElementById('ctrl-louvre-pill').className = louvPill.className;
+
+  // Fan
+  const fanPct = Math.round((s.fanPwm / 255) * 100);
+  document.getElementById('v-fan').textContent = fanPct + '%';
+  document.getElementById('fan-bar').style.width = fanPct + '%';
+  const fanPill = document.getElementById('fan-pill');
+  fanPill.textContent = fanPct === 0 ? 'OFF' : fanPct + '%';
+  fanPill.className = 'status-pill ' + (fanPct === 0 ? 'pill-off' : 'pill-on');
+  document.getElementById('ctrl-fan-pill').textContent = fanPill.textContent;
+  document.getElementById('ctrl-fan-pill').className = fanPill.className;
+  const fanIcon = document.getElementById('fan-icon');
+  if (fanPct > 0) fanIcon.classList.add('spinning');
+  else fanIcon.classList.remove('spinning');
+  // Fan button active/inactive states
+  if (s.mode !== 'AUTO') {
+    setGroupState([
+      {id:'btn-fan-50',  active: s.fanPwm >= 100 && s.fanPwm < 200},
+      {id:'btn-fan-100', active: s.fanPwm >= 200},
+      {id:'btn-fan-off', active: s.fanPwm === 0}
+    ]);
+  }
+
+  // Light
+  const lightPill = document.getElementById('light-pill');
+  lightPill.textContent = s.lightOn ? 'ON' : 'OFF';
+  lightPill.className = 'status-pill ' + (s.lightOn ? 'pill-on' : 'pill-off');
+  document.getElementById('v-light').textContent = s.lightOn ? 'ON' : 'OFF';
+  document.getElementById('v-light').style.color = s.lightOn ? 'var(--amber)' : 'var(--text-faint)';
+  document.getElementById('light-bar').style.width = s.lightOn ? '100%' : '0%';
+  document.getElementById('ctrl-light-pill').textContent = lightPill.textContent;
+  document.getElementById('ctrl-light-pill').className = lightPill.className;
+  // Light button active/inactive states
+  if (s.mode !== 'AUTO') {
+    setGroupState([
+      {id:'btn-light-on',  active: s.lightOn},
+      {id:'btn-light-off', active: !s.lightOn}
+    ]);
+  }
+
+  // Louvre buttons — active=selected, inactive=unselected (in MANUAL only)
+  if (s.mode !== 'AUTO') {
+    const louvreOpen  = s.louvreState === 1 || s.louvreState === 3;
+    const louvreClose = s.louvreState === 2 || s.louvreState === 4;
+    const louvreStop  = s.louvreState === 0;
+    setGroupState([
+      {id:'btn-louvre-open',  active: louvreOpen},
+      {id:'btn-louvre-close', active: louvreClose},
+      {id:'btn-louvre-stop',  active: louvreStop}
+    ]);
+  }
+
+  // Mode
+  updateModeUI();
+
+  // Pump
+  document.getElementById('v-pump').textContent = s.pumpOn ? 'ON' : 'OFF';
+  document.getElementById('v-pump').style.color = s.pumpOn ? 'var(--blue)' : 'var(--text)';
+  document.getElementById('pump-dot').className = 'pump-dot' + (s.pumpOn ? ' on' : '');
+
+  // Irrigation mode
+  document.getElementById('v-irr-mode').textContent = s.irrigationMode || '—';
+  document.getElementById('v-active-row').textContent = s.rowsRunActive ? 'Row ' + s.activeRowIndex : 'None';
+
+  // Soil moisture
+  const soils = s.soilPct || [0,0,0,0];
+  const validSoils = soils.filter(v => v !== null && !isNaN(v));
+  const avg = validSoils.length ? validSoils.reduce((a,b)=>a+b,0)/validSoils.length : 0;
+  document.getElementById('v-soil-avg').textContent = avg.toFixed(0);
+  document.getElementById('soil-avg-bar').style.width = Math.min(100,avg) + '%';
+  for (let i=0; i<4; i++) {
+    const v = soils[i] ?? 0;
+    document.getElementById('soil-bar-'+(i+1)).style.width = Math.min(100,v) + '%';
+    document.getElementById('soil-val-'+(i+1)).textContent = v + '%';
+    const vdot = document.getElementById('valve-dot-'+(i+1));
+    vdot.style.background = s.valveOn[i] ? 'var(--blue)' : (s.rowEnabled[i] ? 'var(--text-faint)' : 'var(--border2)');
+    vdot.style.boxShadow   = s.valveOn[i] ? '0 0 6px var(--blue)' : 'none';
+    vdot.title = s.valveOn[i] ? 'Valve OPEN' : (s.rowEnabled[i] ? 'Enabled' : 'Disabled');
+  }
+
+  // System tiles
+  document.getElementById('v-tank-heat').textContent = s.tankHeaterOn ? '🔥 ON' : 'OFF';
+  document.getElementById('v-tank-heat').style.color = s.tankHeaterOn ? 'var(--amber)' : 'var(--text-faint)';
+  document.getElementById('v-eco').textContent = s.ecoMode ? '🌿 ON' : 'OFF';
+  document.getElementById('v-eco').style.color = s.ecoMode ? 'var(--green)' : 'var(--text-faint)';
+  document.getElementById('v-irr-run').textContent = s.rowsRunActive ? '💧 Active' : 'Idle';
+  document.getElementById('v-irr-run').style.color = s.rowsRunActive ? 'var(--blue)' : 'var(--text-faint)';
+  document.getElementById('v-temp-open').textContent  = (s.tempOpenF||'--') + '°F';
+  document.getElementById('v-temp-close').textContent = (s.tempCloseF||'--') + '°F';
+  document.getElementById('v-pv').textContent = s.pvPresent ? '✅ Yes' : 'No';
+  document.getElementById('v-pv').style.color = s.pvPresent ? 'var(--green)' : 'var(--text-faint)';
+
+  // Faults
+  updateFaults();
+
+  // Live trigger thresholds panel
+  updateThresholds();
+}
+
+function updateFaults() {
+  const s = state;
+  const bits = s.faultBits || 0;
+  const nr = s.nrFaults || {};
+  const nrKeys = Object.keys(nr);
+
+  const hwActive = FAULTS.filter(f => bits & f.bit).length;
+  const totalActive = hwActive + nrKeys.length;
+
+  // Dashboard badge — counts both hardware and NR faults
+  const badge = document.getElementById('fault-badge');
+  if (totalActive > 0) {
+    badge.classList.add('visible');
+    document.getElementById('fault-count').textContent = totalActive;
+    document.getElementById('fault-s').textContent = totalActive === 1 ? '' : 's';
+  } else {
+    badge.classList.remove('visible');
+  }
+
+  const list = document.getElementById('fault-list');
+  if (!list) return;
+
+  // Hardware fault bits from Arduino — always show all rows
+  let html = FAULTS.map(f => {
+    const active = !!(bits & f.bit);
+    const cls = active ? 'err' : 'ok';
+    const dotColor = active ? 'var(--red)' : 'var(--green)';
+    return `<div class="fault-row ${cls}">
+      <div class="fault-dot" style="background:${dotColor};box-shadow:0 0 6px ${dotColor}"></div>
+      <div class="fault-name">${f.name}</div>
+      <div class="fault-status">${active ? 'FAULT' : 'OK'}</div>
+    </div>`;
+  }).join('');
+
+  // Node-RED detected faults — soil missing, floating, comms etc.
+  // Only shown when active (these are dynamic, not a fixed list)
+  if (nrKeys.length > 0) {
+    html += '<div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);padding:10px 4px 6px;">Node-RED Detected</div>';
+    const keyNames = {
+      'soil1_pct': 'Soil Row 1', 'soil2_pct': 'Soil Row 2',
+      'soil3_pct': 'Soil Row 3', 'soil4_pct': 'Soil Row 4',
+      'soil_avg_pct': 'Soil Average', 'controller_fault': 'Controller',
+      'comms': 'Comms', 'louvre_pos_pct': 'Louvre Position',
+      'fan_pwm': 'Fan', 'rh_pct': 'Humidity', 'temp_f': 'Temperature',
+      'lux': 'Light'
+    };
+    html += nrKeys.map(k => {
+      const name = keyNames[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return '<div class="fault-row err">' +
+        '<div class="fault-dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div>' +
+        '<div class="fault-name">' + name + '</div>' +
+        '<div class="fault-status">' + nr[k] + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  list.innerHTML = html;
+}
+
+function updateThresholds() {
+  const s = state;
+  const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  el('thresh-open-val',      s.tempOpenF  != null ? s.tempOpenF.toFixed(1) + ' °F' : '--');
+  el('thresh-close-val',     s.tempCloseF != null ? s.tempCloseF.toFixed(1) : '--');
+  el('thresh-soil-start-val',s.soilStartPct != null ? 'Below ' + s.soilStartPct + '%' : 'Below 35%');
+  el('thresh-soil-stop-val', s.soilStopPct  != null ? s.soilStopPct + '' : '55');
+  el('thresh-heat-on-val',   s.tankHeatOnF  != null ? s.tankHeatOnF.toFixed(1) + ' °F' : '--');
+  el('thresh-heat-off-val',  s.tankHeatOffF != null ? s.tankHeatOffF.toFixed(1) : '--');
+  if (s.scheduleIntervalMs != null) {
+    const hrs = (s.scheduleIntervalMs / 3600000).toFixed(1);
+    el('thresh-sched-val', hrs + ' hrs');
+  } else {
+    el('thresh-sched-val', '--');
+  }
+}
+
+// ── TAB SWITCHING ──
+function switchTab(name) {
+  ['dashboard','control','alerts'].forEach(t => {
+    document.getElementById('panel-'+t).classList.toggle('active', t===name);
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+}
+
+function switchAlertTab(name) {
+  ['faults','thresholds'].forEach(t => {
+    document.getElementById('apanel-'+t).classList.toggle('active', t===name);
+    document.getElementById('atab-'+t).classList.toggle('active', t===name);
+  });
+}
+
+// ── EXPAND / COLLAPSE ──
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+  // Arrow for irrigation
+  const arrow = document.getElementById('irr-arrow');
+  if (arrow && id === 'irr-rows') arrow.classList.toggle('open');
+}
+
+// ── INIT ──
+connectWS();
+
+// Demo simulation when disconnected
+setInterval(() => {
+  if (!state.connected) {
+    injectDemo();
+    // Show as disconnected still
+    state.connected = false;
+    updateConnStatus();
+  }
+}, 1000);
+</script>
+</body>
+</html>
