@@ -788,7 +788,7 @@
         <span id="mode-label">AUTO</span>
       </div>
       <div class="fault-badge" id="fault-badge" onclick="switchTab('alerts')">
-        ⚠ <span id="fault-count">0</span> Fault<span id="fault-s">s</span>
+        ⚠ <span id="fault-count">0</span> Fault(s)
       </div>
       <div class="conn-pill" id="conn-pill">
         <div class="conn-dot" id="conn-dot"></div>
@@ -809,7 +809,7 @@
       <span class="tab-icon">🌱</span> Dashboard
     </button>
     <button class="tab-btn" onclick="switchTab('control')" id="tab-control">
-      <span class="tab-icon">⚙️</span> Control
+      <span class="tab-icon">⚙️</span> Mode
     </button>
     <button class="tab-btn" onclick="switchTab('alerts')" id="tab-alerts">
       <span class="tab-icon">🔔</span> Alerts
@@ -1174,40 +1174,150 @@
     <!-- Thresholds panel — shows live auto-trigger values from telemetry -->
     <div class="alert-panel" id="apanel-thresholds">
       <div class="card" style="padding:14px;font-size:12px;color:var(--text-dim);margin-bottom:14px;">
-        These are the auto-mode trigger values currently set on the controller. They update live from telemetry.
+        Live auto-mode trigger values from the controller. All values update in real time from telemetry.
+      </div>
+
+      <!-- LOUVRE / VENTS -->
+      <div class="section-label" style="margin-top:4px;">🪟 Louvre / Vents</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Opens if Temp above</span>
+          <span class="thresh-range" id="th-temp-open">-- °F</span>
+        </div>
+        <div class="thresh-sub">OR if Humidity above <span id="th-rh-open">--</span>%</div>
       </div>
 
       <div class="card thresh-item">
         <div class="thresh-header">
-          <span class="thresh-label">🌡️ Louvre Opens Above</span>
-          <span class="thresh-range" id="thresh-open-val">-- °F</span>
+          <span class="thresh-label">Closes if Temp below</span>
+          <span class="thresh-range" id="th-temp-close">-- °F</span>
         </div>
-        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Louvre closes below <span id="thresh-close-val">--</span> °F &nbsp;·&nbsp; Hysteresis built in</div>
+        <div class="thresh-sub">AND Humidity below <span id="th-rh-close-calc">--</span>% &nbsp;·&nbsp; Temp hysteresis: <span id="th-temp-hyst">2.0</span>°F &nbsp;·&nbsp; RH hysteresis: <span id="th-rh-hyst">3.0</span>%</div>
       </div>
 
       <div class="card thresh-item">
         <div class="thresh-header">
-          <span class="thresh-label">💧 Soil Irrigation (per row)</span>
-          <span class="thresh-range" id="thresh-soil-start-val">-- %</span>
+          <span class="thresh-label">Eco Emergency Override</span>
+          <span class="thresh-range" id="th-eco-open">-- °F</span>
         </div>
-        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Irrigates when soil drops below trigger · Stops at <span id="thresh-soil-stop-val">--</span>%</div>
+        <div class="thresh-sub">Opens even in eco mode if Temp exceeds open trigger +5°F, or RH exceeds open trigger +5%</div>
       </div>
 
       <div class="card thresh-item">
         <div class="thresh-header">
-          <span class="thresh-label">🪣 Tank Heater On</span>
-          <span class="thresh-range" id="thresh-heat-on-val">-- °F</span>
+          <span class="thresh-label">Louvre Move Timeout</span>
+          <span class="thresh-range">20 s</span>
         </div>
-        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Heater turns off at <span id="thresh-heat-off-val">--</span> °F</div>
+        <div class="thresh-sub">Fault triggered if louvre takes longer than 20 seconds to travel &nbsp;·&nbsp; Full travel time: <span id="th-travel">4.0</span> s</div>
+      </div>
+
+      <!-- FAN -->
+      <div class="section-label" style="margin-top:12px;">🌀 Fan</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Fan starts above</span>
+          <span class="thresh-range" id="th-fan-start">-- °F</span>
+        </div>
+        <div class="thresh-sub">Speed scales linearly: PWM = (Temp - close trigger) × 12 &nbsp;·&nbsp; Max 255 PWM</div>
       </div>
 
       <div class="card thresh-item">
         <div class="thresh-header">
-          <span class="thresh-label">⏱️ Irrigation Schedule</span>
-          <span class="thresh-range" id="thresh-sched-val">--</span>
+          <span class="thresh-label">Fan off below</span>
+          <span class="thresh-range" id="th-fan-off">-- °F</span>
         </div>
-        <div class="thresh-sub" style="font-size:11px;color:var(--text-dim);">Interval between scheduled irrigation runs</div>
+        <div class="thresh-sub">Fan stops when temp drops below the louvre close threshold &nbsp;·&nbsp; Disabled in eco mode</div>
       </div>
+
+      <!-- GROW LIGHT -->
+      <div class="section-label" style="margin-top:12px;">💡 Grow Light</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Light ON below</span>
+          <span class="thresh-range">2,000 lux</span>
+        </div>
+        <div class="thresh-sub">Grow light turns on automatically when ambient light is low</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Light OFF above</span>
+          <span class="thresh-range">4,000 lux</span>
+        </div>
+        <div class="thresh-sub">Grow light turns off when sufficient natural light available &nbsp;·&nbsp; Disabled in eco mode</div>
+      </div>
+
+      <!-- IRRIGATION -->
+      <div class="section-label" style="margin-top:12px;">💧 Irrigation</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Soil — Irrigate below</span>
+          <span class="thresh-range" id="th-soil-start">-- %</span>
+        </div>
+        <div class="thresh-sub">Per-row trigger in SOIL mode &nbsp;·&nbsp; Stops when soil reaches <span id="th-soil-stop">--</span>%</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Row run duration</span>
+          <span class="thresh-range" id="th-row-dur">-- s</span>
+        </div>
+        <div class="thresh-sub">Max time per row per cycle: <span id="th-row-max">--</span> min &nbsp;·&nbsp; Applied to all 4 rows</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Schedule interval</span>
+          <span class="thresh-range" id="th-sched">-- hrs</span>
+        </div>
+        <div class="thresh-sub">Time between scheduled irrigation runs &nbsp;·&nbsp; Disabled in eco mode or comms loss</div>
+      </div>
+
+      <!-- TANK HEATER -->
+      <div class="section-label" style="margin-top:12px;">🪣 Tank Heater</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Heater ON below</span>
+          <span class="thresh-range" id="th-heat-on">-- °F</span>
+        </div>
+        <div class="thresh-sub">Tank heater activates when tank temp drops below this value</div>
+      </div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Heater OFF above</span>
+          <span class="thresh-range" id="th-heat-off">-- °F</span>
+        </div>
+        <div class="thresh-sub">Heater deactivates at this temp &nbsp;·&nbsp; Disabled in eco mode or if tank sensor faulted</div>
+      </div>
+
+      <!-- ECO MODE -->
+      <div class="section-label" style="margin-top:12px;">🌿 Eco Mode</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Eco triggers when</span>
+          <span class="thresh-range">Low batt + no PV</span>
+        </div>
+        <div class="thresh-sub">Low battery fault active AND solar panel absent &nbsp;·&nbsp; 30 s delay before engaging &nbsp;·&nbsp; Disables fan, light, irrigation</div>
+      </div>
+
+      <!-- COMMS -->
+      <div class="section-label" style="margin-top:12px;">📡 Communications</div>
+
+      <div class="card thresh-item">
+        <div class="thresh-header">
+          <span class="thresh-label">Comms loss after</span>
+          <span class="thresh-range">15 s</span>
+        </div>
+        <div class="thresh-sub">If no heartbeat received from Node-RED within 15 seconds, louvre stops and irrigation halts</div>
+      </div>
+
     </div>
 
   </div><!-- /panel-alerts -->
@@ -1240,6 +1350,9 @@ const state = {
   tankHeatOnF: 40, tankHeatOffF: 45,
   soilStartPct: 35, soilStopPct: 55,
   scheduleIntervalMs: null,
+  rhOpenPct: 85,
+  rowDurationMs: 60000,
+  rowMaxCycleMs: 600000,
   pvPresent: false, battV: 0, pvV: 0,
   ecoMode: false,
   faultBits: 0,
@@ -1347,6 +1460,9 @@ function applyPayload(d) {
   if (d.soilStartPct !== undefined) state.soilStartPct = d.soilStartPct;
   if (d.soilStopPct  !== undefined) state.soilStopPct  = d.soilStopPct;
   if (d.scheduleIntervalMs !== undefined) state.scheduleIntervalMs = d.scheduleIntervalMs;
+  if (d.rhOpenPct    !== undefined) state.rhOpenPct    = d.rhOpenPct;
+  if (d.rowDurationMs !== undefined) state.rowDurationMs = d.rowDurationMs;
+  if (d.rowMaxCycleMs !== undefined) state.rowMaxCycleMs = d.rowMaxCycleMs;
   if (d.nrFaults !== undefined) state.nrFaults = d.nrFaults;
   state.lastSeen = new Date();
   updateAll();
@@ -1650,7 +1766,6 @@ function updateFaults() {
   if (totalActive > 0) {
     badge.classList.add('visible');
     document.getElementById('fault-count').textContent = totalActive;
-    document.getElementById('fault-s').textContent = totalActive === 1 ? '' : 's';
   } else {
     badge.classList.remove('visible');
   }
@@ -1698,18 +1813,37 @@ function updateFaults() {
 function updateThresholds() {
   const s = state;
   const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-  el('thresh-open-val',      s.tempOpenF  != null ? s.tempOpenF.toFixed(1) + ' °F' : '--');
-  el('thresh-close-val',     s.tempCloseF != null ? s.tempCloseF.toFixed(1) : '--');
-  el('thresh-soil-start-val',s.soilStartPct != null ? 'Below ' + s.soilStartPct + '%' : 'Below 35%');
-  el('thresh-soil-stop-val', s.soilStopPct  != null ? s.soilStopPct + '' : '55');
-  el('thresh-heat-on-val',   s.tankHeatOnF  != null ? s.tankHeatOnF.toFixed(1) + ' °F' : '--');
-  el('thresh-heat-off-val',  s.tankHeatOffF != null ? s.tankHeatOffF.toFixed(1) : '--');
-  if (s.scheduleIntervalMs != null) {
-    const hrs = (s.scheduleIntervalMs / 3600000).toFixed(1);
-    el('thresh-sched-val', hrs + ' hrs');
-  } else {
-    el('thresh-sched-val', '--');
+  const f1 = v => v != null ? Number(v).toFixed(1) : '--';
+  const f0 = v => v != null ? Number(v).toFixed(0) : '--';
+
+  /* Louvre */
+  el('th-temp-open',      s.tempOpenF  != null ? f1(s.tempOpenF)  + ' °F' : '--');
+  el('th-rh-open',        s.rhOpenPct  != null ? f1(s.rhOpenPct)        : '85');
+  el('th-temp-close',     s.tempCloseF != null ? f1(s.tempCloseF) + ' °F' : '--');
+  /* RH close threshold = rhOpenPct - 3 (RH_HYST_PCT default) */
+  el('th-rh-close-calc',  s.rhOpenPct  != null ? f1(s.rhOpenPct - 3)    : '82');
+  el('th-eco-open',       s.tempOpenF  != null ? f1(s.tempOpenF + 5) + ' °F' : '--');
+
+  /* Fan — starts/stops at TEMP_CLOSE_F */
+  el('th-fan-start',  s.tempCloseF != null ? f1(s.tempCloseF) + ' °F' : '--');
+  el('th-fan-off',    s.tempCloseF != null ? f1(s.tempCloseF) + ' °F' : '--');
+
+  /* Irrigation */
+  el('th-soil-start', s.soilStartPct != null ? s.soilStartPct + ' %' : '--');
+  el('th-soil-stop',  s.soilStopPct  != null ? s.soilStopPct  + ''   : '--');
+  if (s.rowDurationMs != null) {
+    el('th-row-dur', (s.rowDurationMs / 1000).toFixed(0) + ' s');
   }
+  if (s.rowMaxCycleMs != null) {
+    el('th-row-max', (s.rowMaxCycleMs / 60000).toFixed(0) + ' min');
+  }
+  if (s.scheduleIntervalMs != null) {
+    el('th-sched', (s.scheduleIntervalMs / 3600000).toFixed(1) + ' hrs');
+  }
+
+  /* Tank heater */
+  el('th-heat-on',  s.tankHeatOnF  != null ? f1(s.tankHeatOnF)  + ' °F' : '--');
+  el('th-heat-off', s.tankHeatOffF != null ? f1(s.tankHeatOffF) + ' °F' : '--');
 }
 
 // ── TAB SWITCHING ──
