@@ -1,0 +1,9 @@
+:80 {
+    @root path /
+    redir @root /index.html
+
+    @nodered path /nodered*
+    reverse_proxy @nodered localhost:1880
+
+    reverse_proxy localhost:1880
+}
