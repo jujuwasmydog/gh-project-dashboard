@@ -124,7 +124,7 @@
     border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
   }
   .topbar-left { display: flex; align-items: center; gap: 14px; }
   .logo-mark {
@@ -463,7 +463,7 @@
 
   /* Irrigation rows */
   .irr-row {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 6px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
   }
@@ -475,9 +475,10 @@
     color: var(--text-dim);
     width: 44px; flex-shrink: 0;
   }
-  .irr-row-bar { flex: 1; height: 6px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+  .irr-row-bar {
+  margin-right: 2px; flex: 1; height: 6px; background: var(--border2); border-radius: 99px; overflow: hidden; }
   .irr-row-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #166534, var(--green)); transition: width 1s ease; }
-  .irr-row-val { font-size: 11px; color: var(--text-dim); width: 32px; text-align: right; flex-shrink: 0; }
+  .irr-row-val { font-size: 11px; color: var(--text-dim); min-width: 50; text-align: right; flex: 0 0 100px; white-space: nowrap; overflow: visible; }
   .irr-row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   /* Expand/collapse */
@@ -512,7 +513,7 @@
   /* Individual sensor detail */
   .dual-sensor {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 6px;
     padding: 12px 0 4px;
   }
   .dual-sensor-item {
@@ -528,7 +529,7 @@
   .ctrl-section { margin-bottom: 20px; }
   .ctrl-card { padding: 20px; }
   .ctrl-header {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 6px;
     margin-bottom: 16px;
   }
   .ctrl-icon { font-size: 20px; }
@@ -616,7 +617,7 @@
 
   /* Warn banner (disconnected) */
   .warn-banner {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 6px;
     background: rgba(245,158,11,0.08);
     border: 1px solid rgba(245,158,11,0.3);
     border-radius: 8px;
@@ -1357,6 +1358,8 @@ const state = {
   ecoMode: false,
   faultBits: 0,
   nrFaults: {},
+  hw: {},
+  arduinoCommFault: 0,
   lastSeen: null
 };
 
@@ -1464,6 +1467,9 @@ function applyPayload(d) {
   if (d.rowDurationMs !== undefined) state.rowDurationMs = d.rowDurationMs;
   if (d.rowMaxCycleMs !== undefined) state.rowMaxCycleMs = d.rowMaxCycleMs;
   if (d.nrFaults !== undefined) state.nrFaults = d.nrFaults;
+  if (d.hw !== undefined) state.hw = d.hw || {};
+  if (d.arduino_comm_fault !== undefined) state.arduinoCommFault = d.arduino_comm_fault ? 1 : 0;
+  if (d.commFault !== undefined) state.arduinoCommFault = d.commFault ? 1 : 0;
   state.lastSeen = new Date();
   updateAll();
 }
@@ -1528,6 +1534,85 @@ function colorForPct(pct, reverse) {
 }
 
 function fmt(v, dec=1) { return (v===null||v===undefined||isNaN(v)) ? '--' : Number(v).toFixed(dec); }
+
+function getSoilFaultMap() {
+  return state.nrFaults || {};
+}
+
+function isSoilInstalled(idx) {
+  const hw = state.hw || {};
+  const key = 'soil' + idx;
+  if (typeof hw[key] === 'boolean') return hw[key] === true;
+  return true;
+}
+
+function soilFaultText(idx) {
+  const faults = getSoilFaultMap();
+  const key = 'soil' + idx + '_pct';
+  return faults[key] || null;
+}
+
+function getSoilDisplay(idx) {
+  if (state.arduinoCommFault === 1 || state.connected === false) {
+    return { text: '⚫ Not Connected', numeric: null, present: false, installed: false };
+  }
+
+  if (!isSoilInstalled(idx)) {
+    return { text: '⚫ Not Installed', numeric: null, present: false, installed: false };
+  }
+
+  const fault = soilFaultText(idx);
+  if (fault) {
+    return { text: '⚫ Not Connected', numeric: null, present: false, installed: true };
+  }
+
+  const arr = state.soilPct || [];
+  const raw = arr[idx - 1];
+  const n = Number(raw);
+
+  if (!isFinite(n) || n < 0 || n > 100) {
+    return { text: '⚫ Not Connected', numeric: null, present: false, installed: true };
+  }
+
+  const soil = Math.max(0, Math.min(100, n));
+  let text = '';
+  if (soil < 35) text = '🟠 Dry — ' + Math.round(soil) + '%';
+  else if (soil <= 65) text = '🟢 Good — ' + Math.round(soil) + '%';
+  else text = '🟡 Wet — ' + Math.round(soil) + '%';
+
+  return { text: text, numeric: soil, present: true, installed: true };
+}
+
+function getSoilAverageDisplay() {
+  if (state.arduinoCommFault === 1 || state.connected === false) {
+    return { text: '⚫ Not Connected', numeric: null, present: false };
+  }
+
+  const faults = getSoilFaultMap();
+  const values = [];
+
+  for (let idx = 1; idx <= 4; idx++) {
+    if (!isSoilInstalled(idx)) continue;
+    if (faults['soil' + idx + '_pct']) continue;
+
+    const arr = state.soilPct || [];
+    const n = Number(arr[idx - 1]);
+    if (!isFinite(n) || n < 0 || n > 100) continue;
+    values.push(Math.max(0, Math.min(100, n)));
+  }
+
+  if (values.length === 0) {
+    return { text: '--', numeric: null, present: false };
+  }
+
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  let text = '';
+  if (avg < 35) text = '🟠 Dry — ' + Math.round(avg) + '%';
+  else if (avg <= 65) text = '🟢 Good — ' + Math.round(avg) + '%';
+  else text = '🟡 Wet — ' + Math.round(avg) + '%';
+
+  return { text: text, numeric: avg, present: true };
+}
 
 function updateConnStatus() {
   const dot = document.getElementById('conn-dot');
@@ -1718,15 +1803,15 @@ function updateAll() {
   document.getElementById('v-active-row').textContent = s.rowsRunActive ? 'Row ' + s.activeRowIndex : 'None';
 
   // Soil moisture
-  const soils = s.soilPct || [0,0,0,0];
-  const validSoils = soils.filter(v => v !== null && !isNaN(v));
-  const avg = validSoils.length ? validSoils.reduce((a,b)=>a+b,0)/validSoils.length : 0;
-  document.getElementById('v-soil-avg').textContent = avg.toFixed(0);
-  document.getElementById('soil-avg-bar').style.width = Math.min(100,avg) + '%';
+  const avgDisplay = getSoilAverageDisplay();
+  document.getElementById('v-soil-avg').textContent = avgDisplay.present ? Math.round(avgDisplay.numeric) : '--';
+  document.getElementById('soil-avg-bar').style.width = avgDisplay.present ? Math.min(100, avgDisplay.numeric) + '%' : '0%';
+  document.getElementById('soil-avg-bar').title = avgDisplay.present ? avgDisplay.text : '';
+
   for (let i=0; i<4; i++) {
-    const v = soils[i] ?? 0;
-    document.getElementById('soil-bar-'+(i+1)).style.width = Math.min(100,v) + '%';
-    document.getElementById('soil-val-'+(i+1)).textContent = v + '%';
+    const display = getSoilDisplay(i + 1);
+    document.getElementById('soil-bar-'+(i+1)).style.width = display.present ? Math.min(100, display.numeric) + '%' : '0%';
+    document.getElementById('soil-val-'+(i+1)).textContent = display.text;
     const vdot = document.getElementById('valve-dot-'+(i+1));
     vdot.style.background = s.valveOn[i] ? 'var(--blue)' : (s.rowEnabled[i] ? 'var(--text-faint)' : 'var(--border2)');
     vdot.style.boxShadow   = s.valveOn[i] ? '0 0 6px var(--blue)' : 'none';
