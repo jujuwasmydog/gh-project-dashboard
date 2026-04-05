@@ -518,8 +518,8 @@
         "z": "6cda5a5f32196c63",
         "name": "Controller",
         "serial": "f21e5fa854a87f38",
-        "x": 150,
-        "y": 320,
+        "x": 160,
+        "y": 220,
         "wires": [
             [
                 "0331b7e8018058e8"
@@ -531,15 +531,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Parse sensor",
-        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\nif (!line) return null;\n\n// Ignore header row\nif (line.startsWith(\"ts_ms,\")) {\n    return null;\n}\n\nlet fields = line.split(\",\");\n\nif (fields.length !== 55) {\n    node.warn(\"CSV field count mismatch: got \" + fields.length + \", expected 55 :: \" + line);\n    return null;\n}\n\nfunction toNum(v) {\n    let n = Number(v);\n    return Number.isNaN(n) ? null : n;\n}\n\nfunction toBool(v) {\n    return String(v) === \"1\";\n}\n\nfunction louvreStateText(v) {\n    if (String(v) === \"0\") return \"opening\";\n    if (String(v) === \"1\") return \"closing\";\n    if (String(v) === \"2\") return \"closed\";\n    if (String(v) === \"3\") return \"open\";\n    return \"stopped\";\n}\n\nlet p = {\n    ts_ms: toNum(fields[0]),\n    mode: fields[1],\n    irrigation_mode: fields[2],\n    temp_f: toNum(fields[3]),\n    rh_pct: toNum(fields[4]),\n    tank_temp_f: toNum(fields[5]),\n    lux: toNum(fields[6]),\n    soil1_raw: toNum(fields[7]),\n    soil1_pct: toNum(fields[8]),\n    soil2_raw: toNum(fields[9]),\n    soil2_pct: toNum(fields[10]),\n    soil3_raw: toNum(fields[11]),\n    soil3_pct: toNum(fields[12]),\n    soil4_raw: toNum(fields[13]),\n    soil4_pct: toNum(fields[14]),\n    batt_v: toNum(fields[15]),\n    pv_v: toNum(fields[16]),\n    pv_present: toBool(fields[17]),\n    louvre_state_raw: fields[18],\n    louvre_pos_pct: toNum(fields[19]),\n    row1: toBool(fields[20]),\n    row2: toBool(fields[21]),\n    row3: toBool(fields[22]),\n    row4: toBool(fields[23]),\n    row1_en: toBool(fields[24]),\n    row2_en: toBool(fields[25]),\n    row3_en: toBool(fields[26]),\n    row4_en: toBool(fields[27]),\n    row1_ms: toNum(fields[28]),\n    row2_ms: toNum(fields[29]),\n    row3_ms: toNum(fields[30]),\n    row4_ms: toNum(fields[31]),\n    row1_start_pct: toNum(fields[32]),\n    row2_start_pct: toNum(fields[33]),\n    row3_start_pct: toNum(fields[34]),\n    row4_start_pct: toNum(fields[35]),\n    row1_stop_pct: toNum(fields[36]),\n    row2_stop_pct: toNum(fields[37]),\n    row3_stop_pct: toNum(fields[38]),\n    row4_stop_pct: toNum(fields[39]),\n    pump_on: toBool(fields[40]),\n    heater_on: toBool(fields[41]),\n    light_on: toBool(fields[42]),\n    fan_pwm: toNum(fields[43]),\n    rows_run_active: toBool(fields[44]),\n    rows_run_auto: toBool(fields[45]),\n    active_row: toNum(fields[46]),\n    temp_open_f: toNum(fields[47]),\n    temp_close_f: toNum(fields[48]),\n    rh_open_pct: toNum(fields[49]),\n    tank_heat_on_f: toNum(fields[50]),\n    tank_heat_off_f: toNum(fields[51]),\n    schedule_interval_ms: toNum(fields[52]),\n    eco_mode: toBool(fields[53]),\n    fault: toNum(fields[54])\n};\n\n// compatibility aliases\np.ts = Date.now();\np.controller_uptime_ms = p.ts_ms;\np.louvre_state = louvreStateText(p.louvre_state_raw);\np.louvre_pct = p.louvre_pos_pct;\n\nlet soils = [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct].filter(v => typeof v === \"number\");\np.soil_avg_pct = soils.length ? soils.reduce((a, b) => a + b, 0) / soils.length : null;\np.soil = p.soil_avg_pct;\n\np.tavg = p.temp_f;\np.havg = p.rh_pct;\np.t1 = p.temp_f;\np.t2 = p.temp_f;\np.h1 = p.rh_pct;\np.h2 = p.rh_pct;\n\np.fan_pct = (typeof p.fan_pwm === \"number\") ? Math.round((p.fan_pwm / 255) * 100) : null;\np.lightOn = p.light_on;\n\nmsg.payload = p;\nreturn msg;",
+        "func": "let line = msg.payload;\n\nif (Buffer.isBuffer(line)) {\n    line = line.toString();\n}\n\nline = String(line).trim();\nif (!line) return null;\n\n// Ignore header row\nif (line.startsWith(\"ts_ms,\")) {\n    return null;\n}\n\nlet fields = line.split(\",\");\n\nif (fields.length !== 55) {\n    node.warn(\"CSV field count mismatch: got \" + fields.length + \", expected 55 :: \" + line);\n    return null;\n}\n\nfunction toNum(v) {\n    let n = Number(v);\n    return Number.isNaN(n) ? null : n;\n}\n\nfunction toBool(v) {\n    return String(v) === \"1\";\n}\n\nlet p = {\n    ts_ms: toNum(fields[0]),\n    mode: fields[1],\n    irrigation_mode: fields[2],\n    temp_f: toNum(fields[3]),\n    rh_pct: toNum(fields[4]),\n    tank_temp_f: toNum(fields[5]),\n    lux: toNum(fields[6]),\n    soil1_raw: toNum(fields[7]),\n    soil1_pct: toNum(fields[8]),\n    soil2_raw: toNum(fields[9]),\n    soil2_pct: toNum(fields[10]),\n    soil3_raw: toNum(fields[11]),\n    soil3_pct: toNum(fields[12]),\n    soil4_raw: toNum(fields[13]),\n    soil4_pct: toNum(fields[14]),\n    batt_v: toNum(fields[15]),\n    pv_v: toNum(fields[16]),\n    pv_present: toBool(fields[17]),\n    louvre_state_raw: fields[18],\n    louvre_pos_pct: toNum(fields[19]),\n    row1: toBool(fields[20]),\n    row2: toBool(fields[21]),\n    row3: toBool(fields[22]),\n    row4: toBool(fields[23]),\n    row1_en: toBool(fields[24]),\n    row2_en: toBool(fields[25]),\n    row3_en: toBool(fields[26]),\n    row4_en: toBool(fields[27]),\n    row1_ms: toNum(fields[28]),\n    row2_ms: toNum(fields[29]),\n    row3_ms: toNum(fields[30]),\n    row4_ms: toNum(fields[31]),\n    row1_start_pct: toNum(fields[32]),\n    row2_start_pct: toNum(fields[33]),\n    row3_start_pct: toNum(fields[34]),\n    row4_start_pct: toNum(fields[35]),\n    row1_stop_pct: toNum(fields[36]),\n    row2_stop_pct: toNum(fields[37]),\n    row3_stop_pct: toNum(fields[38]),\n    row4_stop_pct: toNum(fields[39]),\n    pump_on: toBool(fields[40]),\n    heater_on: toBool(fields[41]),\n    light_on: toBool(fields[42]),\n    fan_pwm: toNum(fields[43]),\n    rows_run_active: toBool(fields[44]),\n    rows_run_auto: toBool(fields[45]),\n    active_row: toNum(fields[46]),\n    temp_open_f: toNum(fields[47]),\n    temp_close_f: toNum(fields[48]),\n    rh_open_pct: toNum(fields[49]),\n    tank_heat_on_f: toNum(fields[50]),\n    tank_heat_off_f: toNum(fields[51]),\n    schedule_interval_ms: toNum(fields[52]),\n    eco_mode: toBool(fields[53]),\n    fault: toNum(fields[54])\n};\n\np.ts = Date.now();\np.controller_uptime_ms = p.ts_ms;\n\n// Louvre state text from raw numeric\nif (String(p.louvre_state_raw) === \"0\") p.louvre_state = \"opening\";\nelse if (String(p.louvre_state_raw) === \"1\") p.louvre_state = \"closing\";\nelse if (String(p.louvre_state_raw) === \"2\") p.louvre_state = \"closed\";\nelse if (String(p.louvre_state_raw) === \"3\") p.louvre_state = \"open\";\nelse p.louvre_state = \"stopped\";\n\np.fan_pct = (typeof p.fan_pwm === \"number\") ? Math.round((p.fan_pwm / 255) * 100) : null;\n\nmsg.payload = p;\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 320,
-        "y": 320,
+        "x": 330,
+        "y": 220,
         "wires": [
             [
                 "56a18a3fe5e40a59"
@@ -558,8 +558,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 160,
+        "x": 1080,
+        "y": 100,
         "wires": [
             [
                 "6b81021f817b48c5"
@@ -577,8 +577,8 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1710,
-        "y": 120,
+        "x": 1610,
+        "y": 60,
         "wires": [
             []
         ]
@@ -595,8 +595,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1190,
-        "y": 680,
+        "x": 1090,
+        "y": 380,
         "wires": [
             [
                 "4af3079dbb6762fa"
@@ -617,8 +617,8 @@
         "correl": "",
         "expiry": "",
         "broker": "9a8b7c6d5e4f3002",
-        "x": 1730,
-        "y": 200,
+        "x": 1630,
+        "y": 140,
         "wires": [],
         "info": "// p is your live sample object\r\nlet p = msg.payload;\r\n\r\n// choose your topic (keep what you already use)\r\nmsg.topic = \"greenhouse/data/latest\";\r\n\r\n// IMPORTANT: publish JSON string\r\nmsg.payload = JSON.stringify(p);\r\n\r\nreturn msg;\r\n"
     },
@@ -626,16 +626,16 @@
         "id": "3999dea12c82b1a6",
         "type": "function",
         "z": "6cda5a5f32196c63",
-        "name": "Format MQTT payload (live)",
-        "func": "// Publish the live parsed sample to LAN via MQTT\nmsg.topic = \"greenhouse/data/live\";\n// msg.payload is already the parsed object from Parse sensor line\nreturn msg;",
+        "name": "Publish Canonical MQTT Live",
+        "func": "let p = msg.payload;\nif (!p || typeof p !== \"object\") return null;\n\nlet out = JSON.parse(JSON.stringify(p));\nif (typeof out.ts !== \"number\") out.ts = Date.now();\nout.schema = \"greenhouse.live.v1\";\nout.stream = \"live\";\n\nmsg.topic = \"greenhouse/data/live\";\nmsg.payload = out;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1220,
-        "y": 200,
+        "x": 1120,
+        "y": 140,
         "wires": [
             [
                 "fb8c481a34f0fd0e"
@@ -647,15 +647,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "db_function",
-        "func": "let p = msg.payload || {};\n\n// use wall-clock time for DB primary key\nconst ts = Date.now();\n\nfunction sqlNum(v) {\n    return (v === undefined || v === null || v === \"\" || Number.isNaN(Number(v)))\n        ? \"NULL\"\n        : Number(v);\n}\n\nfunction sqlBool(v) {\n    if (v === true || v === 1 || v === \"1\") return 1;\n    if (v === false || v === 0 || v === \"0\") return 0;\n    return \"NULL\";\n}\n\nfunction sqlText(v) {\n    if (v === undefined || v === null || v === \"\") return \"NULL\";\n    return \"'\" + String(v).replace(/'/g, \"''\") + \"'\";\n}\n\n// compatibility values for older dashboard/queries\nlet compat_t = sqlNum(p.temp_f);\nlet compat_h = sqlNum(p.rh_pct);\n\nlet hw = p.hw || {};\nfunction installed(name) {\n    return hw[name] === true;\n}\n\nlet soils = [];\nif (installed(\"soil1\") && p.soil1_pct !== undefined && p.soil1_pct !== null && !Number.isNaN(Number(p.soil1_pct))) soils.push(Number(p.soil1_pct));\nif (installed(\"soil2\") && p.soil2_pct !== undefined && p.soil2_pct !== null && !Number.isNaN(Number(p.soil2_pct))) soils.push(Number(p.soil2_pct));\nif (installed(\"soil3\") && p.soil3_pct !== undefined && p.soil3_pct !== null && !Number.isNaN(Number(p.soil3_pct))) soils.push(Number(p.soil3_pct));\nif (installed(\"soil4\") && p.soil4_pct !== undefined && p.soil4_pct !== null && !Number.isNaN(Number(p.soil4_pct))) soils.push(Number(p.soil4_pct));\n\nlet compat_soil = soils.length\n    ? soils.reduce((a, b) => a + b, 0) / soils.length\n    : null;\n\nlet controllerFault = (p.fault === undefined || p.fault === null || Number.isNaN(Number(p.fault)))\n    ? 0\n    : Number(p.fault);\n\nlet faultCount = Number(p.fault_count || 0);\nlet systemFault = Number(p.system_fault || 0);\n\nmsg.topic =\n  \"INSERT INTO greenhouse_samples (\" +\n  \"ts, t1, t2, tavg, h1, h2, havg, soil, lux, \" +\n  \"louvre_pct, louvre_state, fan_pct, lightOn, fault_count, system_fault, \" +\n  \"mode, irrigation_mode, temp_f, rh_pct, tank_temp_f, \" +\n  \"soil1_raw, soil1_pct, soil2_raw, soil2_pct, soil3_raw, soil3_pct, soil4_raw, soil4_pct, \" +\n  \"batt_v, pv_v, pv_present, louvre_pos_pct, \" +\n  \"row1, row2, row3, row4, row1_en, row2_en, row3_en, row4_en, \" +\n  \"row1_ms, row2_ms, row3_ms, row4_ms, \" +\n  \"row1_start_pct, row2_start_pct, row3_start_pct, row4_start_pct, \" +\n  \"row1_stop_pct, row2_stop_pct, row3_stop_pct, row4_stop_pct, \" +\n  \"pump_on, heater_on, light_on, fan_pwm, \" +\n  \"rows_run_active, rows_run_auto, active_row, \" +\n  \"temp_open_f, temp_close_f, rh_open_pct, \" +\n  \"tank_heat_on_f, tank_heat_off_f, schedule_interval_ms, eco_mode, controller_fault\" +\n  \") VALUES (\" +\n  sqlNum(ts) + \", \" +\n\n  compat_t + \", \" + compat_t + \", \" + compat_t + \", \" +\n  compat_h + \", \" + compat_h + \", \" + compat_h + \", \" +\n  sqlNum(compat_soil) + \", \" + sqlNum(p.lux) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n  sqlText(p.louvre_state) + \", \" +\n  sqlNum(p.fan_pct !== undefined ? p.fan_pct : p.fan_pwm) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n\n  sqlNum(faultCount) + \", \" +\n  sqlNum(systemFault) + \", \" +\n\n  sqlText(p.mode) + \", \" +\n  sqlText(p.irrigation_mode) + \", \" +\n  sqlNum(p.temp_f) + \", \" +\n  sqlNum(p.rh_pct) + \", \" +\n  sqlNum(p.tank_temp_f) + \", \" +\n\n  sqlNum(p.soil1_raw) + \", \" +\n  sqlNum(p.soil1_pct) + \", \" +\n  sqlNum(p.soil2_raw) + \", \" +\n  sqlNum(p.soil2_pct) + \", \" +\n  sqlNum(p.soil3_raw) + \", \" +\n  sqlNum(p.soil3_pct) + \", \" +\n  sqlNum(p.soil4_raw) + \", \" +\n  sqlNum(p.soil4_pct) + \", \" +\n\n  sqlNum(p.batt_v) + \", \" +\n  sqlNum(p.pv_v) + \", \" +\n  sqlBool(p.pv_present) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n\n  sqlBool(p.row1) + \", \" +\n  sqlBool(p.row2) + \", \" +\n  sqlBool(p.row3) + \", \" +\n  sqlBool(p.row4) + \", \" +\n\n  sqlBool(p.row1_en) + \", \" +\n  sqlBool(p.row2_en) + \", \" +\n  sqlBool(p.row3_en) + \", \" +\n  sqlBool(p.row4_en) + \", \" +\n\n  sqlNum(p.row1_ms) + \", \" +\n  sqlNum(p.row2_ms) + \", \" +\n  sqlNum(p.row3_ms) + \", \" +\n  sqlNum(p.row4_ms) + \", \" +\n\n  sqlNum(p.row1_start_pct) + \", \" +\n  sqlNum(p.row2_start_pct) + \", \" +\n  sqlNum(p.row3_start_pct) + \", \" +\n  sqlNum(p.row4_start_pct) + \", \" +\n\n  sqlNum(p.row1_stop_pct) + \", \" +\n  sqlNum(p.row2_stop_pct) + \", \" +\n  sqlNum(p.row3_stop_pct) + \", \" +\n  sqlNum(p.row4_stop_pct) + \", \" +\n\n  sqlBool(p.pump_on) + \", \" +\n  sqlBool(p.heater_on) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n  sqlNum(p.fan_pwm) + \", \" +\n\n  sqlBool(p.rows_run_active) + \", \" +\n  sqlBool(p.rows_run_auto) + \", \" +\n  sqlNum(p.active_row) + \", \" +\n\n  sqlNum(p.temp_open_f) + \", \" +\n  sqlNum(p.temp_close_f) + \", \" +\n  sqlNum(p.rh_open_pct) + \", \" +\n\n  sqlNum(p.tank_heat_on_f) + \", \" +\n  sqlNum(p.tank_heat_off_f) + \", \" +\n  sqlNum(p.schedule_interval_ms) + \", \" +\n  sqlBool(p.eco_mode) + \", \" +\n  sqlNum(controllerFault) +\n  \");\";\n\nmsg.payload = [];\nreturn msg;\n",
+        "func": "let p = msg.payload || {};\n\n// use wall-clock time for DB primary key\nconst ts = Date.now();\n\nfunction sqlNum(v) {\n    return (v === undefined || v === null || v === \"\" || Number.isNaN(Number(v)))\n        ? \"NULL\"\n        : Number(v);\n}\n\nfunction sqlBool(v) {\n    if (v === true || v === 1 || v === \"1\") return 1;\n    if (v === false || v === 0 || v === \"0\") return 0;\n    return \"NULL\";\n}\n\nfunction sqlText(v) {\n    if (v === undefined || v === null || v === \"\") return \"NULL\";\n    return \"'\" + String(v).replace(/'/g, \"''\") + \"'\";\n}\n\n// compatibility values for older dashboard/queries\nlet compat_t = sqlNum(p.temp_f);\nlet compat_h = sqlNum(p.rh_pct);\n\n// Use canonical soil_avg_pct from Final Live Payload (hw-aware, fault-aware)\nlet compat_soil = p.soil_avg_pct;\n\nlet controllerFault = (p.fault === undefined || p.fault === null || Number.isNaN(Number(p.fault)))\n    ? 0\n    : Number(p.fault);\n\nlet faultCount = Number(p.fault_count || 0);\nlet systemFault = Number(p.system_fault || 0);\n\nmsg.topic =\n  \"INSERT INTO greenhouse_samples (\" +\n  \"ts, t1, t2, tavg, h1, h2, havg, soil, lux, \" +\n  \"louvre_pct, louvre_state, fan_pct, lightOn, fault_count, system_fault, \" +\n  \"mode, irrigation_mode, temp_f, rh_pct, tank_temp_f, \" +\n  \"soil1_raw, soil1_pct, soil2_raw, soil2_pct, soil3_raw, soil3_pct, soil4_raw, soil4_pct, \" +\n  \"batt_v, pv_v, pv_present, louvre_pos_pct, \" +\n  \"row1, row2, row3, row4, row1_en, row2_en, row3_en, row4_en, \" +\n  \"row1_ms, row2_ms, row3_ms, row4_ms, \" +\n  \"row1_start_pct, row2_start_pct, row3_start_pct, row4_start_pct, \" +\n  \"row1_stop_pct, row2_stop_pct, row3_stop_pct, row4_stop_pct, \" +\n  \"pump_on, heater_on, light_on, fan_pwm, \" +\n  \"rows_run_active, rows_run_auto, active_row, \" +\n  \"temp_open_f, temp_close_f, rh_open_pct, \" +\n  \"tank_heat_on_f, tank_heat_off_f, schedule_interval_ms, eco_mode, controller_fault\" +\n  \") VALUES (\" +\n  sqlNum(ts) + \", \" +\n\n  compat_t + \", \" + compat_t + \", \" + compat_t + \", \" +\n  compat_h + \", \" + compat_h + \", \" + compat_h + \", \" +\n  sqlNum(compat_soil) + \", \" + sqlNum(p.lux) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n  sqlText(p.louvre_state) + \", \" +\n  sqlNum(p.fan_pct !== undefined ? p.fan_pct : p.fan_pwm) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n\n  sqlNum(faultCount) + \", \" +\n  sqlNum(systemFault) + \", \" +\n\n  sqlText(p.mode) + \", \" +\n  sqlText(p.irrigation_mode) + \", \" +\n  sqlNum(p.temp_f) + \", \" +\n  sqlNum(p.rh_pct) + \", \" +\n  sqlNum(p.tank_temp_f) + \", \" +\n\n  sqlNum(p.soil1_raw) + \", \" +\n  sqlNum(p.soil1_pct) + \", \" +\n  sqlNum(p.soil2_raw) + \", \" +\n  sqlNum(p.soil2_pct) + \", \" +\n  sqlNum(p.soil3_raw) + \", \" +\n  sqlNum(p.soil3_pct) + \", \" +\n  sqlNum(p.soil4_raw) + \", \" +\n  sqlNum(p.soil4_pct) + \", \" +\n\n  sqlNum(p.batt_v) + \", \" +\n  sqlNum(p.pv_v) + \", \" +\n  sqlBool(p.pv_present) + \", \" +\n\n  sqlNum(p.louvre_pos_pct) + \", \" +\n\n  sqlBool(p.row1) + \", \" +\n  sqlBool(p.row2) + \", \" +\n  sqlBool(p.row3) + \", \" +\n  sqlBool(p.row4) + \", \" +\n\n  sqlBool(p.row1_en) + \", \" +\n  sqlBool(p.row2_en) + \", \" +\n  sqlBool(p.row3_en) + \", \" +\n  sqlBool(p.row4_en) + \", \" +\n\n  sqlNum(p.row1_ms) + \", \" +\n  sqlNum(p.row2_ms) + \", \" +\n  sqlNum(p.row3_ms) + \", \" +\n  sqlNum(p.row4_ms) + \", \" +\n\n  sqlNum(p.row1_start_pct) + \", \" +\n  sqlNum(p.row2_start_pct) + \", \" +\n  sqlNum(p.row3_start_pct) + \", \" +\n  sqlNum(p.row4_start_pct) + \", \" +\n\n  sqlNum(p.row1_stop_pct) + \", \" +\n  sqlNum(p.row2_stop_pct) + \", \" +\n  sqlNum(p.row3_stop_pct) + \", \" +\n  sqlNum(p.row4_stop_pct) + \", \" +\n\n  sqlBool(p.pump_on) + \", \" +\n  sqlBool(p.heater_on) + \", \" +\n  sqlBool(p.light_on) + \", \" +\n  sqlNum(p.fan_pwm) + \", \" +\n\n  sqlBool(p.rows_run_active) + \", \" +\n  sqlBool(p.rows_run_auto) + \", \" +\n  sqlNum(p.active_row) + \", \" +\n\n  sqlNum(p.temp_open_f) + \", \" +\n  sqlNum(p.temp_close_f) + \", \" +\n  sqlNum(p.rh_open_pct) + \", \" +\n\n  sqlNum(p.tank_heat_on_f) + \", \" +\n  sqlNum(p.tank_heat_off_f) + \", \" +\n  sqlNum(p.schedule_interval_ms) + \", \" +\n  sqlBool(p.eco_mode) + \", \" +\n  sqlNum(controllerFault) +\n  \");\";\n\nmsg.payload = [];\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 380,
+        "x": 1070,
+        "y": 300,
         "wires": [
             [
                 "b91ca825f88143fb"
@@ -670,114 +670,10 @@
         "sqlquery": "msg.topic",
         "sql": "",
         "name": "greenhouse_db",
-        "x": 1480,
-        "y": 380,
-        "wires": [
-            [
-                "10d54d59890a7417"
-            ]
-        ]
-    },
-    {
-        "id": "10d54d59890a7417",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "Format MQTT payload",
-        "func": "// Expect rows from SQLite\nif (!Array.isArray(msg.payload) || msg.payload.length === 0) {\n    return null;\n}\n\n// Take the newest row\nconst row = msg.payload[0];\n\n// Set MQTT topic\nmsg.topic = \"greenhouse/data/latest\";\n\n// Publish JSON object\nmsg.payload = row;\n\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 1700,
-        "y": 380,
-        "wires": [
-            [
-                "fb8c481a34f0fd0e"
-            ]
-        ]
-    },
-    {
-        "id": "76de5bf877b6191a",
-        "type": "mqtt in",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "topic": "greenhouse/data/#",
-        "qos": "2",
-        "datatype": "auto-detect",
-        "broker": "9a8b7c6d5e4f3002",
-        "nl": false,
-        "rap": true,
-        "rh": 0,
-        "inputs": 0,
-        "x": 190,
-        "y": 800,
+        "x": 1380,
+        "y": 300,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "8ba39c5ed2842546",
-        "type": "inject",
-        "z": "6cda5a5f32196c63",
-        "name": "query db (every 60s)",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "60",
-        "crontab": "",
-        "once": true,
-        "onceDelay": "1",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 1160,
-        "y": 280,
-        "wires": [
-            [
-                "8def210fb4efeb3c"
-            ]
-        ]
-    },
-    {
-        "id": "8def210fb4efeb3c",
-        "type": "change",
-        "z": "6cda5a5f32196c63",
-        "name": "Build SELECT query (latest row)",
-        "rules": [
-            {
-                "t": "set",
-                "p": "topic",
-                "pt": "msg",
-                "to": "SELECT ts, t1, t2, tavg, h1, h2, havg, soil, lux, louvre_pct, louvre_state, fan_pct, lightOn, fault_count, system_fault FROM greenhouse_samples ORDER BY ts DESC LIMIT 1;",
-                "tot": "str"
-            },
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "[ ]",
-                "tot": "json"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1430,
-        "y": 280,
-        "wires": [
-            [
-                "b91ca825f88143fb"
-            ]
         ]
     },
     {
@@ -785,15 +681,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Temperature",
-        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar temp = Number(p.tavg);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 65) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 80) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🔴 Hot — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
+        "func": "var p = msg.payload || {};\nvar commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nif (commFault === 1) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nvar temp = Number(p.temp_f);\n\nif (isNaN(temp)) {\n    msg.payload = \"⚫ Not Connected\";\n    return msg;\n}\n\nif (temp < 65) {\n    msg.payload = \"🔵 Cold — \" + temp.toFixed(1) + \"°F\";\n} else if (temp <= 80) {\n    msg.payload = \"🟢 Good — \" + temp.toFixed(1) + \"°F\";\n} else {\n    msg.payload = \"🔴 Hot — \" + temp.toFixed(1) + \"°F\";\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 760,
+        "x": 1070,
+        "y": 560,
         "wires": [
             [
                 "bb6a10ac977d0717"
@@ -812,8 +708,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1160,
-        "y": 800,
+        "x": 1060,
+        "y": 600,
         "wires": [
             [
                 "a6d64198e6eaae62"
@@ -832,8 +728,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 840,
+        "x": 1070,
+        "y": 640,
         "wires": [
             [
                 "3a5ee99f6baf7088"
@@ -852,8 +748,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 880,
+        "x": 1070,
+        "y": 680,
         "wires": [
             [
                 "66c91ea4b80fc08f"
@@ -872,8 +768,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 1080,
+        "x": 1080,
+        "y": 880,
         "wires": [
             [
                 "66d981e6d96be52c"
@@ -936,8 +832,8 @@
         "height": "6",
         "className": "",
         "interpolation": "smooth",
-        "x": 1600,
-        "y": 680,
+        "x": 1500,
+        "y": 380,
         "wires": [
             []
         ]
@@ -959,8 +855,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 680,
+        "x": 1310,
+        "y": 380,
         "wires": [
             [
                 "4cb5f93570d7d0ca"
@@ -984,8 +880,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 840,
+        "x": 1310,
+        "y": 640,
         "wires": [
             [
                 "ad4169f006bccb85"
@@ -1009,8 +905,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 760,
+        "x": 1310,
+        "y": 560,
         "wires": [
             [
                 "1ce6a5b6622a17ed"
@@ -1034,8 +930,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 800,
+        "x": 1310,
+        "y": 600,
         "wires": [
             [
                 "53e4b9cbb629afe5"
@@ -1059,8 +955,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 880,
+        "x": 1310,
+        "y": 680,
         "wires": [
             [
                 "84fe9ef876e0aad4"
@@ -1084,8 +980,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1080,
+        "x": 1310,
+        "y": 880,
         "wires": [
             [
                 "19ac465249fbbe53"
@@ -1107,30 +1003,10 @@
         "once": true,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault",
+        "payload": "timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault\n",
         "payloadType": "str",
-        "x": 980,
-        "y": 120,
-        "wires": [
-            [
-                "4abddf2657d029ce"
-            ]
-        ]
-    },
-    {
-        "id": "4abddf2657d029ce",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "function 1",
-        "func": "msg.payload = \"timestamp,ts_ms,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,lux,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,soil_avg_pct,batt_v,pv_v,pv_present,louvre_state,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,fan_pct,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,fault\\n\";\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 1160,
-        "y": 120,
+        "x": 180,
+        "y": 60,
         "wires": [
             [
                 "887f4b565053691c"
@@ -1149,8 +1025,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1120,
+        "x": 1070,
+        "y": 920,
         "wires": [
             [
                 "fanpctdelay00001"
@@ -1174,8 +1050,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1120,
+        "x": 1310,
+        "y": 920,
         "wires": [
             [
                 "7ec8464d62e237b2"
@@ -1187,7 +1063,7 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Final Live Payload",
-        "func": "let p = msg.payload || {};\nlet isCommMsg = (p && typeof p === \"object\" && p.source === \"comm_watchdog\");\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nfunction clone(obj) {\n    return JSON.parse(JSON.stringify(obj || {}));\n}\n\nfunction installed(hw, name) {\n    return hw && hw[name] === true;\n}\n\nfunction addFault(faults, name, msgText) {\n    faults[name] = msgText;\n}\n\nfunction finalizeFaults(obj) {\n    let out = clone(obj);\n    let faults = {};\n    let missing = [];\n    let hw = out.hw || {};\n\n    function requireNumber(field, opts) {\n        opts = opts || {};\n        let installKey = opts.installKey || null;\n        if (installKey && !installed(hw, installKey)) {\n            addFault(faults, field, \"NOT INSTALLED\");\n            return;\n        }\n        if (!(field in out) || out[field] === null || out[field] === \"\") {\n            addFault(faults, field, \"MISSING\");\n            missing.push(field);\n            return;\n        }\n        if (!isNum(out[field])) {\n            addFault(faults, field, \"INVALID\");\n            return;\n        }\n        if (isNum(opts.min) && out[field] < opts.min) addFault(faults, field, \"INVALID\");\n        if (isNum(opts.max) && out[field] > opts.max) addFault(faults, field, \"INVALID\");\n    }\n\n    function requireBool(field, opts) {\n        opts = opts || {};\n        let installKey = opts.installKey || null;\n        if (installKey && !installed(hw, installKey)) {\n            addFault(faults, field, \"NOT INSTALLED\");\n            return;\n        }\n        if (!(field in out) || out[field] === null || out[field] === \"\") {\n            addFault(faults, field, \"MISSING\");\n            missing.push(field);\n            return;\n        }\n        if (!(out[field] === true || out[field] === false)) {\n            addFault(faults, field, \"INVALID\");\n        }\n    }\n\n    requireNumber(\"temp_f\", {min: -40, max: 150});\n    requireNumber(\"rh_pct\", {min: 0, max: 100});\n    requireNumber(\"lux\", {min: 0, max: 150000});\n    requireNumber(\"louvre_pos_pct\", {min: 0, max: 100});\n    requireNumber(\"fan_pwm\", {min: 0, max: 255});\n\n    if (!(\"louvre_state\" in out) || out.louvre_state === null || out.louvre_state === \"\") {\n        addFault(faults, \"louvre_state\", \"MISSING\");\n        missing.push(\"louvre_state\");\n    }\n\n    requireNumber(\"soil1_pct\", {installKey: \"soil1\", min: 0, max: 100});\n    requireNumber(\"soil2_pct\", {installKey: \"soil2\", min: 0, max: 100});\n    requireNumber(\"soil3_pct\", {installKey: \"soil3\", min: 0, max: 100});\n    requireNumber(\"soil4_pct\", {installKey: \"soil4\", min: 0, max: 100});\n\n    requireNumber(\"tank_temp_f\", {installKey: \"tank_temp\", min: -40, max: 180});\n    requireBool(\"pump_on\", {installKey: \"pump\"});\n    requireBool(\"heater_on\", {installKey: \"heater\"});\n    requireBool(\"pv_present\", {installKey: \"pv\"});\n\n    if (isNum(out.fault) && out.fault !== 0) {\n        addFault(faults, \"controller_fault\", \"ARDUINO fault=\" + out.fault);\n    }\n\n    if (out.fallback_used === true) {\n        addFault(faults, \"data_quality\", \"LAST GOOD SAMPLE\");\n    }\n\n    if (commFault === 1) {\n        addFault(faults, \"comms\", \"NO COMMS TO ARDUINO\");\n    }\n\n    out.faults = faults;\n    out.fault_count = Object.keys(faults).length;\n    out.system_fault = out.fault_count > 0 ? 1 : 0;\n    out.missing_fields = missing.join(\",\");\n    out.source = \"sensor\";\n    return out;\n}\n\nfunction buildCommsPayload() {\n    let sensor = flow.get(\"last_sensor_final_payload\") || {};\n    let out = clone(sensor);\n    out.hw = out.hw || {};\n    out.hardware = out.hardware || {};\n    out.faults = out.faults || {};\n    if (commFault === 1) {\n        out.faults.comms = \"NO COMMS TO ARDUINO\";\n    } else {\n        delete out.faults.comms;\n    }\n    out.fault_count = Object.keys(out.faults).length;\n    out.system_fault = out.fault_count > 0 ? 1 : 0;\n    out.fault_source = commFault === 1 ? \"comms\" : \"sensor\";\n    return out;\n}\n\nif (isCommMsg) {\n    msg.payload = buildCommsPayload();\n    return [null, msg];\n}\n\nif (typeof p !== \"object\" || p === null) {\n    return null;\n}\n\nlet lastGoodClean = context.get(\"lastGoodClean\") || null;\nlet clean = clone(p);\nlet hw = clean.hw || {};\nlet fallbackUsed = false;\n\nfunction maybeFallbackNumeric(field, min, max) {\n    if (!(field in clean) || clean[field] === null || clean[field] === \"\") {\n        return;\n    }\n    if (!isNum(clean[field]) || (isNum(min) && clean[field] < min) || (isNum(max) && clean[field] > max)) {\n        if (lastGoodClean && isNum(lastGoodClean[field])) {\n            clean[field] = lastGoodClean[field];\n            fallbackUsed = true;\n        }\n    }\n}\n\nmaybeFallbackNumeric(\"temp_f\", -40, 150);\nmaybeFallbackNumeric(\"rh_pct\", 0, 100);\nmaybeFallbackNumeric(\"lux\", 0, 150000);\nmaybeFallbackNumeric(\"louvre_pos_pct\", 0, 100);\nmaybeFallbackNumeric(\"fan_pct\", 0, 100);\nmaybeFallbackNumeric(\"fan_pwm\", 0, 255);\n\n[\"soil1\",\"soil2\",\"soil3\",\"soil4\"].forEach(function(name) {\n    let field = name + \"_pct\";\n    if (installed(hw, name)) {\n        maybeFallbackNumeric(field, 0, 100);\n    }\n});\n\nif (installed(hw, \"tank_temp\")) {\n    maybeFallbackNumeric(\"tank_temp_f\", -40, 180);\n}\n\nif (!fallbackUsed && isNum(clean.lux) && clean.lux === 0 && lastGoodClean && isNum(lastGoodClean.lux) && lastGoodClean.lux > 5) {\n    clean.lux = lastGoodClean.lux;\n    fallbackUsed = true;\n}\n\nclean.fallback_used = fallbackUsed;\n\ncontext.set(\"lastGoodClean\", clone(clean));\n\nlet out = finalizeFaults(clean);\nflow.set(\"last_sensor_final_payload\", clone(out));\n\nmsg.payload = out;\nreturn [msg, null];\n",
+        "func": "let p = msg.payload || {};\nlet isCommMsg = (p && typeof p === \"object\" && p.source === \"comm_watchdog\");\nlet commFault = flow.get(\"arduino_comm_fault\") || 0;\n\nfunction isNum(v) {\n    return typeof v === \"number\" && isFinite(v);\n}\n\nfunction clone(obj) {\n    return JSON.parse(JSON.stringify(obj || {}));\n}\n\nfunction installed(hw, name) {\n    return hw && hw[name] === true;\n}\n\nfunction addFault(faults, name, msgText) {\n    faults[name] = msgText;\n}\n\nfunction finalizeFaults(obj) {\n    let out = clone(obj);\n    let faults = {};\n    let missing = [];\n    let hw = out.hw || {};\n\n    function requireNumber(field, opts) {\n        opts = opts || {};\n        let installKey = opts.installKey || null;\n        if (installKey && !installed(hw, installKey)) {\n            addFault(faults, field, \"NOT INSTALLED\");\n            return;\n        }\n        if (!(field in out) || out[field] === null || out[field] === \"\") {\n            addFault(faults, field, \"MISSING\");\n            missing.push(field);\n            return;\n        }\n        if (!isNum(out[field])) {\n            addFault(faults, field, \"INVALID\");\n            return;\n        }\n        if (isNum(opts.min) && out[field] < opts.min) addFault(faults, field, \"INVALID\");\n        if (isNum(opts.max) && out[field] > opts.max) addFault(faults, field, \"INVALID\");\n    }\n\n    function requireBool(field, opts) {\n        opts = opts || {};\n        let installKey = opts.installKey || null;\n        if (installKey && !installed(hw, installKey)) {\n            addFault(faults, field, \"NOT INSTALLED\");\n            return;\n        }\n        if (!(field in out) || out[field] === null || out[field] === \"\") {\n            addFault(faults, field, \"MISSING\");\n            missing.push(field);\n            return;\n        }\n        if (!(out[field] === true || out[field] === false)) {\n            addFault(faults, field, \"INVALID\");\n        }\n    }\n\n    requireNumber(\"temp_f\", {min: -40, max: 150});\n    requireNumber(\"rh_pct\", {min: 0, max: 100});\n    requireNumber(\"lux\", {min: 0, max: 150000});\n    requireNumber(\"louvre_pos_pct\", {min: 0, max: 100});\n    requireNumber(\"fan_pwm\", {min: 0, max: 255});\n\n    if (!(\"louvre_state\" in out) || out.louvre_state === null || out.louvre_state === \"\") {\n        addFault(faults, \"louvre_state\", \"MISSING\");\n        missing.push(\"louvre_state\");\n    }\n\n    requireNumber(\"soil1_pct\", {installKey: \"soil1\", min: 0, max: 100});\n    requireNumber(\"soil2_pct\", {installKey: \"soil2\", min: 0, max: 100});\n    requireNumber(\"soil3_pct\", {installKey: \"soil3\", min: 0, max: 100});\n    requireNumber(\"soil4_pct\", {installKey: \"soil4\", min: 0, max: 100});\n\n    requireNumber(\"tank_temp_f\", {installKey: \"tank_temp\", min: -40, max: 180});\n    requireBool(\"pump_on\", {installKey: \"pump\"});\n    requireBool(\"heater_on\", {installKey: \"heater\"});\n    requireBool(\"pv_present\", {installKey: \"pv\"});\n\n    if (isNum(out.fault) && out.fault !== 0) {\n        addFault(faults, \"controller_fault\", \"ARDUINO fault=\" + out.fault);\n    }\n\n    if (out.fallback_used === true) {\n        addFault(faults, \"data_quality\", \"LAST GOOD SAMPLE\");\n    }\n\n    if (commFault === 1) {\n        addFault(faults, \"comms\", \"NO COMMS TO ARDUINO\");\n    }\n\n    out.faults = faults;\n    out.fault_count = Object.keys(faults).length;\n    out.system_fault = out.fault_count > 0 ? 1 : 0;\n    out.missing_fields = missing.join(\",\");\n    out.source = \"sensor\";\n\n    // Compute canonical soil_avg_pct (hw-aware, fault-aware, single source of truth)\n    let soilVals = [];\n    [\"soil1\",\"soil2\",\"soil3\",\"soil4\"].forEach(function(name) {\n        let field = name + \"_pct\";\n        if (!installed(hw, name)) return;\n        if (faults[field]) return;\n        if (!(field in out) || out[field] === null || out[field] === \"\") return;\n        if (!isNum(out[field])) return;\n        if (out[field] < 0 || out[field] > 100) return;\n        soilVals.push(out[field]);\n    });\n    out.soil_avg_pct = soilVals.length > 0\n        ? soilVals.reduce(function(a,b){return a+b;},0) / soilVals.length\n        : null;\n\n    return out;\n}\n\nfunction buildCommsPayload() {\n    let sensor = flow.get(\"last_sensor_final_payload\") || {};\n    let out = clone(sensor);\n    out.hw = out.hw || {};\n    out.faults = out.faults || {};\n    if (commFault === 1) {\n        out.faults.comms = \"NO COMMS TO ARDUINO\";\n    } else {\n        delete out.faults.comms;\n    }\n    out.fault_count = Object.keys(out.faults).length;\n    out.system_fault = out.fault_count > 0 ? 1 : 0;\n    out.fault_source = commFault === 1 ? \"comms\" : \"sensor\";\n    return out;\n}\n\nif (isCommMsg) {\n    msg.payload = buildCommsPayload();\n    return [null, msg];\n}\n\nif (typeof p !== \"object\" || p === null) {\n    return null;\n}\n\nlet lastGoodClean = context.get(\"lastGoodClean\") || null;\nlet clean = clone(p);\nlet hw = clean.hw || {};\nlet fallbackUsed = false;\n\nfunction maybeFallbackNumeric(field, min, max) {\n    if (!(field in clean) || clean[field] === null || clean[field] === \"\") {\n        return;\n    }\n    if (!isNum(clean[field]) || (isNum(min) && clean[field] < min) || (isNum(max) && clean[field] > max)) {\n        if (lastGoodClean && isNum(lastGoodClean[field])) {\n            clean[field] = lastGoodClean[field];\n            fallbackUsed = true;\n        }\n    }\n}\n\nmaybeFallbackNumeric(\"temp_f\", -40, 150);\nmaybeFallbackNumeric(\"rh_pct\", 0, 100);\nmaybeFallbackNumeric(\"lux\", 0, 150000);\nmaybeFallbackNumeric(\"louvre_pos_pct\", 0, 100);\nmaybeFallbackNumeric(\"fan_pct\", 0, 100);\nmaybeFallbackNumeric(\"fan_pwm\", 0, 255);\n\n[\"soil1\",\"soil2\",\"soil3\",\"soil4\"].forEach(function(name) {\n    let field = name + \"_pct\";\n    if (installed(hw, name)) {\n        maybeFallbackNumeric(field, 0, 100);\n    }\n});\n\nif (installed(hw, \"tank_temp\")) {\n    maybeFallbackNumeric(\"tank_temp_f\", -40, 180);\n}\n\nif (!fallbackUsed && isNum(clean.lux) && clean.lux === 0 && lastGoodClean && isNum(lastGoodClean.lux) && lastGoodClean.lux > 5) {\n    clean.lux = lastGoodClean.lux;\n    fallbackUsed = true;\n}\n\nclean.fallback_used = fallbackUsed;\n\ncontext.set(\"lastGoodClean\", clone(clean));\n\nlet out = finalizeFaults(clean);\nflow.set(\"last_sensor_final_payload\", clone(out));\n\nmsg.payload = out;\nreturn [msg, null];\n",
         "outputs": 2,
         "timeout": 0,
         "noerr": 0,
@@ -1195,36 +1071,21 @@
         "finalize": "",
         "libs": [],
         "x": 690,
-        "y": 480,
+        "y": 460,
         "wires": [
             [
-                "0d1202f9041fb697",
-                "d4942742387dabb4",
-                "112b42a1704108f8",
-                "c5aa37be95cbd5f2",
-                "f2588d218f7169c5",
-                "fanpctfunc000001",
-                "f3809e8fd627b134",
-                "edf5b972d6316cee",
-                "a66c52d9e1e01cb2",
-                "a1f580c33ceba5a3",
-                "b36dab0781c0fd8a",
-                "d42ca6357ab04682",
-                "f11ff88198fa786b",
-                "88afa582f1768d06",
                 "ws_format_func_001",
-                "5af17cb50fcfd049",
-                "2ce9937eb48a8c8b",
                 "f98d2f1f0673b101",
                 "3999dea12c82b1a6",
-                "ee12a869e25d83bb",
-                "4b266addf47812be"
-            ],
-            [
+                "mqttedgeexport001",
+                "4b266addf47812be",
                 "0d1202f9041fb697",
                 "d4942742387dabb4",
                 "112b42a1704108f8",
                 "c5aa37be95cbd5f2",
+                "a24e7f3c812590eb",
+                "684c8ea3508c5763",
+                "a71fc4b492052cde",
                 "f2588d218f7169c5",
                 "fanpctfunc000001",
                 "f3809e8fd627b134",
@@ -1235,9 +1096,32 @@
                 "d42ca6357ab04682",
                 "f11ff88198fa786b",
                 "88afa582f1768d06",
-                "ws_format_func_001",
                 "5af17cb50fcfd049",
-                "2ce9937eb48a8c8b"
+                "2ce9937eb48a8c8b",
+                "ee12a869e25d83bb"
+            ],
+            [
+                "ws_format_func_001",
+                "0d1202f9041fb697",
+                "d4942742387dabb4",
+                "112b42a1704108f8",
+                "c5aa37be95cbd5f2",
+                "a24e7f3c812590eb",
+                "684c8ea3508c5763",
+                "a71fc4b492052cde",
+                "f2588d218f7169c5",
+                "fanpctfunc000001",
+                "f3809e8fd627b134",
+                "edf5b972d6316cee",
+                "a66c52d9e1e01cb2",
+                "a1f580c33ceba5a3",
+                "b36dab0781c0fd8a",
+                "d42ca6357ab04682",
+                "f11ff88198fa786b",
+                "88afa582f1768d06",
+                "5af17cb50fcfd049",
+                "2ce9937eb48a8c8b",
+                "ee12a869e25d83bb"
             ]
         ]
     },
@@ -1253,8 +1137,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1190,
-        "y": 460,
+        "x": 1090,
+        "y": 340,
         "wires": [
             [
                 "68f3fed977ad9f73"
@@ -1281,8 +1165,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1410,
-        "y": 460,
+        "x": 1310,
+        "y": 340,
         "wires": []
     },
     {
@@ -1324,8 +1208,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 120,
-        "y": 1040,
+        "x": 180,
+        "y": 1020,
         "wires": [
             [
                 "82cb2ac5ce541d87"
@@ -1344,8 +1228,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 410,
-        "y": 1040,
+        "x": 470,
+        "y": 1020,
         "wires": [
             [
                 "a2a532efe1bbf72b"
@@ -1358,8 +1242,8 @@
         "z": "6cda5a5f32196c63",
         "name": "",
         "serial": "f21e5fa854a87f38",
-        "x": 820,
-        "y": 1200,
+        "x": 740,
+        "y": 960,
         "wires": []
     },
     {
@@ -1401,8 +1285,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 100,
-        "y": 1100,
+        "x": 160,
+        "y": 1080,
         "wires": [
             [
                 "dc183ed1b109c77e"
@@ -1421,8 +1305,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
-        "y": 1100,
+        "x": 460,
+        "y": 1080,
         "wires": [
             [
                 "a2a532efe1bbf72b"
@@ -1461,8 +1345,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 100,
-        "y": 1160,
+        "x": 160,
+        "y": 1140,
         "wires": [
             [
                 "3803f18308f137a5"
@@ -1481,8 +1365,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
-        "y": 1160,
+        "x": 460,
+        "y": 1140,
         "wires": [
             [
                 "a2a532efe1bbf72b"
@@ -1501,8 +1385,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 510,
-        "y": 320,
+        "x": 500,
+        "y": 220,
         "wires": [
             [
                 "hwconfig0000001"
@@ -1527,7 +1411,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 200,
-        "y": 480,
+        "y": 460,
         "wires": [
             [
                 "36a8046ed184ac87"
@@ -1547,7 +1431,7 @@
         "finalize": "",
         "libs": [],
         "x": 400,
-        "y": 480,
+        "y": 460,
         "wires": [
             [
                 "dd71f97f1b1584dd"
@@ -1571,8 +1455,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1470,
-        "y": 160,
+        "x": 1370,
+        "y": 100,
         "wires": [
             [
                 "887f4b565053691c"
@@ -1596,8 +1480,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 130,
-        "y": 1320,
+        "x": 160,
+        "y": 960,
         "wires": [
             [
                 "ebadb11eb93cb9ce"
@@ -1616,8 +1500,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
-        "y": 1320,
+        "x": 460,
+        "y": 960,
         "wires": [
             [
                 "12cca41621c67cb4"
@@ -1644,8 +1528,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1610,
-        "y": 760,
+        "x": 1510,
+        "y": 560,
         "wires": []
     },
     {
@@ -1668,8 +1552,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1600,
-        "y": 800,
+        "x": 1500,
+        "y": 600,
         "wires": []
     },
     {
@@ -1692,8 +1576,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1600,
-        "y": 840,
+        "x": 1500,
+        "y": 640,
         "wires": []
     },
     {
@@ -1716,8 +1600,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1640,
-        "y": 880,
+        "x": 1540,
+        "y": 680,
         "wires": []
     },
     {
@@ -1740,8 +1624,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1620,
-        "y": 1080,
+        "x": 1520,
+        "y": 880,
         "wires": []
     },
     {
@@ -1764,8 +1648,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1610,
-        "y": 1120,
+        "x": 1510,
+        "y": 920,
         "wires": []
     },
     {
@@ -1780,8 +1664,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 920,
+        "x": 1070,
+        "y": 720,
         "wires": [
             [
                 "122bc30ae01f5aef"
@@ -1800,8 +1684,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 960,
+        "x": 1070,
+        "y": 760,
         "wires": [
             [
                 "c05d02c6c1a47b68"
@@ -1820,8 +1704,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1000,
+        "x": 1070,
+        "y": 800,
         "wires": [
             [
                 "aa07c00b77367af0"
@@ -1840,8 +1724,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1040,
+        "x": 1070,
+        "y": 840,
         "wires": [
             [
                 "f6652c79933d5722"
@@ -1865,8 +1749,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 920,
+        "x": 1310,
+        "y": 720,
         "wires": [
             [
                 "be8a7c8e797a6693"
@@ -1890,8 +1774,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 960,
+        "x": 1310,
+        "y": 760,
         "wires": [
             [
                 "a16cd82a260590bb"
@@ -1915,8 +1799,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1000,
+        "x": 1310,
+        "y": 800,
         "wires": [
             [
                 "2577dedb22cac2d6"
@@ -1940,8 +1824,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1040,
+        "x": 1310,
+        "y": 840,
         "wires": [
             [
                 "c1111ec699e95296"
@@ -1968,8 +1852,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1640,
-        "y": 920,
+        "x": 1540,
+        "y": 720,
         "wires": []
     },
     {
@@ -1992,8 +1876,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1640,
-        "y": 960,
+        "x": 1540,
+        "y": 760,
         "wires": []
     },
     {
@@ -2016,8 +1900,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1640,
-        "y": 1000,
+        "x": 1540,
+        "y": 800,
         "wires": []
     },
     {
@@ -2040,8 +1924,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1640,
-        "y": 1040,
+        "x": 1540,
+        "y": 840,
         "wires": []
     },
     {
@@ -2056,8 +1940,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1200,
+        "x": 1070,
+        "y": 1000,
         "wires": [
             [
                 "02998a9b72e160a2"
@@ -2076,8 +1960,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 1160,
+        "x": 1080,
+        "y": 960,
         "wires": [
             [
                 "d0fd1a12a694de57"
@@ -2096,8 +1980,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 1240,
+        "x": 1080,
+        "y": 1040,
         "wires": [
             [
                 "6a205b7544ef4ba4"
@@ -2116,8 +2000,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1280,
+        "x": 1070,
+        "y": 1080,
         "wires": [
             [
                 "c6c59999e2179d0c"
@@ -2136,8 +2020,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 1320,
+        "x": 1080,
+        "y": 1120,
         "wires": [
             [
                 "92ea6d85f1db08b2"
@@ -2156,8 +2040,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1170,
-        "y": 1360,
+        "x": 1070,
+        "y": 1160,
         "wires": [
             [
                 "a8c0f4d11ffcbc46"
@@ -2176,8 +2060,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 1400,
+        "x": 1080,
+        "y": 1200,
         "wires": [
             [
                 "3c46abf0c9ce3913"
@@ -2201,8 +2085,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1200,
+        "x": 1310,
+        "y": 1000,
         "wires": [
             [
                 "8f96604c34681a3d"
@@ -2226,8 +2110,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1360,
+        "x": 1310,
+        "y": 1160,
         "wires": [
             [
                 "bfe1fbf00ca37186"
@@ -2251,8 +2135,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1400,
+        "x": 1310,
+        "y": 1200,
         "wires": [
             [
                 "0c9b2fa48a0ddcdb"
@@ -2276,8 +2160,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1160,
+        "x": 1310,
+        "y": 960,
         "wires": [
             [
                 "52570d4e53521e96"
@@ -2301,8 +2185,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1240,
+        "x": 1310,
+        "y": 1040,
         "wires": [
             [
                 "3870447647cbebee"
@@ -2326,8 +2210,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1280,
+        "x": 1310,
+        "y": 1080,
         "wires": [
             [
                 "a40f21f9a26cebb7"
@@ -2351,8 +2235,8 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1410,
-        "y": 1320,
+        "x": 1310,
+        "y": 1120,
         "wires": [
             [
                 "cfc52da1c3247673"
@@ -2379,8 +2263,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1610,
-        "y": 1200,
+        "x": 1510,
+        "y": 1000,
         "wires": []
     },
     {
@@ -2403,8 +2287,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1610,
-        "y": 1360,
+        "x": 1510,
+        "y": 1160,
         "wires": []
     },
     {
@@ -2427,8 +2311,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1620,
-        "y": 1400,
+        "x": 1520,
+        "y": 1200,
         "wires": []
     },
     {
@@ -2451,8 +2335,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1620,
-        "y": 1160,
+        "x": 1520,
+        "y": 960,
         "wires": []
     },
     {
@@ -2475,8 +2359,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1620,
-        "y": 1240,
+        "x": 1520,
+        "y": 1040,
         "wires": []
     },
     {
@@ -2499,8 +2383,8 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1610,
-        "y": 1280,
+        "x": 1510,
+        "y": 1080,
         "wires": []
     },
     {
@@ -2523,56 +2407,9 @@
         "className": "",
         "value": "payload",
         "valueType": "msg",
-        "x": 1620,
-        "y": 1320,
+        "x": 1520,
+        "y": 1120,
         "wires": []
-    },
-    {
-        "id": "57d0cc34117a5b81",
-        "type": "inject",
-        "z": "6cda5a5f32196c63",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "1",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 550,
-        "y": 960,
-        "wires": [
-            [
-                "83c09f4b52f000bf"
-            ]
-        ]
-    },
-    {
-        "id": "83c09f4b52f000bf",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "Not Connected",
-        "func": "msg.payload = \"Not Connected\\n\";\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 800,
-        "y": 960,
-        "wires": [
-            [
-                "a24e7f3c812590eb",
-                "684c8ea3508c5763",
-                "a71fc4b492052cde"
-            ]
-        ]
     },
     {
         "id": "2ce9937eb48a8c8b",
@@ -2586,8 +2423,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1160,
-        "y": 520,
+        "x": 1300,
+        "y": 440,
         "wires": [
             [
                 "fb25e247ea692f58"
@@ -2612,8 +2449,8 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 1400,
-        "y": 520,
+        "x": 1500,
+        "y": 440,
         "wires": [
             []
         ]
@@ -2649,8 +2486,8 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 180,
-        "y": 520,
+        "x": 1080,
+        "y": 480,
         "wires": [
             [
                 "2ce9937eb48a8c8b"
@@ -2689,8 +2526,8 @@
         ],
         "topic": "topic",
         "topicType": "msg",
-        "x": 110,
-        "y": 1220,
+        "x": 170,
+        "y": 1200,
         "wires": [
             [
                 "a997ea0e7028d94d"
@@ -2709,8 +2546,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
-        "y": 1220,
+        "x": 460,
+        "y": 1200,
         "wires": [
             [
                 "a2a532efe1bbf72b"
@@ -2735,8 +2572,8 @@
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 190,
-        "y": 740,
+        "x": 450,
+        "y": 660,
         "wires": [
             []
         ]
@@ -2746,15 +2583,15 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "Format for WS Dashboard",
-        "func": "let p = msg.payload;\nif (!p || typeof p !== 'object') return null;\n\n// Map the fully-enriched payload (post Fault Detection) to the\n// exact JSON shape the greenhouse_dashboard.html expects.\nlet out = {\n    temp:          p.temp_f,\n    rh:            p.rh_pct,\n    // Sketch merges both DHT sensors into one temp_f/rh_pct value.\n    // Expose as exhaust=t1 intake=t2 (aliases set in Parse sensor).\n    tempExhaust:   p.t1,\n    tempIntake:    p.t2,\n    rhExhaust:     p.h1,\n    rhIntake:      p.h2,\n    lux:           p.lux,\n    tankTemp:      p.tank_temp_f,\n    soilPct:       [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct],\n    valveOn:       [p.row1===true, p.row2===true, p.row3===true, p.row4===true],\n    rowEnabled:    [p.row1_en!==false, p.row2_en!==false, p.row3_en!==false, p.row4_en!==false],\n    pumpOn:        p.pump_on === true,\n    lightOn:       p.light_on === true,\n    fanPwm:        p.fan_pwm,\n    tankHeaterOn:  p.heater_on === true,\n    louvreState:   Number(p.louvre_state_raw),   // 0-5 numeric from sketch\n    louvrePos:     p.louvre_pos_pct,\n    mode:          p.mode,\n    irrigationMode: p.irrigation_mode,\n    rowsRunActive: p.rows_run_active === true,\n    activeRowIndex: p.active_row,\n    tempOpenF:     p.temp_open_f,\n    tempCloseF:    p.temp_close_f,\n    ecoMode:       p.eco_mode === true,\n    pvPresent:     p.pv_present === true,\n    battV:         p.batt_v,\n    pvV:           p.pv_v,\n    faultBits: (p.fault || 0) | (p.fault_count > 0 ? 512 : 0),\n    nrFaults: p.faults || {},\n    tankHeatOnF:   p.tank_heat_on_f,\n    tankHeatOffF:  p.tank_heat_off_f,\n    soilStartPct:  p.row1_start_pct,   // use row1 as representative\n    soilStopPct:   p.row1_stop_pct,\n    scheduleIntervalMs: p.schedule_interval_ms\n};\n\n//node.warn(\"fault_count=\" + p.fault_count + \" faults=\" + JSON.stringify(p.faults));\n\n\nmsg.payload = JSON.stringify(out);\nreturn msg;",
+        "func": "let p = msg.payload;\nif (!p || typeof p !== 'object') return null;\n\nlet out = {\n    temp:          p.temp_f,\n    rh:            p.rh_pct,\n    tempExhaust:   p.temp_f,\n    tempIntake:    p.temp_f,\n    rhExhaust:     p.rh_pct,\n    rhIntake:      p.rh_pct,\n    lux:           p.lux,\n    tankTemp:      p.tank_temp_f,\n    soilPct:       [p.soil1_pct, p.soil2_pct, p.soil3_pct, p.soil4_pct],\n    valveOn:       [p.row1===true, p.row2===true, p.row3===true, p.row4===true],\n    rowEnabled:    [p.row1_en!==false, p.row2_en!==false, p.row3_en!==false, p.row4_en!==false],\n    pumpOn:        p.pump_on === true,\n    lightOn:       p.light_on === true,\n    fanPwm:        p.fan_pwm,\n    tankHeaterOn:  p.heater_on === true,\n    louvreState:   Number(p.louvre_state_raw),\n    louvrePos:     p.louvre_pos_pct,\n    mode:          p.mode,\n    irrigationMode: p.irrigation_mode,\n    rowsRunActive: p.rows_run_active === true,\n    activeRowIndex: p.active_row,\n    tempOpenF:     p.temp_open_f,\n    tempCloseF:    p.temp_close_f,\n    ecoMode:       p.eco_mode === true,\n    pvPresent:     p.pv_present === true,\n    battV:         p.batt_v,\n    pvV:           p.pv_v,\n    faultBits: (p.fault || 0) | (p.fault_count > 0 ? 512 : 0),\n    nrFaults: p.faults || {},\n    tankHeatOnF:   p.tank_heat_on_f,\n    tankHeatOffF:  p.tank_heat_off_f,\n    soilStartPct:  p.row1_start_pct,\n    soilStopPct:   p.row1_stop_pct,\n    scheduleIntervalMs: p.schedule_interval_ms,\n    hw:            p.hw || {},\n    rhOpenPct:     p.rh_open_pct,\n    rowDurationMs: p.row1_ms,\n    rowMaxCycleMs: p.row1_ms ? p.row1_ms * 10 : null,\n    commFault:     flow.get('arduino_comm_fault') || 0\n};\n\nmsg.payload = JSON.stringify(out);\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1210,
-        "y": 600,
+        "x": 1110,
+        "y": 1260,
         "wires": [
             [
                 "ws_out_node_001"
@@ -2768,8 +2605,8 @@
         "name": "WS → Dashboard",
         "server": "ws_in_node_001",
         "client": "",
-        "x": 1450,
-        "y": 600,
+        "x": 1350,
+        "y": 1260,
         "wires": []
     },
     {
@@ -2779,7 +2616,7 @@
         "name": "WS Commands ← Dashboard",
         "server": "ws_in_node_001",
         "client": "",
-        "x": 150,
+        "x": 210,
         "y": 1260,
         "wires": [
             [
@@ -2798,7 +2635,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 430,
+        "x": 490,
         "y": 1260,
         "wires": [
             [
@@ -2819,27 +2656,7 @@
         "finalize": "",
         "libs": [],
         "x": 690,
-        "y": 260,
-        "wires": [
-            [
-                "hwnormalize00001"
-            ]
-        ]
-    },
-    {
-        "id": "hwnormalize00001",
-        "type": "function",
-        "z": "6cda5a5f32196c63",
-        "name": "Normalize Hardware",
-        "func": "let p = msg.payload || {};\nlet hw = p.hw || {};\n\nfunction installed(name) {\n    return hw[name] === true;\n}\n\np.hardware = {\n    soil1: installed(\"soil1\") ? \"installed\" : \"not_installed\",\n    soil2: installed(\"soil2\") ? \"installed\" : \"not_installed\",\n    soil3: installed(\"soil3\") ? \"installed\" : \"not_installed\",\n    soil4: installed(\"soil4\") ? \"installed\" : \"not_installed\",\n    tank_temp: installed(\"tank_temp\") ? \"installed\" : \"not_installed\",\n    pump: installed(\"pump\") ? \"installed\" : \"not_installed\",\n    heater: installed(\"heater\") ? \"installed\" : \"not_installed\",\n    pv: installed(\"pv\") ? \"installed\" : \"not_installed\"\n};\n\np.soil1_disabled = !installed(\"soil1\");\np.soil2_disabled = !installed(\"soil2\");\np.soil3_disabled = !installed(\"soil3\");\np.soil4_disabled = !installed(\"soil4\");\np.tank_temp_disabled = !installed(\"tank_temp\");\np.pump_disabled = !installed(\"pump\");\np.heater_disabled = !installed(\"heater\");\np.pv_disabled = !installed(\"pv\");\n\nmsg.payload = p;\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 690,
-        "y": 320,
+        "y": 220,
         "wires": [
             [
                 "dd71f97f1b1584dd"
@@ -2851,18 +2668,38 @@
         "type": "function",
         "z": "6cda5a5f32196c63",
         "name": "enable control",
-        "func": "let controlEnabled = flow.get(\"control_enabled\");\n\nif (controlEnabled === undefined) {\n    controlEnabled = false; // false = no control; true = full control\n    flow.set(\"control_enabled\", false);\n}\n\nif (controlEnabled) {\n    return msg;\n}\n\nnode.status({ fill: \"red\", shape: \"ring\", text: \"blocked\" });\nreturn null;",
+        "func": "// ===== USER CONTROL =====\nlet control_state = 0; // 1 = allow, 0 = block\n// =======================\n\nif (control_state === 1) {\n    return msg;\n}\n\nreturn null;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 720,
-        "y": 1100,
+        "x": 760,
+        "y": 1260,
         "wires": [
             [
                 "12cca41621c67cb4"
+            ]
+        ]
+    },
+    {
+        "id": "mqttedgeexport001",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "Publish Compact MQTT Edge",
+        "func": "let p = msg.payload;\nif (!p || typeof p !== \"object\") return null;\n\nlet out = {\n    schema: \"greenhouse.edge.v1\",\n    stream: \"edge\",\n    ts: (typeof p.ts === \"number\") ? p.ts : Date.now(),\n    temp_f: p.temp_f,\n    rh_pct: p.rh_pct,\n    soil_avg_pct: p.soil_avg_pct,\n    lux: p.lux,\n    mode: p.mode,\n    irrigation_mode: p.irrigation_mode,\n    louvre_pos_pct: p.louvre_pos_pct,\n    louvre_state: p.louvre_state,\n    fan_pct: p.fan_pct,\n    light_on: p.light_on === true,\n    pump_on: p.pump_on === true,\n    heater_on: p.heater_on === true,\n    active_row: p.active_row,\n    rows_run_active: p.rows_run_active === true,\n    rows_run_auto: p.rows_run_auto === true,\n    system_fault: Number(p.system_fault || 0),\n    fault_count: Number(p.fault_count || 0),\n    faults: p.faults || {},\n    fallback_used: p.fallback_used === true\n};\n\nmsg.topic = \"greenhouse/data/edge\";\nmsg.payload = out;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 180,
+        "wires": [
+            [
+                "fb8c481a34f0fd0e"
             ]
         ]
     }
