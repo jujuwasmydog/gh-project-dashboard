@@ -149,24 +149,47 @@
     margin-top: 1px;
   }
 
-  /* Connection pill */
-  .conn-pill {
-    display: flex; align-items: center; gap: 7px;
+  /* Status indicators */
+  .status-bar {
+    display: flex; align-items: center; gap: 6px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 99px;
-    padding: 5px 12px;
-    font-size: 11px;
+    padding: 4px 10px;
+    font-size: 10px;
     color: var(--text-dim);
-    transition: all 0.3s;
   }
-  .conn-dot {
+  .status-item {
+    display: flex; align-items: center; gap: 4px;
+    letter-spacing: 0.05em;
+  }
+  .status-item:not(:last-child)::after {
+    content: '';
+    width: 1px; height: 12px;
+    background: var(--border);
+    margin-left: 6px;
+  }
+  .status-dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: var(--red);
     box-shadow: 0 0 6px var(--red);
-    transition: all 0.3s;
+    transition: background 0.3s, box-shadow 0.3s;
   }
-  .conn-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .heartbeat-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+  }
+  .heartbeat-dot.alive {
+    animation: nr-breathe 2s ease-in-out infinite;
+  }
+  @keyframes nr-breathe {
+    0%   { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    50%  { background: #555; box-shadow: 0 0 2px #555; }
+    100% { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  }
 
   /* Fault indicator badge */
   .fault-badge {
@@ -791,9 +814,10 @@
       <div class="fault-badge" id="fault-badge" onclick="switchTab('alerts')">
         ⚠ <span id="fault-count">0</span> Fault(s)
       </div>
-      <div class="conn-pill" id="conn-pill">
-        <div class="conn-dot" id="conn-dot"></div>
-        <span id="conn-label">Connecting…</span>
+      <div class="status-bar" id="status-bar">
+        <div class="status-item"><div class="status-dot" id="dot-ws"></div> WS</div>
+        <div class="status-item"><div class="heartbeat-dot" id="dot-nr"></div> NR</div>
+        <div class="status-item"><div class="status-dot" id="dot-ard"></div> ARD</div>
       </div>
       <div class="theme-switcher">
         <button class="theme-btn active" data-t="green" onclick="setTheme('green')" title="Green"></button>
@@ -1360,7 +1384,8 @@ const state = {
   nrFaults: {},
   hw: {},
   arduinoCommFault: 0,
-  lastSeen: null
+  lastSeen: null,
+  lastHeartbeat: null
 };
 
 // Fault bit definitions from sketch
@@ -1414,6 +1439,10 @@ function connectWS() {
     ws.onmessage = (e) => {
       try {
         const d = JSON.parse(e.data);
+        if (d.heartbeat) {
+          pulseHeartbeat();
+          return;
+        }
         applyPayload(d);
       } catch(_) {}
     };
@@ -1615,18 +1644,32 @@ function getSoilAverageDisplay() {
 }
 
 function updateConnStatus() {
-  const dot = document.getElementById('conn-dot');
-  const lbl = document.getElementById('conn-label');
-  const warn= document.getElementById('ctrl-warn');
-  if (state.connected) {
-    dot.className = 'conn-dot ok';
-    lbl.textContent = 'Connected';
-    if (warn) warn.style.display = 'none';
-  } else {
-    dot.className = 'conn-dot';
-    lbl.textContent = 'Disconnected';
-    if (warn) warn.style.display = 'flex';
+  const warn = document.getElementById('ctrl-warn');
+  // WS dot
+  const wsDot = document.getElementById('dot-ws');
+  wsDot.className = state.connected ? 'status-dot ok' : 'status-dot';
+  // ARD dot
+  const ardDot = document.getElementById('dot-ard');
+  ardDot.className = state.arduinoCommFault ? 'status-dot' : 'status-dot ok';
+  // NR heartbeat staleness (red if no beat in 3s)
+  updateNrStatus();
+  // Control warning
+  if (warn) warn.style.display = state.connected ? 'none' : 'flex';
+}
+
+function updateNrStatus() {
+  const nrDot = document.getElementById('dot-nr');
+  if (!state.lastHeartbeat) {
+    nrDot.className = 'heartbeat-dot';
+    return;
   }
+  const age = Date.now() - state.lastHeartbeat.getTime();
+  nrDot.className = age > 3000 ? 'heartbeat-dot' : 'heartbeat-dot alive';
+}
+
+function pulseHeartbeat() {
+  state.lastHeartbeat = new Date();
+  updateNrStatus();
 }
 
 function updateModeUI() {
@@ -1959,11 +2002,11 @@ function toggleSection(id) {
 // ── INIT ──
 connectWS();
 
-// Demo simulation when disconnected
+// Check NR heartbeat staleness + demo simulation every 1s
 setInterval(() => {
+  updateNrStatus();
   if (!state.connected) {
     injectDemo();
-    // Show as disconnected still
     state.connected = false;
     updateConnStatus();
   }
