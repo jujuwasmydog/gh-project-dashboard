@@ -1071,7 +1071,7 @@
         "finalize": "",
         "libs": [],
         "x": 690,
-        "y": 460,
+        "y": 420,
         "wires": [
             [
                 "ws_format_func_001",
@@ -1411,7 +1411,7 @@
         "payload": "",
         "payloadType": "date",
         "x": 200,
-        "y": 460,
+        "y": 420,
         "wires": [
             [
                 "36a8046ed184ac87"
@@ -1431,7 +1431,7 @@
         "finalize": "",
         "libs": [],
         "x": 400,
-        "y": 460,
+        "y": 420,
         "wires": [
             [
                 "dd71f97f1b1584dd"
@@ -2700,6 +2700,45 @@
         "wires": [
             [
                 "fb8c481a34f0fd0e"
+            ]
+        ]
+    },
+    {
+        "id": "hb_inject_001",
+        "type": "inject",
+        "z": "6cda5a5f32196c63",
+        "name": "1s Heartbeat",
+        "props": [],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 690,
+        "y": 1340,
+        "wires": [
+            [
+                "hb_func_001"
+            ]
+        ]
+    },
+    {
+        "id": "hb_func_001",
+        "type": "function",
+        "z": "6cda5a5f32196c63",
+        "name": "node red status indicator",
+        "func": "msg.payload = JSON.stringify({heartbeat: true, ts: Date.now()});\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 1340,
+        "wires": [
+            [
+                "ws_out_node_001"
             ]
         ]
     }
