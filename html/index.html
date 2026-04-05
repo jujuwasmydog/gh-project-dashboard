@@ -1460,6 +1460,26 @@ function sendCmd(type, val) {
   }
 }
 
+let _lastRender = 0;
+let _renderPending = false;
+
+function throttledRender() {
+  const now = Date.now();
+  const elapsed = now - _lastRender;
+  if (elapsed >= 500) {
+    _lastRender = now;
+    _renderPending = false;
+    updateAll();
+  } else if (!_renderPending) {
+    _renderPending = true;
+    setTimeout(() => {
+      _lastRender = Date.now();
+      _renderPending = false;
+      updateAll();
+    }, 500 - elapsed);
+  }
+}
+
 function applyPayload(d) {
   if (d.temp       !== undefined) state.temp       = d.temp;
   if (d.rh         !== undefined) state.rh         = d.rh;
@@ -1500,7 +1520,7 @@ function applyPayload(d) {
   if (d.arduino_comm_fault !== undefined) state.arduinoCommFault = d.arduino_comm_fault ? 1 : 0;
   if (d.commFault !== undefined) state.arduinoCommFault = d.commFault ? 1 : 0;
   state.lastSeen = new Date();
-  updateAll();
+  throttledRender();
 }
 
 // ── DEMO DATA (simulates live feed when not connected) ──
