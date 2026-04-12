@@ -538,6 +538,37 @@
   .expand-arrow { transition: transform 0.3s; }
   .expand-arrow.open { transform: rotate(180deg); }
 
+  /* Collapsible table pane */
+  .table-collapse-toggle {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .table-collapse-toggle:hover { color: var(--teal); }
+  .table-collapse-arrow {
+    display: inline-block;
+    transition: transform 0.3s;
+    font-size: 12px;
+  }
+  .table-collapse-arrow.collapsed { transform: rotate(-90deg); }
+  .table-collapsible {
+    overflow: hidden;
+    max-height: 600px;
+    opacity: 1;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+  }
+  .table-collapsible.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0 !important;
+  }
+
   /* Individual sensor detail */
   .dual-sensor {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -1372,19 +1403,22 @@
 
     <div class="card" style="padding:14px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-        <div class="section-label" style="margin:0;">TABLE</div>
+        <button class="table-collapse-toggle" onclick="toggleTablePane()">
+          <span class="table-collapse-arrow collapsed" id="table-collapse-arrow">▼</span>
+          <div class="section-label" style="margin:0;">TABLE</div>
+        </button>
         <div style="flex:1;"></div>
-        <span style="font-size:11px;color:var(--text-dim);">Page size</span>
-        <select id="hist-page-size" onchange="History.setPageSize(this.value)">
+        <span class="table-collapsible-ctrl" style="font-size:11px;color:var(--text-dim);display:none;">Page size</span>
+        <select class="table-collapsible-ctrl" id="hist-page-size" onchange="History.setPageSize(this.value)" style="display:none;">
           <option value="50">50</option>
           <option value="100" selected>100</option>
           <option value="500">500</option>
         </select>
-        <button class="hist-pg" onclick="History.prevPage()">‹ Prev</button>
-        <span id="hist-page-info">—</span>
-        <button class="hist-pg" onclick="History.nextPage()">Next ›</button>
+        <button class="hist-pg table-collapsible-ctrl" onclick="History.prevPage()" style="display:none;">‹ Prev</button>
+        <span class="table-collapsible-ctrl" id="hist-page-info" style="display:none;">—</span>
+        <button class="hist-pg table-collapsible-ctrl" onclick="History.nextPage()" style="display:none;">Next ›</button>
       </div>
-      <div class="hist-table-wrap">
+      <div class="hist-table-wrap table-collapsible collapsed" id="hist-table-collapsible">
         <table class="hist-table" id="hist-table">
           <thead><tr id="hist-thead"></tr></thead>
           <tbody id="hist-tbody"></tbody>
@@ -2242,6 +2276,17 @@ function toggleSection(id) {
   if (arrow && id === 'irr-rows') arrow.classList.toggle('open');
 }
 
+function toggleTablePane() {
+  const body = document.getElementById('hist-table-collapsible');
+  const arrow = document.getElementById('table-collapse-arrow');
+  if (!body) return;
+  const collapsed = body.classList.toggle('collapsed');
+  if (arrow) arrow.classList.toggle('collapsed', collapsed);
+  document.querySelectorAll('.table-collapsible-ctrl').forEach(el => {
+    el.style.display = collapsed ? 'none' : '';
+  });
+}
+
 // ── INIT ──
 connectWS();
 
@@ -2408,7 +2453,27 @@ const History = (function() {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const text = await r.text();
       parseCsv(text);
-      setStatus(rows.length + ' rows');
+
+      let firstTs = rows.length ? Number(rows[0][0]) : null;
+      let lastTs  = rows.length ? Number(rows[rows.length - 1][0]) : null;
+      let rangeLabel = 'all';
+      if (rangeFrom != null && rangeTo != null) {
+        let spanMs = Math.max(0, rangeTo - rangeFrom);
+        if (spanMs <= 3600e3) rangeLabel = '1h';
+        else if (spanMs <= 6 * 3600e3) rangeLabel = '6h';
+        else if (spanMs <= 24 * 3600e3) rangeLabel = '24h';
+        else if (spanMs <= 7 * 24 * 3600e3) rangeLabel = '7d';
+        else if (spanMs <= 30 * 24 * 3600e3) rangeLabel = '30d';
+        else rangeLabel = Math.round(spanMs / 3600000) + 'h';
+      }
+
+      setStatus(
+        rows.length + ' rows' +
+        ' | range ' + rangeLabel +
+        (firstTs ? ' | from ' + new Date(firstTs).toLocaleString() : '') +
+        (lastTs  ? ' | to ' + new Date(lastTs).toLocaleString() : '')
+      );
+
       refreshChartTable();
     } catch (e) {
       setStatus('Error: ' + e.message);
@@ -2469,9 +2534,24 @@ const History = (function() {
     const faultOnlyEl = document.getElementById('hist-fault-only');
     const faultOnly = faultOnlyEl ? faultOnlyEl.checked : false;
     filteredRows = rows;
+
+    // Client-side time-range filtering
+    if (rangeFrom != null || rangeTo != null) {
+      const tsIdx = header.indexOf('ts');
+      if (tsIdx >= 0) {
+        filteredRows = filteredRows.filter(r => {
+          const t = Number(r[tsIdx]);
+          if (isNaN(t)) return false;
+          if (rangeFrom != null && t < rangeFrom) return false;
+          if (rangeTo   != null && t > rangeTo)   return false;
+          return true;
+        });
+      }
+    }
+
     if (faultOnly) {
       const fcIdx = header.indexOf('fault_count');
-      filteredRows = rows.filter(r => {
+      filteredRows = filteredRows.filter(r => {
         const fc = fcIdx >= 0 ? Number(r[fcIdx]) : 0;
         return fc > 0;
       });
