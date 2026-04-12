@@ -239,17 +239,18 @@
     border: none;
     color: var(--text-dim);
     font-family: var(--font-head);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 10px 8px;
+    padding: 10px 4px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    display: flex; align-items: center; justify-content: center; gap: 3px;
     flex: 1;
-    white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
   }
   .tab-btn:hover { color: var(--text); background: var(--surface2); }
   .tab-btn.active {
@@ -257,7 +258,11 @@
     color: #fff;
     box-shadow: 0 2px 12px rgba(14,184,160,0.25);
   }
-  .tab-btn .tab-icon { font-size: 14px; }
+  .tab-btn .tab-icon { font-size: 12px; }
+  @media (max-width: 480px) {
+    .tab-btn { font-size: 9px; padding: 8px 2px; gap: 2px; letter-spacing: 0; }
+    .tab-btn .tab-icon { display: none; }
+  }
 
   /* ── TAB PANELS ── */
   .tab-panel { display: none; }
@@ -792,7 +797,129 @@
   .theme-btn[data-t="green"]  { background: radial-gradient(circle at 40% 40%, #0eb8a0, #0b0f0e); }
   .theme-btn[data-t="dark"]  { background: radial-gradient(circle at 40% 40%, #a855f7, #0f0f0f); }
 
+  /* ── HISTORY TAB ── */
+  .hist-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .hist-row:last-child { margin-bottom: 0; }
+  .hist-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    min-width: 60px;
+  }
+  .hist-quick, .hist-groups, .hist-fields {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .hist-qbtn, .hist-gbtn, .hist-pg, .hist-fetch, .hist-export {
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .hist-qbtn:hover, .hist-gbtn:hover, .hist-pg:hover, .hist-fetch:hover, .hist-export:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+  .hist-qbtn.active, .hist-gbtn.active {
+    background: var(--teal-dim);
+    color: #fff;
+    border-color: var(--teal);
+  }
+  .hist-fields label {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .hist-fields label.checked {
+    background: var(--teal-dim);
+    color: #fff;
+    border-color: var(--teal);
+  }
+  .hist-fields input[type="checkbox"] { margin: 0; }
+  input#hist-from, input#hist-to {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .hist-toggle {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer;
+  }
+  .hist-status {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  select#hist-page-size {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .hist-table-wrap {
+    overflow-x: auto;
+    max-height: 480px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .hist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .hist-table th, .hist-table td {
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .hist-table th {
+    position: sticky; top: 0;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .hist-table tr.fault td {
+    background: rgba(255, 80, 80, 0.08);
+  }
+  #hist-page-info {
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 110px;
+    text-align: center;
+  }
+  .uplot { font-family: inherit; }
+  #hist-chart { min-height: 200px; }
+  @media (max-width: 480px) {
+    .u-legend { font-size: 9px; }
+    .u-legend th, .u-legend td { padding: 1px 4px; }
+  }
+
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.min.css">
+<script src="https://cdn.jsdelivr.net/npm/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -835,6 +962,9 @@
     </button>
     <button class="tab-btn" onclick="switchTab('control')" id="tab-control">
       <span class="tab-icon">⚙️</span> Mode
+    </button>
+    <button class="tab-btn" onclick="switchTab('history')" id="tab-history">
+      <span class="tab-icon">📈</span> History
     </button>
     <button class="tab-btn" onclick="switchTab('alerts')" id="tab-alerts">
       <span class="tab-icon">🔔</span> Alerts
@@ -1183,6 +1313,87 @@
 
   </div><!-- /panel-control -->
 
+  <!-- ═══════════════════ HISTORY TAB ═══════════════════ -->
+  <div class="tab-panel" id="panel-history">
+
+    <div class="section-label">📈 HISTORY</div>
+
+    <div class="card" style="padding:14px;margin-bottom:14px;">
+      <div class="hist-row">
+        <div class="hist-label">Range</div>
+        <div class="hist-quick">
+          <button class="hist-qbtn" data-range="1h" onclick="History.setQuick('1h')">1h</button>
+          <button class="hist-qbtn" data-range="6h" onclick="History.setQuick('6h')">6h</button>
+          <button class="hist-qbtn active" data-range="24h" onclick="History.setQuick('24h')">24h</button>
+          <button class="hist-qbtn" data-range="7d" onclick="History.setQuick('7d')">7d</button>
+          <button class="hist-qbtn" data-range="30d" onclick="History.setQuick('30d')">30d</button>
+          <button class="hist-qbtn" data-range="all" onclick="History.setQuick('all')">all</button>
+        </div>
+      </div>
+      <div class="hist-row">
+        <div class="hist-label">From</div>
+        <input type="datetime-local" id="hist-from" onchange="History.onPickerChange()">
+        <div class="hist-label">To</div>
+        <input type="datetime-local" id="hist-to" onchange="History.onPickerChange()">
+        <button class="hist-fetch" onclick="History.refresh()">↻ Reload</button>
+      </div>
+      <div class="hist-row">
+        <div class="hist-label">Group</div>
+        <div class="hist-groups">
+          <button class="hist-gbtn active" data-group="climate" onclick="History.setGroup('climate')">🌡 Climate</button>
+          <button class="hist-gbtn" data-group="soil" onclick="History.setGroup('soil')">🌱 Soil</button>
+          <button class="hist-gbtn" data-group="controls" onclick="History.setGroup('controls')">🎛 Controls</button>
+          <button class="hist-gbtn" data-group="power" onclick="History.setGroup('power')">⚡ Power</button>
+          <button class="hist-gbtn" data-group="irrigation" onclick="History.setGroup('irrigation')">💧 Irrigation</button>
+          <button class="hist-gbtn" data-group="faults" onclick="History.setGroup('faults')">🔔 Faults</button>
+        </div>
+      </div>
+      <div class="hist-row">
+        <div class="hist-label">Fields</div>
+        <div class="hist-fields" id="hist-fields"></div>
+      </div>
+      <div class="hist-row">
+        <label class="hist-toggle">
+          <input type="checkbox" id="hist-fault-only" onchange="History.refreshChartTable()"> Show only fault rows
+        </label>
+        <label class="hist-toggle">
+          <input type="checkbox" id="hist-fault-markers" checked onchange="History.refreshChartTable()"> Mark faults on chart
+        </label>
+        <div style="flex:1;"></div>
+        <span class="hist-status" id="hist-status">—</span>
+        <button class="hist-export" onclick="History.exportCsv()">⬇ Download filtered CSV</button>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px;margin-bottom:14px;">
+      <div class="section-label" style="margin-bottom:10px;">CHART</div>
+      <div id="hist-chart" style="width:100%;"></div>
+    </div>
+
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <div class="section-label" style="margin:0;">TABLE</div>
+        <div style="flex:1;"></div>
+        <span style="font-size:11px;color:var(--text-dim);">Page size</span>
+        <select id="hist-page-size" onchange="History.setPageSize(this.value)">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="500">500</option>
+        </select>
+        <button class="hist-pg" onclick="History.prevPage()">‹ Prev</button>
+        <span id="hist-page-info">—</span>
+        <button class="hist-pg" onclick="History.nextPage()">Next ›</button>
+      </div>
+      <div class="hist-table-wrap">
+        <table class="hist-table" id="hist-table">
+          <thead><tr id="hist-thead"></tr></thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /panel-history -->
+
   <!-- ═══════════════════ ALERTS TAB ═══════════════════ -->
   <div class="tab-panel" id="panel-alerts">
 
@@ -1373,15 +1584,16 @@ const state = {
   activeRowIndex: 0,
   tempOpenF: 85, tempCloseF: 65,
   tankHeatOnF: 40, tankHeatOffF: 45,
-  soilStartPct: 35, soilStopPct: 55,
+  soilStartPct: [35,35,35,35], soilStopPct: [55,55,55,55],
   scheduleIntervalMs: null,
   rhOpenPct: 85,
-  rowDurationMs: 60000,
-  rowMaxCycleMs: 600000,
+  rowDurationMs: [60000,60000,60000,60000],
   pvPresent: false, battV: 0, pvV: 0,
   ecoMode: false,
-  faultBits: 0,
-  nrFaults: {},
+  arduinoFault: 0,
+  faultCount: 0,
+  systemFault: 0,
+  faults: {},
   hw: {},
   arduinoCommFault: 0,
   lastSeen: null,
@@ -1506,7 +1718,10 @@ function applyPayload(d) {
   if (d.tempCloseF !== undefined) state.tempCloseF = d.tempCloseF;
   if (d.ecoMode    !== undefined) state.ecoMode    = d.ecoMode;
   if (d.pvPresent  !== undefined) state.pvPresent  = d.pvPresent;
-  if (d.faultBits  !== undefined) state.faultBits  = d.faultBits;
+  if (d.arduinoFault !== undefined) state.arduinoFault = d.arduinoFault;
+  if (d.faultCount !== undefined) state.faultCount = d.faultCount;
+  if (d.systemFault !== undefined) state.systemFault = d.systemFault;
+  if (d.faults !== undefined) state.faults = d.faults;
   if (d.tankHeatOnF  !== undefined) state.tankHeatOnF  = d.tankHeatOnF;
   if (d.tankHeatOffF !== undefined) state.tankHeatOffF = d.tankHeatOffF;
   if (d.soilStartPct !== undefined) state.soilStartPct = d.soilStartPct;
@@ -1514,8 +1729,6 @@ function applyPayload(d) {
   if (d.scheduleIntervalMs !== undefined) state.scheduleIntervalMs = d.scheduleIntervalMs;
   if (d.rhOpenPct    !== undefined) state.rhOpenPct    = d.rhOpenPct;
   if (d.rowDurationMs !== undefined) state.rowDurationMs = d.rowDurationMs;
-  if (d.rowMaxCycleMs !== undefined) state.rowMaxCycleMs = d.rowMaxCycleMs;
-  if (d.nrFaults !== undefined) state.nrFaults = d.nrFaults;
   if (d.hw !== undefined) state.hw = d.hw || {};
   if (d.arduino_comm_fault !== undefined) state.arduinoCommFault = d.arduino_comm_fault ? 1 : 0;
   if (d.commFault !== undefined) state.arduinoCommFault = d.commFault ? 1 : 0;
@@ -1551,7 +1764,10 @@ function injectDemo() {
     tempOpenF:   85, tempCloseF: 65,
     ecoMode:     false,
     pvPresent:   true,
-    faultBits:   0
+    arduinoFault: 0,
+    faultCount:  0,
+    systemFault: 0,
+    faults:      {}
   });
 }
 
@@ -1585,7 +1801,7 @@ function colorForPct(pct, reverse) {
 function fmt(v, dec=1) { return (v===null||v===undefined||isNaN(v)) ? '--' : Number(v).toFixed(dec); }
 
 function getSoilFaultMap() {
-  return state.nrFaults || {};
+  return state.faults || {};
 }
 
 function isSoilInstalled(idx) {
@@ -1902,14 +2118,11 @@ function updateAll() {
 
 function updateFaults() {
   const s = state;
-  const bits = s.faultBits || 0;
-  const nr = s.nrFaults || {};
-  const nrKeys = Object.keys(nr);
+  const bits = s.arduinoFault || 0;
+  const faultMap = s.faults || {};
+  const faultKeys = Object.keys(faultMap);
+  const totalActive = s.faultCount || 0;
 
-  const hwActive = FAULTS.filter(f => bits & f.bit).length;
-  const totalActive = hwActive + nrKeys.length;
-
-  // Dashboard badge — counts both hardware and NR faults
   const badge = document.getElementById('fault-badge');
   if (totalActive > 0) {
     badge.classList.add('visible');
@@ -1921,7 +2134,7 @@ function updateFaults() {
   const list = document.getElementById('fault-list');
   if (!list) return;
 
-  // Hardware fault bits from Arduino — always show all rows
+  // Hardware fault bits from Arduino
   let html = FAULTS.map(f => {
     const active = !!(bits & f.bit);
     const cls = active ? 'err' : 'ok';
@@ -1933,24 +2146,25 @@ function updateFaults() {
     </div>`;
   }).join('');
 
-  // Node-RED detected faults — soil missing, floating, comms etc.
-  // Only shown when active (these are dynamic, not a fixed list)
-  if (nrKeys.length > 0) {
-    html += '<div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);padding:10px 4px 6px;">Node-RED Detected</div>';
+  // Faults from canonical payload (Final Live Payload)
+  if (faultKeys.length > 0) {
+    html += '<div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-faint);padding:10px 4px 6px;">Detected Faults</div>';
     const keyNames = {
       'soil1_pct': 'Soil Row 1', 'soil2_pct': 'Soil Row 2',
       'soil3_pct': 'Soil Row 3', 'soil4_pct': 'Soil Row 4',
       'soil_avg_pct': 'Soil Average', 'controller_fault': 'Controller',
       'comms': 'Comms', 'louvre_pos_pct': 'Louvre Position',
       'fan_pwm': 'Fan', 'rh_pct': 'Humidity', 'temp_f': 'Temperature',
-      'lux': 'Light'
+      'lux': 'Light', 'tank_temp_f': 'Tank Temp',
+      'pump_on': 'Pump', 'heater_on': 'Heater', 'pv_present': 'PV',
+      'data_quality': 'Data Quality'
     };
-    html += nrKeys.map(k => {
+    html += faultKeys.map(k => {
       const name = keyNames[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       return '<div class="fault-row err">' +
         '<div class="fault-dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div>' +
         '<div class="fault-name">' + name + '</div>' +
-        '<div class="fault-status">' + nr[k] + '</div>' +
+        '<div class="fault-status">' + faultMap[k] + '</div>' +
         '</div>';
     }).join('');
   }
@@ -1976,15 +2190,23 @@ function updateThresholds() {
   el('th-fan-start',  s.tempCloseF != null ? f1(s.tempCloseF) + ' °F' : '--');
   el('th-fan-off',    s.tempCloseF != null ? f1(s.tempCloseF) + ' °F' : '--');
 
-  /* Irrigation */
-  el('th-soil-start', s.soilStartPct != null ? s.soilStartPct + ' %' : '--');
-  el('th-soil-stop',  s.soilStopPct  != null ? s.soilStopPct  + ''   : '--');
-  if (s.rowDurationMs != null) {
-    el('th-row-dur', (s.rowDurationMs / 1000).toFixed(0) + ' s');
+  /* Irrigation — arrays from per-row data, show range or single value */
+  function arrSummary(arr, suffix, div) {
+    if (!Array.isArray(arr)) return arr != null ? arr + (suffix||'') : '--';
+    var valid = arr.filter(function(v) { return v != null; });
+    if (valid.length === 0) return '--';
+    var mn = Math.min.apply(null, valid);
+    var mx = Math.max.apply(null, valid);
+    var d = div || 1;
+    if (mn === mx) return (mn/d).toFixed(d===1?0:0) + (suffix||'');
+    return (mn/d).toFixed(0) + '–' + (mx/d).toFixed(0) + (suffix||'');
   }
-  if (s.rowMaxCycleMs != null) {
-    el('th-row-max', (s.rowMaxCycleMs / 60000).toFixed(0) + ' min');
-  }
+  el('th-soil-start', arrSummary(s.soilStartPct, ' %'));
+  el('th-soil-stop',  arrSummary(s.soilStopPct, ' %'));
+  el('th-row-dur',    arrSummary(s.rowDurationMs, ' s', 1000));
+  el('th-row-max',    s.rowDurationMs != null ? arrSummary(
+    Array.isArray(s.rowDurationMs) ? s.rowDurationMs.map(function(v) { return v ? v*10 : null; }) : null, ' min', 60000
+  ) : '--');
   if (s.scheduleIntervalMs != null) {
     el('th-sched', (s.scheduleIntervalMs / 3600000).toFixed(1) + ' hrs');
   }
@@ -1996,10 +2218,11 @@ function updateThresholds() {
 
 // ── TAB SWITCHING ──
 function switchTab(name) {
-  ['dashboard','control','alerts'].forEach(t => {
+  ['dashboard','control','history','alerts'].forEach(t => {
     document.getElementById('panel-'+t).classList.toggle('active', t===name);
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
   });
+  if (name === 'history') History.ensureInit();
 }
 
 function switchAlertTab(name) {
@@ -2031,6 +2254,484 @@ setInterval(() => {
     updateConnStatus();
   }
 }, 1000);
+
+// ═══════════════════ HISTORY TAB ═══════════════════
+const History = (function() {
+  const LOUVRE_STATE_MAP = { 'closed': 0, 'closing': 1, 'opening': 2, 'open': 3, 'stopped': 4 };
+  function encodeLouvreState(v) {
+    if (v == null) return NaN;
+    var n = LOUVRE_STATE_MAP[String(v).toLowerCase()];
+    return n == null ? NaN : n;
+  }
+
+  const FIELD_GROUPS = {
+    climate: { label: 'Climate', defaults: ['temp_f', 'rh_pct'], fields: [
+      { key: 'temp_f',      label: 'Temp (°F)',      color: '#ff6b6b' },
+      { key: 'rh_pct',      label: 'Humidity (%)',   color: '#4dabf7' },
+      { key: 'tank_temp_f', label: 'Tank Temp (°F)', color: '#ffa94d' },
+      { key: 'lux',         label: 'Lux',            color: '#ffd43b' },
+    ]},
+    soil: { label: 'Soil', defaults: ['soil1_pct','soil2_pct','soil3_pct','soil4_pct','soil'], fields: [
+      { key: 'soil1_pct', label: 'Soil 1 %',   color: '#51cf66' },
+      { key: 'soil2_pct', label: 'Soil 2 %',   color: '#94d82d' },
+      { key: 'soil3_pct', label: 'Soil 3 %',   color: '#37b24d' },
+      { key: 'soil4_pct', label: 'Soil 4 %',   color: '#2f9e44' },
+      { key: 'soil',      label: 'Soil avg %', color: '#69db7c' },
+    ]},
+    controls: { label: 'Controls', defaults: ['fan_pct', 'louvre_pct'], fields: [
+      { key: 'fan_pct',      label: 'Fan %',         color: '#74c0fc' },
+      { key: 'louvre_pct',   label: 'Louvre %',      color: '#a5d8ff' },
+      { key: 'lightOn',      label: 'Light on',      color: '#ffd43b' },
+      { key: 'fan_pwm',      label: 'Fan PWM',       color: '#4dabf7' },
+      { key: 'louvre_state', label: 'Louvre state',  color: '#e599f7', encode: encodeLouvreState, step: true },
+      { key: 'heater_on',    label: 'Heater on',     color: '#ff922b' },
+      { key: 'pump_on',      label: 'Pump on',       color: '#22b8cf' },
+    ]},
+    power: { label: 'Power', defaults: ['batt_v', 'pv_v'], fields: [
+      { key: 'batt_v',     label: 'Battery V',  color: '#fcc419' },
+      { key: 'pv_v',       label: 'PV V',       color: '#ffd43b' },
+      { key: 'pv_present', label: 'PV present', color: '#ffe066' },
+    ]},
+    irrigation: { label: 'Irrigation', defaults: ['active_row'], fields: [
+      { key: 'active_row', label: 'Active row', color: '#3bc9db' },
+      { key: 'row1',       label: 'Row 1',      color: '#15aabf' },
+      { key: 'row2',       label: 'Row 2',      color: '#1098ad' },
+      { key: 'row3',       label: 'Row 3',      color: '#0c8599' },
+      { key: 'row4',       label: 'Row 4',      color: '#0b7285' },
+    ]},
+    faults: { label: 'Faults', defaults: ['fault_count'], fields: [
+      { key: 'fault_count', label: 'Fault count', color: '#ff6b6b' },
+    ]},
+  };
+
+  let header = [];
+  let rows = [];
+  let filteredRows = [];
+  let currentGroup = 'climate';
+  let selectedFields = new Set(['temp_f', 'rh_pct']);
+  let pageSize = 100;
+  let pageIdx = 0;
+  let chartInstance = null;
+  let histResizeObserver = null;
+  let rangeFrom = null;
+  let rangeTo = null;
+
+  function setStatus(s) {
+    const el = document.getElementById('hist-status');
+    if (el) el.textContent = s;
+  }
+
+  function setQuick(range) {
+    document.querySelectorAll('.hist-qbtn').forEach(b => {
+      b.classList.toggle('active', b.dataset.range === range);
+    });
+    const now = Date.now();
+    if (range === 'all') { rangeFrom = null; rangeTo = null; }
+    else {
+      const map = { '1h': 3600e3, '6h': 6*3600e3, '24h': 86400e3, '7d': 7*86400e3, '30d': 30*86400e3 };
+      rangeFrom = now - map[range];
+      rangeTo = now;
+    }
+    syncPickers();
+    refresh();
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function toLocalInput(ms) {
+    const d = new Date(ms);
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function syncPickers() {
+    const fromEl = document.getElementById('hist-from');
+    const toEl   = document.getElementById('hist-to');
+    fromEl.value = rangeFrom != null ? toLocalInput(rangeFrom) : '';
+    toEl.value   = rangeTo   != null ? toLocalInput(rangeTo)   : '';
+  }
+  function onPickerChange() {
+    const fromEl = document.getElementById('hist-from');
+    const toEl   = document.getElementById('hist-to');
+    rangeFrom = fromEl.value ? new Date(fromEl.value).getTime() : null;
+    rangeTo   = toEl.value   ? new Date(toEl.value).getTime()   : null;
+    document.querySelectorAll('.hist-qbtn').forEach(b => b.classList.remove('active'));
+    refresh();
+  }
+
+  function setGroup(g) {
+    currentGroup = g;
+    document.querySelectorAll('.hist-gbtn').forEach(b => {
+      b.classList.toggle('active', b.dataset.group === g);
+    });
+    selectedFields = new Set();
+    const grp = FIELD_GROUPS[g];
+    const defaults = grp.defaults || grp.fields.slice(0, 2).map(f => f.key);
+    defaults.forEach(k => selectedFields.add(k));
+    renderFieldList();
+    refreshChartTable();
+  }
+
+  function renderFieldList() {
+    const wrap = document.getElementById('hist-fields');
+    wrap.innerHTML = '';
+    FIELD_GROUPS[currentGroup].fields.forEach(f => {
+      const lbl = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = f.key;
+      cb.checked = selectedFields.has(f.key);
+      if (cb.checked) lbl.classList.add('checked');
+      cb.addEventListener('change', () => {
+        if (cb.checked) selectedFields.add(f.key);
+        else selectedFields.delete(f.key);
+        lbl.classList.toggle('checked', cb.checked);
+        refreshChartTable();
+      });
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(' ' + f.label));
+      wrap.appendChild(lbl);
+    });
+  }
+
+  async function refresh() {
+    setStatus('Loading…');
+    let url = '/history.csv';
+    const params = [];
+    if (rangeFrom != null) params.push('from=' + rangeFrom);
+    if (rangeTo   != null) params.push('to='   + rangeTo);
+    if (params.length) url += '?' + params.join('&');
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      const host = qs.get('host') || window.location.hostname || '127.0.0.1';
+      const port = window.location.port ? ':' + window.location.port : '';
+      const proto = window.location.protocol === 'https:' ? 'https:' : 'http:';
+      const fullUrl = proto + '//' + host + port + url;
+      const r = await fetch(fullUrl);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const text = await r.text();
+      parseCsv(text);
+      setStatus(rows.length + ' rows');
+      refreshChartTable();
+    } catch (e) {
+      setStatus('Error: ' + e.message);
+      rows = []; filteredRows = []; header = [];
+      refreshChartTable();
+    }
+  }
+
+  const V3_HEADER = 'ts,t1,t2,tavg,h1,h2,havg,soil,lux,louvre_pct,louvre_state,fan_pct,lightOn,fault_count,system_fault,mode,irrigation_mode,temp_f,rh_pct,tank_temp_f,soil1_raw,soil1_pct,soil2_raw,soil2_pct,soil3_raw,soil3_pct,soil4_raw,soil4_pct,batt_v,pv_v,pv_present,louvre_pos_pct,row1,row2,row3,row4,row1_en,row2_en,row3_en,row4_en,row1_ms,row2_ms,row3_ms,row4_ms,row1_start_pct,row2_start_pct,row3_start_pct,row4_start_pct,row1_stop_pct,row2_stop_pct,row3_stop_pct,row4_stop_pct,pump_on,heater_on,light_on,fan_pwm,rows_run_active,rows_run_auto,active_row,temp_open_f,temp_close_f,rh_open_pct,tank_heat_on_f,tank_heat_off_f,schedule_interval_ms,eco_mode,controller_fault';
+
+  function parseCsv(text) {
+    rows = [];
+    if (!text) { header = []; return; }
+    const lines = text.split('\n');
+    if (lines.length === 0) { header = []; return; }
+    var startIdx = 0;
+    var firstField = parseLine(lines[0])[0] || '';
+    if (/^\d/.test(firstField)) {
+      header = V3_HEADER.split(',');
+      startIdx = 0;
+    } else {
+      header = parseLine(lines[0]);
+      startIdx = 1;
+    }
+    for (let i = startIdx; i < lines.length; i++) {
+      const ln = lines[i];
+      if (!ln) continue;
+      var firstComma = ln.indexOf(',');
+      if (firstComma > 0 && /^\d/.test(ln)) {
+        const fields = parseLine(ln);
+        if (fields.length >= 2) rows.push(fields);
+      }
+    }
+  }
+
+  function parseLine(line) {
+    const out = [];
+    let cur = '';
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (inQ) {
+        if (c === '"') {
+          if (line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += c;
+      } else {
+        if (c === ',') { out.push(cur); cur = ''; }
+        else if (c === '"') inQ = true;
+        else cur += c;
+      }
+    }
+    out.push(cur);
+    return out;
+  }
+
+  function refreshChartTable() {
+    const faultOnlyEl = document.getElementById('hist-fault-only');
+    const faultOnly = faultOnlyEl ? faultOnlyEl.checked : false;
+    filteredRows = rows;
+    if (faultOnly) {
+      const fcIdx = header.indexOf('fault_count');
+      filteredRows = rows.filter(r => {
+        const fc = fcIdx >= 0 ? Number(r[fcIdx]) : 0;
+        return fc > 0;
+      });
+    }
+    pageIdx = 0;
+    renderChart();
+    renderTable();
+  }
+
+  function autoBucketSize(rangeMs, maxPoints) {
+    const target = maxPoints || 1000;
+    const rawBucket = rangeMs / target;
+    const buckets = [1e3, 5e3, 10e3, 30e3, 60e3, 5*60e3, 15*60e3, 60*60e3, 6*60*60e3, 24*60*60e3];
+    for (const b of buckets) if (b >= rawBucket) return b;
+    return 24*60*60e3;
+  }
+
+  function renderChart() {
+    const container = document.getElementById('hist-chart');
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    container.innerHTML = '';
+    if (filteredRows.length === 0 || selectedFields.size === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:80px 0;font-size:11px;">No data to plot</div>';
+      return;
+    }
+    const tsIdx = header.indexOf('ts');
+    if (tsIdx < 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:80px 0;">Missing ts column</div>';
+      return;
+    }
+    const fieldList = FIELD_GROUPS[currentGroup].fields.filter(f => selectedFields.has(f.key));
+    const fieldIdx = fieldList.map(f => Object.assign({}, f, { idx: header.indexOf(f.key) })).filter(f => f.idx >= 0);
+    if (fieldIdx.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:80px 0;">Selected fields not in data</div>';
+      return;
+    }
+
+    let tsMin = Infinity, tsMax = -Infinity;
+    for (const r of filteredRows) {
+      const t = Number(r[tsIdx]);
+      if (!isNaN(t)) { if (t < tsMin) tsMin = t; if (t > tsMax) tsMax = t; }
+    }
+    if (!isFinite(tsMin)) { container.innerHTML = 'no valid timestamps'; return; }
+    const rangeMs = Math.max(1, tsMax - tsMin);
+    const bucket = autoBucketSize(rangeMs, 1000);
+
+    const buckets = new Map();
+    for (const row of filteredRows) {
+      const ts = Number(row[tsIdx]);
+      if (isNaN(ts)) continue;
+      const k = Math.floor(ts / bucket) * bucket;
+      let entry = buckets.get(k);
+      if (!entry) {
+        entry = { sums: new Array(fieldIdx.length).fill(0), counts: new Array(fieldIdx.length).fill(0) };
+        buckets.set(k, entry);
+      }
+      for (let i = 0; i < fieldIdx.length; i++) {
+        const raw = row[fieldIdx[i].idx];
+        const v = fieldIdx[i].encode ? fieldIdx[i].encode(raw) : Number(raw);
+        if (!isNaN(v)) { entry.sums[i] += v; entry.counts[i]++; }
+      }
+    }
+    const sortedKeys = Array.from(buckets.keys()).sort((a, b) => a - b);
+    const xs = sortedKeys.map(k => k / 1000);
+    const ys = fieldIdx.map((_, i) => sortedKeys.map(k => {
+      const e = buckets.get(k);
+      return e.counts[i] > 0 ? e.sums[i] / e.counts[i] : null;
+    }));
+
+    const data = [xs].concat(ys);
+    const series = [{ label: 'time' }].concat(fieldIdx.map(f => {
+      const s = { label: f.label, stroke: f.color, width: 1.5 };
+      if (f.step && typeof uPlot !== 'undefined' && uPlot.paths && uPlot.paths.stepped) {
+        s.paths = uPlot.paths.stepped({ align: 1 });
+      }
+      return s;
+    }));
+
+    var isMobile = container.clientWidth < 480;
+    var chartH = isMobile ? 220 : 340;
+
+    const opts = {
+      width: container.clientWidth || 800,
+      height: chartH,
+      series: series,
+      legend: { show: true },
+      cursor: { drag: { x: true, y: false } },
+      scales: { x: { time: true } },
+      axes: [
+        {
+          stroke: '#888',
+          grid: { stroke: 'rgba(255,255,255,0.05)' },
+          size: isMobile ? 40 : 50,
+          font: isMobile ? '9px sans-serif' : '11px sans-serif',
+          space: isMobile ? 60 : 80,
+          incrs: isMobile ? [60, 300, 600, 3600, 7200, 86400] : undefined
+        },
+        {
+          stroke: '#888',
+          grid: { stroke: 'rgba(255,255,255,0.05)' },
+          size: isMobile ? 40 : 55,
+          font: isMobile ? '9px sans-serif' : '11px sans-serif'
+        }
+      ],
+      hooks: {
+        draw: [
+          function(u) {
+            const markersOn = document.getElementById('hist-fault-markers');
+            if (!markersOn || !markersOn.checked) return;
+            drawFaultMarkers(u);
+          }
+        ]
+      }
+    };
+
+    chartInstance = new uPlot(opts, data, container);
+
+    if (!histResizeObserver) {
+      histResizeObserver = new ResizeObserver(function(entries) {
+        if (chartInstance) {
+          var w = entries[0].contentRect.width;
+          if (Math.abs(w - chartInstance.width) > 20) {
+            chartInstance.setSize({ width: w, height: chartH });
+          }
+        }
+      });
+      histResizeObserver.observe(container);
+    }
+  }
+
+  function drawFaultMarkers(u) {
+    const fcIdx = header.indexOf('fault_count');
+    if (fcIdx < 0) return;
+    const tsIdx = header.indexOf('ts');
+    const ctx = u.ctx;
+    const faultTs = [];
+    let prev = 0;
+    for (const r of filteredRows) {
+      const fc = Number(r[fcIdx]);
+      const ts = Number(r[tsIdx]);
+      if (fc > 0 && prev === 0 && !isNaN(ts)) faultTs.push(ts / 1000);
+      prev = fc;
+    }
+    if (faultTs.length === 0) return;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 80, 80, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    const top = u.bbox.top;
+    const bot = u.bbox.top + u.bbox.height;
+    for (const t of faultTs) {
+      const x = u.valToPos(t, 'x', true);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bot);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function renderTable() {
+    const thead = document.getElementById('hist-thead');
+    const tbody = document.getElementById('hist-tbody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    if (header.length === 0) {
+      document.getElementById('hist-page-info').textContent = '0 rows';
+      return;
+    }
+
+    const visible = ['ts'];
+    selectedFields.forEach(k => { if (visible.indexOf(k) < 0) visible.push(k); });
+    if (visible.indexOf('fault_count') < 0) visible.push('fault_count');
+    const visIdx = visible.map(k => ({ key: k, idx: header.indexOf(k) })).filter(v => v.idx >= 0);
+
+    const headerRow = document.createElement('tr');
+    visIdx.forEach(v => {
+      const th = document.createElement('th');
+      th.textContent = v.key;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+
+    const total = filteredRows.length;
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+    if (pageIdx >= pageCount) pageIdx = pageCount - 1;
+    if (pageIdx < 0) pageIdx = 0;
+    const start = pageIdx * pageSize;
+    const end = Math.min(start + pageSize, total);
+    const fcTblIdx = header.indexOf('fault_count');
+    for (let i = start; i < end; i++) {
+      const r = filteredRows[i];
+      const tr = document.createElement('tr');
+      const fc = fcTblIdx >= 0 ? Number(r[fcTblIdx]) : 0;
+      if (fc > 0) tr.classList.add('fault');
+      visIdx.forEach(v => {
+        const td = document.createElement('td');
+        let val = r[v.idx];
+        if (v.key === 'ts' && val) {
+          const n = Number(val);
+          if (!isNaN(n)) val = new Date(n).toISOString().replace('T', ' ').replace('Z', '');
+        }
+        td.textContent = val == null ? '' : val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    }
+    document.getElementById('hist-page-info').textContent =
+      total === 0 ? '0 rows' : (start + 1) + '–' + end + ' of ' + total;
+  }
+
+  function setPageSize(n) { pageSize = Number(n) || 100; pageIdx = 0; renderTable(); }
+  function nextPage() { pageIdx++; renderTable(); }
+  function prevPage() { pageIdx--; renderTable(); }
+
+  function csvEscOut(v) {
+    if (v == null || v === '') return '';
+    const s = String(v);
+    if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+  function exportCsv() {
+    if (filteredRows.length === 0) return;
+    const lines = [header.join(',')];
+    for (const r of filteredRows) lines.push(r.map(csvEscOut).join(','));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gh_data_filtered_' + Date.now() + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  let inited = false;
+  function ensureInit() {
+    if (inited) return;
+    inited = true;
+    setGroup('climate');
+    setQuick('24h');
+  }
+
+  return {
+    setQuick: setQuick,
+    setGroup: setGroup,
+    refresh: refresh,
+    refreshChartTable: refreshChartTable,
+    onPickerChange: onPickerChange,
+    setPageSize: setPageSize,
+    nextPage: nextPage,
+    prevPage: prevPage,
+    exportCsv: exportCsv,
+    ensureInit: ensureInit
+  };
+})();
 </script>
 </body>
 </html>
